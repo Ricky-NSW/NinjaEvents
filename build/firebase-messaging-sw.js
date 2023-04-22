@@ -1,16 +1,14 @@
 importScripts('https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js');
 importScripts('https://www.gstatic.com/firebasejs/8.10.0/firebase-messaging.js');
-import { env } from 'react-dotenv';
 
 firebase.initializeApp({
-    apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
-    authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
-    databaseURL: process.env.REACT_APP_FIREBASE_DATABASE_URL,
-    projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
-    storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
-    appId: process.env.REACT_APP_FIREBASE_APP_ID,
-    measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID
+    apiKey: "AIzaSyC7N_T7Pze4DDRFENV8bN5seMmhyrsNCCw",
+    authDomain: "ninjaworld-c885a.firebaseapp.com",
+    projectId: "ninjaworld-c885a",
+    storageBucket: "ninjaworld-c885a.appspot.com",
+    messagingSenderId: "345924605674",
+    appId: "1:345924605674:web:da38312b5ff9cb76efe993",
+    measurementId: "G-TSPM11TJLF"
 });
 
 const messaging = firebase.messaging();
