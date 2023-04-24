@@ -11,21 +11,43 @@ const SubmitEventResults = ({ eventId }) => {
     const [users, setUsers] = useState([]);
     const [results, setResults] = useState([]);
     const [placeFields, setPlaceFields] = useState([]);
-    const [title, setTitle] = useState('');
+    const [name, setName] = useState('');
 
     const handleManualEnter = (index, event) => {
         const newResults = [...results];
         const inputValue = event.target.value.trim();
+
+        const user = users.find((user) => {
+            const userDisplayName =
+                user.firstName && user.lastName
+                    ? `${user.firstName} ${user.lastName}`
+                    : user.ninjaName || user.displayName || user.email;
+            return userDisplayName.toLowerCase() === inputValue.toLowerCase();
+        });
+
         if (inputValue) {
-            newResults[index] = { displayName: inputValue };
+            if (!user) {
+                // If it's a manual entry, update the displayName
+                newResults[index] = { displayName: inputValue };
+            } else {
+                // If the user is found in the list, update the id, firstName, and lastName
+                newResults[index] = {
+                    id: user.id,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                };
+            }
         }
         setResults(newResults);
     };
 
+
+
+
     const resetForm = () => {
         setNumPlaces(0);
         setResults([]);
-        setTitle('');
+        setName('');
     };
 
     useEffect(() => {
@@ -66,7 +88,12 @@ const SubmitEventResults = ({ eventId }) => {
                                     newResults[i - 1] = { displayName: inputValue };
                                 }
                             } else {
-                                newResults[i - 1] = newValue;
+                                newResults[i - 1] = {
+                                    id: newValue.id,
+                                    firstName: newValue.firstName,
+                                    lastName: newValue.lastName,
+                                    displayName: newValue.ninjaName || newValue.displayName || newValue.email,
+                                };
                             }
                             setResults(newResults);
                         }}
@@ -96,10 +123,20 @@ const SubmitEventResults = ({ eventId }) => {
         try {
             // Create a new document in the results subcollection and set its data to the form results
             const docRef = await addDoc(resultsCollectionRef, {
-                title,
-                results,
+                name,
+                results: results.map((result) => {
+                    if (result.id) {
+                        return {
+                            id: result.id,
+                            firstName: result.firstName,
+                            lastName: result.lastName,
+                        };
+                    } else {
+                        return { displayName: result.displayName };
+                    }
+                }),
             });
-            console.log('Results submitted:', { title, results });
+            console.log('Results submitted:', { name, results });
             console.log('Document ID:', docRef.id);
             resetForm();
         } catch (error) {
@@ -115,8 +152,8 @@ const SubmitEventResults = ({ eventId }) => {
             size="small"
             sx={{ m: 1, width: '25ch' }}
             label="Title of Results (eg. Pre-teens)"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
             />
             <TextField
                 type="number"
@@ -133,4 +170,3 @@ const SubmitEventResults = ({ eventId }) => {
 };
 
 export default SubmitEventResults;
-
