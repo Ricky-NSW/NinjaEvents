@@ -11,7 +11,7 @@ import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 
-import { BrowserRouter, Routes, Route, Switch } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "./components/layout/Layout";
 import Home from "./pages/Home";
 import Register from "./pages/Register";
@@ -37,7 +37,7 @@ import NoPage from "./pages/NoPage";
 import EventDetails from './components/events/EventDetails';
 import LoginPage from './pages/login'
 import LeagueDetails from "./components/leagues/LeagueDetails";
-import UserProfilePage from "./components/user/UserProfilePage";
+// import UserProfilePage from "./components/user/UserProfilePage";
 
 export default function App() {
     return (
@@ -52,8 +52,7 @@ export default function App() {
                     <Route exact path="login" element={<LoginPage />} />
                     <Route path="manageprofile" element={<ManageProfile />} />
                     <Route path="register" element={<Register />} />
-                    <Route path="/users/:userId" element={<UserProfilePage />} />
-
+                    {/*<Route path="/users/:userId" element={<UserProfilePage />} />*/}
                     {/*Events Pages*/}
                     <Route path="events" element={<EventsPage />} />
                     <Route path="addevent" element={<AddEventPage />} />

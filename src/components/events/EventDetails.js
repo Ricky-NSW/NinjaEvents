@@ -10,10 +10,9 @@ import {getFirestore, doc, getDoc, updateDoc, getDocs, query, collection, where}
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material';
 import Autocomplete from "@mui/material/Autocomplete";
 import {auth, db} from "../../FirebaseSetup";
-import GoogleMapSingle from "../api/GoogleMapSingle";
 import { Switch } from '@mui/material';
 import IsSubscribedSwitch from "../user/isSubscribedSwitch";
-
+import SubmitResultsForm from "./results/SubmitResultsForm";
 const EventDetails = () => {
     const { id } = useParams();
     const [event, setEvent] = useState(null);
@@ -217,6 +216,7 @@ const EventDetails = () => {
 
 
     return (
+        <>
         <div>
             {event ? (
                 <>
@@ -257,10 +257,6 @@ const EventDetails = () => {
 
                     <hr />
                     <Button variant="contained" onClick={handleOpen}>Edit</Button>
-
-                    {/*TODO: make {address.name} a link to the gym details page*/}
-                    <h2>MAP</h2>
-                    <GoogleMapSingle marker={event} />
 
                     {/*This is the dialogue that allows the Gym owner or the league admin to edit the events*/}
                     <Dialog open={open} onClose={handleClose}>
@@ -362,11 +358,19 @@ const EventDetails = () => {
                             <Button onClick={handleSaveChanges}>Save Changes</Button>
                         </DialogActions>
                     </Dialog>
+                    {/*//TODO: after the events date has passed show the results of the event - this needs to be a notification for the league and gym owner*/}
+                    {/*//TODO: once events results have been added, they should be displayed below*/}
+                    <SubmitResultsForm eventId={event.id} />
+                    <br />
                 </>
+
             ) : (
                 <p>Loading event details...</p>
             )}
         </div>
+
+
+        </>
     );
 };
 

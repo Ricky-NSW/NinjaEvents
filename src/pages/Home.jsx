@@ -4,6 +4,8 @@ import EventCard from '../components/events/eventCard';
 import { List } from '@mui/material';
 import AuthContext from '../contexts/AuthContext';
 import { useDataLayer } from '../components/data/DataLayer';
+import SearchBar from '../components/layout/tools/SearchBar';
+import { getFirestore, collection, getDocs, query, where } from 'firebase/firestore';
 
 const Home = () => {
     // State to hold the IDs of the gyms the user has subscribed
@@ -16,6 +18,7 @@ const Home = () => {
     // Get current user and user data from the Auth and Data contexts
     const { currentUser } = useContext(AuthContext);
     const { events, user } = useDataLayer();
+    const [searchResults, setSearchResults] = useState([]);
 
     useEffect(() => {
         // Find the user data for the current user
@@ -49,8 +52,52 @@ const Home = () => {
         setFilteredEvents(filteredEventsArray);
     }, [events, subscribedGymsIDs, subscribedLeaguesIDs]);
 
+    const handleSearch = async (searchText) => {
+        console.log('Search text:', searchText);
+
+        const db = getFirestore();
+        const collections = ['users', 'leagues', 'gyms', 'events'];
+        let allResults = [];
+
+        // Convert the search text to lowercase
+        const lowerCaseSearchText = searchText.toLowerCase();
+
+        for (const collectionName of collections) {
+            const collRef = collection(db, collectionName);
+            const docsSnapshot = await getDocs(collRef);
+
+            docsSnapshot.forEach((doc) => {
+                const docData = doc.data();
+
+                // Convert the name field value to lowercase and check if it contains the search text
+                if (docData.name && docData.name.toLowerCase().includes(lowerCaseSearchText)) {
+                    allResults.push({ collection: collectionName, id: doc.id, data: docData });
+                }
+            });
+        }
+
+        setSearchResults(allResults);
+    };
+
+
     return (
         <div>
+            <p>&nbsp;</p>
+            {/*//TODO: move all the search logic into the search component*/}
+            <SearchBar onSearch={handleSearch} />
+            {searchResults.length > 0 && (
+                <div>
+                    <h2>Search results:</h2>
+                    <ul>
+                        {searchResults.map((result, index) => (
+                            <li key={index}>
+                                {result.collection}: {result.data.name} (ID: {result.id})
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+
             <h2>Upcoming Events at Gyms and Leagues you follow</h2>
             {filteredEvents.length > 0 ? (
                 // If there are filtered events, display them in a list

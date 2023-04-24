@@ -2,17 +2,6 @@
 
 import React from 'react';
 import RegisterUser from '../components/user/RegisterUser';
-//MUI
-import Button from "@mui/material/Button";
-import EventsList from "../components/events/EventsList";
-import EventsMap from '../components/events/EventsMap';
-//MUI Dialogue
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
-
 const style = {
     position: 'absolute',
     top: '50%',

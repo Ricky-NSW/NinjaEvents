@@ -34,6 +34,7 @@ import DialogContent from '@mui/material/DialogContent';
 
 //notifications
 import { requestNotificationPermission } from '../messaging/fcm';
+import IsSubscribedSwitch from "../user/isSubscribedSwitch";
 
 
 // GymDetails component
@@ -43,10 +44,10 @@ const GymDetails = () => {
     const [isSubscribed, setIsSubscribed] = useState(false);
     const [events, setEvents] = useState([]);
     const [mapDialogOpen, setMapDialogOpen] = useState(false);
+
     // Fetch gym data from Firestore using gym ID
     useEffect(() => {
         const gymRef = doc(getFirestore(), 'gyms', id);
-
         const getGym = async () => {
             const gymDoc = await getDoc(gymRef);
             if (gymDoc.exists()) {
@@ -81,8 +82,27 @@ const GymDetails = () => {
         fetchEvents();
     }, [id]);
 
+
+    // Check if the user is subscribed to this gym
+    useEffect(() => {
+        const checkSubscribedGym = async () => {
+            if (auth.currentUser) {
+                const userRef = doc(getFirestore(), "users", auth.currentUser.uid);
+                const userDoc = await getDoc(userRef);
+
+                if (userDoc.exists()) {
+                    const subscribedGyms = userDoc.data().subscribedGyms || [];
+                    setIsSubscribed(subscribedGyms.some(gym => gym.id === id));
+                }
+            }
+        };
+
+
+        checkSubscribedGym();
+    }, [id, auth.currentUser]);
+
     // Handle subscribed/unsubscribed gym toggle
-    const handleLikeToggle = async () => {
+    const handlesubscribeToggle = async () => {
         setIsSubscribed(!isSubscribed);
         const userRef = doc(getFirestore(), "users", auth.currentUser.uid);
         const gymRef = doc(getFirestore(), "gyms", id);
@@ -101,24 +121,6 @@ const GymDetails = () => {
     };
 
 
-
-    // Check if the gym is subscribed by the current user
-    useEffect(() => {
-        const checkSubscribedGym = async () => {
-            if (auth.currentUser) {
-                const userRef = doc(getFirestore(), "users", auth.currentUser.uid);
-                const userDoc = await getDoc(userRef);
-
-                if (userDoc.exists()) {
-                    const subscribedGyms = userDoc.data().subscribedGyms || [];
-                    setIsSubscribed(subscribedGyms.includes(id));
-                }
-            }
-        };
-
-        checkSubscribedGym();
-    }, [id, auth.currentUser]);
-
     // Functions to open and close the map dialog
     const openMapDialog = () => {
         setMapDialogOpen(true);
@@ -128,54 +130,6 @@ const GymDetails = () => {
         setMapDialogOpen(false);
     };
 
-    // Listen for new events created with this gym's id in the event.gym array - for notifications
-    useEffect(() => {
-        const fetchNewEvents = async () => {
-            const db = getFirestore();
-            const eventsRef = collection(db, 'events');
-            const q = query(eventsRef, where('gym.id', '==', id));
-
-            const unsubscribe = onSnapshot(q, (querySnapshot) => {
-                querySnapshot.docChanges().forEach((change) => {
-                    if (change.type === 'added') {
-                        const newEvent = { id: change.doc.id, ...change.doc.data() };
-                        sendNotification(newEvent);
-                    }
-                });
-            });
-
-            return () => unsubscribe();
-        };
-
-        if (isSubscribed) {
-            fetchNewEvents();
-        }
-    }, [id, isSubscribed]);
-
-    // Send a notification to the user when a new event is created
-    const sendNotification = async (newEvent) => {
-        console.log("New event created:", newEvent);
-
-        // Request notification permission and get FCM token
-        const token = await requestNotificationPermission();
-
-        if (token) {
-            // Create notification options
-            const notificationOptions = {
-                body: `A new event "${newEvent.title}" has been added at ${newEvent.gym.name}!`,
-            };
-
-            // Show notification
-            navigator.serviceWorker.ready.then((registration) => {
-                registration.showNotification(notificationOptions.title, notificationOptions);
-            });
-        }
-    };
-
-
-
-
-
     // Render the component
     console.log('found events', events);
     return (
@@ -184,14 +138,13 @@ const GymDetails = () => {
                 <>
                 {/*{gym.name ? <h2>{gym.name}</h2> : null }*/}
                     <div>
-                        <Switch
-                            checked={isSubscribed}
-                            onChange={handleLikeToggle}
-                            icon={<FavoriteBorderIcon />}
-                            checkedIcon={<FavoriteIcon />}
+                        <IsSubscribedSwitch
+                            isSubscribed={isSubscribed}
+                            handleSubscription={handlesubscribeToggle}
                         />
+                        <span>Follow this Gym</span>
                     </div>
-                    <Button variant="contained" onClick={sendNotification}>Send Test Notification</Button>
+                    {/*<Button variant="contained" onClick={sendNotification}>Send Test Notification</Button>*/}
 
                     <p>{gym.location}</p>
                     <p>Location: {gym.address}</p>
@@ -202,7 +155,11 @@ const GymDetails = () => {
                         aria-labelledby="map-dialog-title"
                     >
                         <DialogTitle id="map-dialog-title">Gym Location</DialogTitle>
-                        <DialogContent>
+                        {/*TODO: Set the width of the dialigue to fill more space*/}
+                        <DialogContent
+                            fullWidth
+                            maxWidth="xs"
+                        >
                             <GoogleMapSingle marker={gym} />
                         </DialogContent>
                     </Dialog>

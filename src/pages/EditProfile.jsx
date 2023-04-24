@@ -89,6 +89,34 @@ const UserProfile = () => {
                         {userDetails.userType}
                     </Typography>
 
+                    {/*//TODO: list HERE - the leagues that the user has subscribed to, in the subscribedLeagues array*/}
+                    {userDetails.subscribedLeagues && (
+                        <>
+                            <h2>Subscribed Leagues</h2>
+                            <ul>
+                                {userDetails.subscribedLeagues.map((league) => (
+                                    <li key={league.id}>
+                                        <Typography>{league.name}</Typography>
+                                    </li>
+                                ))}
+                            </ul>
+                        </>
+                    )}
+
+                    {/*//TODO: list HERE - the gyms that the user has subscribed to, in the subscribedGyms array*/}
+                    {userDetails.subscribedGyms && (
+                        <>
+                            <h2>Subscribed Gyms</h2>
+                            <ul>
+                                {userDetails.subscribedGyms.map((gym) => (
+                                    <li key={gym.id}>
+                                        <Typography>{gym.name}</Typography>
+                                    </li>
+                                ))}
+                            </ul>
+                        </>
+                    )}
+
                     <UpdateUserForm />
                 </Item>
             </Grid>

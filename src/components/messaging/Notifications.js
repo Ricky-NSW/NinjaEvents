@@ -92,7 +92,7 @@ console.log('bla bla')
                     ) : (
                         <>
                             <Typography variant="body1">No unread notifications</Typography>
-                            <Typography variant="body2">See the events page for any upcoming events</Typography>
+                            <Typography variant="body2">See your homepage for upcoming events at your Gyms and Leagues.</Typography>
                         </>
                     )}
                 </Box>
