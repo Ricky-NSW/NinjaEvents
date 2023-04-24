@@ -3,6 +3,8 @@ import { doc, addDoc, getDocs, collection, getFirestore } from 'firebase/firesto
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
+import FormControl from '@mui/material/FormControl';
+import FormHelperText from '@mui/material/FormHelperText';
 
 const SubmitEventResults = ({ eventId }) => {
     const [numPlaces, setNumPlaces] = useState(0);
@@ -18,6 +20,12 @@ const SubmitEventResults = ({ eventId }) => {
             newResults[index] = { displayName: inputValue };
         }
         setResults(newResults);
+    };
+
+    const resetForm = () => {
+        setNumPlaces(0);
+        setResults([]);
+        setTitle('');
     };
 
     useEffect(() => {
@@ -47,7 +55,7 @@ const SubmitEventResults = ({ eventId }) => {
                         renderInput={(params) => <TextField {...params} label={`User at place ${i}`} onBlur={(event) => handleManualEnter(i - 1, event)} />}
                         renderOption={(props, option, { inputValue }) => (
                             <div {...props}>
-                                {option.displayName || option.email || option.ninjaName}
+                                {option.firstName && option.lastName ? `${option.firstName} ${option.lastName}` : option.displayName || option.email || option.ninjaName}
                             </div>
                         )}
                         onChange={(event, newValue) => {
@@ -86,10 +94,6 @@ const SubmitEventResults = ({ eventId }) => {
         const resultsCollectionRef = collection(eventDocRef, 'results');
 
         try {
-            // Create a new document in the results subcollection and set its data to the form
-
-
-
             // Create a new document in the results subcollection and set its data to the form results
             const docRef = await addDoc(resultsCollectionRef, {
                 title,
@@ -97,6 +101,7 @@ const SubmitEventResults = ({ eventId }) => {
             });
             console.log('Results submitted:', { title, results });
             console.log('Document ID:', docRef.id);
+            resetForm();
         } catch (error) {
             console.error('Error adding document:', error);
         }
@@ -106,16 +111,18 @@ const SubmitEventResults = ({ eventId }) => {
         <div>
             <h3>Submit Event Results</h3>
             <TextField
-                type="text"
-                size="small"
-                label="Title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
+            type="text"
+            size="small"
+            sx={{ m: 1, width: '25ch' }}
+            label="Title of Results (eg. Pre-teens)"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
             />
             <TextField
                 type="number"
                 size="small"
-                label="Number of Places"
+                sx={{ m: 1, width: '25ch' }}
+                label="Number of Competitors?"
                 value={numPlaces}
                 onChange={(e) => setNumPlaces(Math.max(0, parseInt(e.target.value)))}
             />
