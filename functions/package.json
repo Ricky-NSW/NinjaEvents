@@ -15,7 +15,9 @@
   "main": "index.js",
   "dependencies": {
     "firebase-admin": "^11.7.0",
-    "firebase-functions": "^4.3.1"
+    "firebase-functions": "^4.3.1",
+    "install": "^0.13.0",
+    "lodash": "^4.17.21"
   },
   "devDependencies": {
     "eslint": "^8.15.0",

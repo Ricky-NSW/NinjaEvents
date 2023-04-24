@@ -84,6 +84,12 @@ console.log('bla bla')
                                         </Typography>
                                         <Typography>
                                             {notification.gymName}
+                                            {notification.type}
+                                            {notification.eventId}
+                                            {notification.resultId}
+                                            {notification.resultPlace}
+                                            {notification.message}
+                                            {/*{notification.timestamp}*/}
                                         </Typography>
                                     </div>
                                 </Alert>

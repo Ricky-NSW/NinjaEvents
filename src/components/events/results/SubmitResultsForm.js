@@ -124,12 +124,13 @@ const SubmitEventResults = ({ eventId }) => {
             // Create a new document in the results subcollection and set its data to the form results
             const docRef = await addDoc(resultsCollectionRef, {
                 name,
-                results: results.map((result) => {
+                results: results.map((result, index) => {
                     if (result.id) {
                         return {
                             id: result.id,
                             firstName: result.firstName,
                             lastName: result.lastName,
+                            resultPlace: index + 1, // get the index of the result in the results array and add 1
                         };
                     } else {
                         return { displayName: result.displayName };
@@ -143,6 +144,7 @@ const SubmitEventResults = ({ eventId }) => {
             console.error('Error adding document:', error);
         }
     };
+
 
     return (
         <div>
