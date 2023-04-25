@@ -14,7 +14,7 @@ const admin = require("firebase-admin");
 admin.initializeApp();
 
 // notify users when a new event is created
-exports.createNotificationOnEventCreate = functions.firestore
+exports.createNotificationOnEventCreate = functions.region("australia-southeast1").firestore
     .document("events/{eventId}")
     .onCreate(async (snapshot, context) => {
       const event = snapshot.data();
@@ -44,6 +44,7 @@ exports.createNotificationOnEventCreate = functions.firestore
               .doc();
 
           batch.set(notificationRef, {
+            type: "new_event",
             id: eventId,
             createdAt: admin.firestore.Timestamp.now(),
             status: "unread",
@@ -61,7 +62,7 @@ exports.createNotificationOnEventCreate = functions.firestore
     });
 
 // notify users when a new result is added to an event
-exports.processEventResults = functions.firestore
+exports.processEventResults = functions.region("australia-southeast1").firestore
     .document("events/{eventId}/results/{resultId}")
     .onCreate(async (snapshot, context) => {
       const eventId = context.params.eventId;
@@ -73,33 +74,56 @@ exports.processEventResults = functions.firestore
       // Start a new batch
       const batch = admin.firestore().batch();
 
+      // Fetch the event document
+      const eventRef = admin.firestore().collection("events").doc(eventId);
+      const eventDoc = await eventRef.get();
+      const eventData = eventDoc.data();
+      const eventName = eventData.title;
+      const gymName = eventData.gym.name;
+
+      function ordinalSuffix(i) {
+        const j = i % 10;
+        const k = i % 100;
+        if (j === 1 && k !== 11) {
+          return i + "st";
+        }
+        if (j === 2 && k !== 12) {
+          return i + "nd";
+        }
+        if (j === 3 && k !== 13) {
+          return i + "rd";
+        }
+        return i + "th";
+      }
+
+
       // Iterate through the results array and process each item
       await Promise.all(results.map(async (resultItem, index) => {
         if (resultItem.id) {
           // The item has an id, meaning it is a user already in the database
           const userRef = admin.firestore().collection("users").doc(resultItem.id);
 
-          // Fetch the user document
-          const userDoc = await userRef.get();
-
-          // Add a notification to the user's notification array
-          const notificationRef = userRef.collection("notifications").doc();
-          const notificationData = {
+          // Add a result to the user's result array
+          const resultRef = userRef.collection("results").doc();
+          const resultData = {
             type: "event_result",
             eventId: eventId,
             resultId: resultId,
-            resultPlace: index + 1,
-            message: `New results for event ${eventId} have been processed.`,
+            resultPlace: ordinalSuffix(index + 1), // Use the ordinalSuffix function here
+            eventName: eventName,
+            gymName: gymName,
+            message: `New results for ${eventName} at ${gymName} have been processed.`,
             timestamp: admin.firestore.FieldValue.serverTimestamp(),
             status: "unread",
           };
 
-          batch.set(notificationRef, notificationData);
+          batch.set(resultRef, resultData);
         }
       }));
 
       // Commit the batch
       await batch.commit();
 
-      console.log(`Processed event results and sent notifications for event ${eventId}`);
+      console.log(`Processed event results and sent results for event ${eventName} at ${gymName}`);
     });
+

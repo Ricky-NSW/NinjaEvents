@@ -9,23 +9,34 @@ import Typography from '@mui/material/Typography';
 import Badge from '@mui/material/Badge';
 import Alert from '@mui/material/Alert';
 import CloseIcon from '@mui/icons-material/Close';
-
+import { format } from 'date-fns';
+import { Link } from 'react-router-dom';
 const Notifications = ({ lightMode }) => {
     const [notifications, setNotifications] = useState([]);
     const [drawerOpen, setDrawerOpen] = useState(false);
+    const [hiddenNotifications, setHiddenNotifications] = useState([]); // Add this line
 
     useEffect(() => {
         const db = getFirestore();
 
-        if (auth.currentUser) { // Add condition to check if auth.currentUser is not null
+        if (auth.currentUser) {
             const notificationsCollection = collection(db, 'users', auth.currentUser.uid, 'notifications');
+            const resultsCollection = collection(db, 'users', auth.currentUser.uid, 'results');
 
-            const unsubscribe = onSnapshot(notificationsCollection, (querySnapshot) => {
-                const fetchedNotifications = querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
-                setNotifications(fetchedNotifications || []);
+            const notificationsUnsubscribe = onSnapshot(notificationsCollection, (querySnapshot) => {
+                const fetchedNotifications = querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id, type: 'notification' }));
+                setNotifications(prevNotifications => ([...prevNotifications, ...fetchedNotifications]));
             });
 
-            return () => unsubscribe();
+            const resultsUnsubscribe = onSnapshot(resultsCollection, (querySnapshot) => {
+                const fetchedResults = querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id, type: 'result' }));
+                setNotifications(prevNotifications => ([...prevNotifications, ...fetchedResults]));
+            });
+
+            return () => {
+                notificationsUnsubscribe();
+                resultsUnsubscribe();
+            };
         }
     }, []);
 
@@ -40,11 +51,28 @@ const Notifications = ({ lightMode }) => {
     const handleNotificationClick = async (notification) => {
         const db = getFirestore();
         const notificationDoc = doc(db, 'users', auth.currentUser.uid, 'notifications', notification.id);
-console.log('bla bla')
-        await updateDoc(notificationDoc, {
-            status: 'read',
-        });
+        try {
+            await updateDoc(notificationDoc, {
+                status: 'read',
+            });
+
+            // Update the local state
+            setNotifications(prevNotifications => {
+                return prevNotifications.map(n => {
+                    if (n.id === notification.id) {
+                        return { ...n, status: 'read' };
+                    }
+                    return n;
+                });
+            });
+
+        } catch (error) {
+            console.error('Error updating notification status:', error);
+        }
     };
+
+
+
 
     return (
         <>
@@ -58,42 +86,80 @@ console.log('bla bla')
                     <Typography variant="h5" gutterBottom>
                         Notifications
                     </Typography>
+
                     {unreadNotifications.length > 0 ? (
                         <Box sx={{ width: '100%' }}>
-                            {unreadNotifications.map((notification) => (
-                                <Alert
-                                    key={notification.id}
-                                    action={
-                                        <IconButton
-                                            aria-label="close"
-                                            color="inherit"
-                                            size="small"
-                                            onClick={() => {
-                                                handleNotificationClick(notification);
-                                            }}
-                                        >
-                                            <CloseIcon fontSize="inherit" />
-                                        </IconButton>
-                                    }
-                                    sx={{ mb: 2 }}
-                                    severity='info'
-                                >
-                                    <div>
-                                        <Typography variant="paragraph" component="h1" gutterBottom>
-                                            {notification.eventTitle}
-                                        </Typography>
-                                        <Typography>
-                                            {notification.gymName}
-                                            {notification.type}
-                                            {notification.eventId}
-                                            {notification.resultId}
-                                            {notification.resultPlace}
-                                            {notification.message}
-                                            {/*{notification.timestamp}*/}
-                                        </Typography>
-                                    </div>
-                                </Alert>
-                            ))}
+                            {unreadNotifications.map((notification) => {
+                                const timestamp = notification.timestamp; // Access the timestamp property of each notification
+console.log('notifications', {notification})
+                                let formattedDate = '';
+                                if (timestamp) {
+                                    const date = timestamp.toDate(); // Convert the Timestamp to a JavaScript Date object
+                                    formattedDate = format(date, 'dd MMMM yyyy'); // Format the date in "Day month year" format
+                                }
+                                return (
+                                    <Alert
+                                        key={notification.id}
+                                        action={
+                                            <IconButton
+                                                aria-label="close"
+                                                color="inherit"
+                                                size="small"
+                                                onClick={() => {
+                                                    handleNotificationClick(notification);
+                                                }}
+                                            >
+                                                <CloseIcon fontSize="inherit" />
+                                            </IconButton>
+                                        }
+                                        sx={{ mb: 2 }}
+                                        severity="info"
+                                        style={hiddenNotifications.includes(notification.id) ? { display: 'none' } : {}}
+                                    >
+                                        {/*<div>*/}
+
+                                        {/*    <Typography>{notification.gymName}</Typography>*/}
+                                        {/*    <Typography>{notification.resultPlace}</Typography>*/}
+                                        {/*    <Typography>{notification.message}</Typography>*/}
+                                        {/*    <Typography>{notification.eventName}</Typography>*/}
+                                        {/*    {timestamp && <Typography>{formattedDate}</Typography>} /!* Render the formatted date if timestamp exists *!/*/}
+                                        {/*</div>*/}
+
+                                        {notification.type === "notification" ? (
+                                            <>
+                                                <Typography variant="paragraph" component="h1" gutterBottom>
+                                                    New Event:
+                                                </Typography>
+                                                <Typography>A new event at {notification.gymName} has been announced!</Typography>
+                                                <Typography variant="paragraph" component="h1" gutterBottom>
+                                                    {notification.eventTitle}
+                                                </Typography>
+                                                <Typography variant="paragraph" gutterBottom>
+                                                    <Link to={notification.eventId}>Click here to learn more, and save the event.</Link>
+                                                </Typography>
+                                            </>
+                                        ) : null}
+
+                                        {notification.type === "result" ? (
+                                            <>
+                                                <Typography variant="paragraph" component="h1" gutterBottom>
+                                                    New Results:
+                                                </Typography>
+                                                <Typography>
+                                                    Congratulations, you placed {notification.resultPlace} on the {formattedDate} in the {notification.eventName} at {notification.gymName}!
+                                                </Typography>
+                                                {/*<Typography variant="paragraph" gutterBottom>*/}
+                                                {/*    Event: {notification.eventName}*/}
+                                                {/*</Typography>*/}
+                                                {/*<Typography>*/}
+                                                {/*    /!*Gym: {notification.gymName}*!/*/}
+                                                {/*</Typography>*/}
+
+                                            </>
+                                        ) : null}
+                                    </Alert>
+                                );
+                            })}
                         </Box>
                     ) : (
                         <>
@@ -105,7 +171,6 @@ console.log('bla bla')
             </Drawer>
         </>
     );
-
 };
 
 export default Notifications;
