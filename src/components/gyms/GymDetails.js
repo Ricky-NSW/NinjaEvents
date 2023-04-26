@@ -131,6 +131,7 @@ const GymDetails = () => {
     };
 
     // Render the component
+    console.log('gym', gym)
     console.log('found events', events);
     return (
         <div>

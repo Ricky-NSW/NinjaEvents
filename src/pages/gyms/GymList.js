@@ -2,7 +2,7 @@
 
 import React, { useRef, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-
+import GymScraper from '../../components/gyms/GymScraper';
 //Firebase
 import { db } from '../../FirebaseSetup';
 
@@ -16,6 +16,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
+import GymScraper from "../../components/gyms/GymScraper";
 
 const style = {
     position: 'absolute',
@@ -32,6 +33,8 @@ function GymsPage() {
 
     return (
         <div>
+            <h2>scraper</h2>
+            <GymScraper />
             <h1>Gyms</h1>
             <GymsList />
 

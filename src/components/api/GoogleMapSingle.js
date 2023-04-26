@@ -1,5 +1,7 @@
 import React, { useRef } from "react";
 import { GoogleMap, Marker } from "@react-google-maps/api";
+
+import GoogleMapsApi from '../api/GoogleMapsApi';
 import {mapOptions} from "./mapOptions";
 const GoogleMapSingle = ({ marker, onMapLoad, loadError }) => {
     const mapRef = useRef(null);
