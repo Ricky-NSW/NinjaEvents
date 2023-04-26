@@ -141,8 +141,21 @@ const GymsList = () => {
                         </Typography>
                     </CardContent>
                     <CardActions>
-                        <Button size="small">Share</Button>
-                        <Button component={Link} to={/gyms/ + gym.id} size="small">
+                        <Button
+                            size="small"
+                            sx={{
+                                color: 'black',
+                            }}
+                        >Share</Button>
+                        <Button
+                            component={Link}
+                            to={/gyms/ + gym.id}
+                            size="small"
+                            //style the button
+                            sx={{
+                                color: 'black',
+                            }}
+                        >
                             Learn More
                         </Button>
                         {auth.currentUser && auth.currentUser.uid === gym.createdBy ? (
