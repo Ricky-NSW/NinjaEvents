@@ -28,6 +28,7 @@ const Root = () => {
     };
     // console.log(reportWebVitals())
 
+
     return (
         <React.StrictMode>
             <AuthProvider>
