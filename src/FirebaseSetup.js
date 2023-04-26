@@ -7,6 +7,7 @@ import 'firebase/compat/firestore';
 import 'firebase/compat/storage';
 import 'firebase/compat/messaging';
 import 'firebase/storage';
+import { getPerformance } from "firebase/performance";
 
 const firebaseConfig = {
     apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -20,6 +21,9 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
+
+// Initialize Performance Monitoring and get a reference to the service
+const perf = getPerformance(app);
 
 export const db = firebase.firestore();
 export const auth = firebase.auth();
