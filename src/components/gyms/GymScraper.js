@@ -1,16 +1,3 @@
-// help me write a component for my get-react-app using firebase v9
-//
-// I would like to enter the lat and lng coordinates and the component searches google maps for 'ninja warrior gyms'
-//     The component gets the list of gyms including this information:
-//     name: details.name,
-//         address: details.formatted_address,
-//     id: place.place_id,
-//     geometry: place.geometry,
-//     openingHours: place.opening_hours,
-//     website: details.website,
-//
-//     And sends the information to firestore into a collection called ScrapedGyms
-
 import React, { useState } from 'react';
 import GoogleMapsApi from '../api/GoogleMapsApi';
 import { db } from '../../FirebaseSetup';
@@ -53,6 +40,8 @@ const GymScraper = () => {
                             id: place.place_id,
                             latitude: place.geometry.location.lat(),
                             longitude: place.geometry.location.lng(),
+                            country: details.address_components.find(component => component.types.includes('country')).long_name,
+                            state: details.address_components.find(component => component.types.includes('administrative_area_level_1')).long_name,
                             website: details.website,
                         });
                     }
@@ -102,6 +91,8 @@ const GymScraper = () => {
                                 <strong>{gym.name}</strong>
                                 <br />
                                 {gym.address}
+                                <br />
+                                {gym.country} - {gym.state}
                                 <br />
                                 {gym.website}
                             </li>
