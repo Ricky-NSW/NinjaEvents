@@ -37,8 +37,8 @@ const GymScraper = () => {
                         locationData.push({
                             name: details.name,
                             address: details.formatted_address,
-                            id: place.place_id,
-                            latitude: place.geometry.location.lat(),
+                            // id: place.place_id,
+                            latitude: place. geometry.location.lat(),
                             longitude: place.geometry.location.lng(),
                             country: details.address_components.find(component => component.types.includes('country')).long_name,
                             state: details.address_components.find(component => component.types.includes('administrative_area_level_1')).long_name,

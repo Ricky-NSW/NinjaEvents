@@ -57,7 +57,7 @@ function GoogleMapArray({ markers, onMapLoad, nestedGym}) {
                             ? { lat: Number(marker.gym.latitude), lng: Number(marker.gym.longitude) }
                             : { lat: Number(marker.latitude), lng: Number(marker.longitude) };
 
-                        console.log("Event position:", position);
+                        // console.log("Event position:", position);
 
                         const targetRoute = nestedGym
                             ? `/events/${marker.id}`

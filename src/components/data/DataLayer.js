@@ -29,11 +29,18 @@ const DataLayer = ({ children }) => {
     const [gyms, setGyms] = useState([]);
     const [leagues, setLeagues] = useState([]);
     const [events, setEvents] = useState([]);
+    const [currentUser, setCurrentUser] = useState(null);
 
     // Fetching and listening to real-time updates from firestore
     useEffect(() => {
         const unsubscribeUsers = db.collection('users').onSnapshot((snapshot) => {
-            setUser(snapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+            const usersData = snapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
+            setUser(usersData);
+
+            // Assuming the first user in the list is the current user
+            // Replace this logic with your own implementation for getting the current user
+            const loggedInUser = usersData[0];
+            setCurrentUser(loggedInUser);
         });
 
         const unsubscribeGyms = db.collection('gyms').onSnapshot((snapshot) => {
@@ -58,6 +65,7 @@ const DataLayer = ({ children }) => {
     }, []);
 
     const value = {
+        currentUser,
         user,
         gyms,
         leagues,
