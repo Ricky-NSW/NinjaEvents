@@ -42,6 +42,9 @@ const GymsList = () => {
             </FormControl>
             <FormControl>
                 <Select value={filters.state} onChange={handleStateChange}>
+                    <MenuItem value="">
+                        <em>Select a state</em>
+                    </MenuItem>
                     {(states[filters.country] || []).map(({ code, name }) => (
                         <MenuItem key={code} value={code}>
                             {name}
