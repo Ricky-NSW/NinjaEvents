@@ -6,10 +6,13 @@ import {
     TextField,
     Typography,
     Grid,
+    List,
+    ListItem,
+    ListItemText,
 } from '@mui/material';
 import { useDataLayer } from '../data/DataLayer';
 import { useParams } from 'react-router-dom';
-import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc, addDoc, collection, query, orderBy } from 'firebase/firestore';
 import { db } from '../../FirebaseSetup';
 
 const SimpleTimer = () => {
@@ -20,6 +23,7 @@ const SimpleTimer = () => {
     const countRef = useRef(null);
     const { currentUser } = useDataLayer();
     const { id } = useParams(); // Get the timer ID from the URL
+    const [records, setRecords] = useState([]);
 
     useEffect(() => {
         if (currentUser && id) {
@@ -33,8 +37,22 @@ const SimpleTimer = () => {
                 }
             });
 
+            // Fetch records and listen for updates
+            const recordsQuery = query(collection(db, `users/${currentUser.id}/timers/${id}/records`), orderBy('recordedTime', 'asc'));
+            const unsubscribeRecords = onSnapshot(recordsQuery, (querySnapshot) => {
+                const recordsData = [];
+                querySnapshot.forEach((doc) => {
+                    recordsData.push({
+                        id: doc.id,
+                        ...doc.data(),
+                    });
+                });
+                setRecords(recordsData);
+            });
+
             return () => {
                 unsubscribe();
+                unsubscribeRecords();
             };
         }
     }, [currentUser, id]);
@@ -67,6 +85,22 @@ const SimpleTimer = () => {
         setTimer(0);
     };
 
+    const saveNewRecord = async () => {
+        if (currentUser && id) {
+            try {
+                const recordsCollection = collection(db, `users/${currentUser.id}/timers/${id}/records`);
+                const newRecord = {
+                    ninjaName: ninjaName,
+                    recordedTime: timer,
+                };
+                const docRef = await addDoc(recordsCollection, newRecord);
+                console.log('Record added with ID:', docRef.id);
+            } catch (e) {
+                console.error('Error adding new record:', e);
+            }
+        }
+    };
+
     const saveAndClear = async () => {
         if (currentUser && id) {
             try {
@@ -80,19 +114,25 @@ const SimpleTimer = () => {
                 console.error('Error updating timer:', e);
             }
         }
+        await saveNewRecord();
         setNinjaName('');
         restartTimer();
     };
 
     return (
+        // this is the timer display
         <Grid container spacing={2}>
-            <Grid item xs={12}>
-                <TextField
-                    label="Timer Name"
-                    value={timerName}
-                    onChange={handleTimerNameChange}
-                />
-            </Grid>
+            {/*<Grid item xs={12}>*/}
+            {/*    <TextField*/}
+            {/*        label="Timer Name"*/}
+            {/*        value={timerName}*/}
+            {/*        onChange={handleTimerNameChange}*/}
+            {/*    />*/}
+            {/*</Grid>*/}
+            <br />
+            <br />
+            <br />
+            <Typography variant="h4">{timerName}</Typography>
             <Grid item xs={12}>
                 <TextField
                     label="Ninja Name"
@@ -113,6 +153,17 @@ const SimpleTimer = () => {
                     )}
                     <Button onClick={saveAndClear}>Save</Button>
                 </Box>
+            </Grid>
+            {/*//list of recorded times*/}
+            <Grid item xs={12}>
+                <Typography variant="h6">Records:</Typography>
+                <List>
+                    {records.map((record) => (
+                        <ListItem key={record.id}>
+                            <ListItemText primary={`${record.ninjaName}: ${formatTime(record.recordedTime)}`} />
+                        </ListItem>
+                    ))}
+                </List>
             </Grid>
         </Grid>
     );

@@ -1,4 +1,5 @@
 // TimerList.js
+//TODO: get the name of the users Gym from their id, and display it in the list
 import React, { useEffect, useState } from 'react';
 import { collection, addDoc, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { TextField, Button, List, ListItem, ListItemText } from '@mui/material';
@@ -45,6 +46,17 @@ const TimerList = () => {
         navigate(`/timers/${timerId}`);
     };
 
+    const formatDate = (date) => {
+        const options = {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+        };
+        return new Intl.DateTimeFormat('en-US', options).format(date);
+    };
+
     return (
         <div>
             <TextField
@@ -62,7 +74,10 @@ const TimerList = () => {
                         key={timer.id}
                         onClick={() => handleTimerClick(timer.id)}
                     >
-                        <ListItemText primary={timer.name} />
+                        <ListItemText
+                            primary={timer.name}
+                            secondary={formatDate(timer.createdAt)}
+                        />
                     </ListItem>
                 ))}
             </List>
