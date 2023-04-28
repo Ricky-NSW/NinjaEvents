@@ -141,6 +141,10 @@ export default function NavDrawer() {
                 <MenuItem component={Link} to="/leagues"><MenuItemIcon><AddLocationIcon /></MenuItemIcon>Leagues</MenuItem>
             </MenuList>
             <Divider/>
+            <MenuItem component={Link} to="/timers"><MenuItemIcon><AddLocationIcon /></MenuItemIcon>Timers</MenuItem>
+
+
+            <Divider/>
             {userDetails ? <MenuItem component={Link} to="/manageprofile"><MenuItemIcon><PersonOutlineIcon /></MenuItemIcon>Manage Profile</MenuItem> : null }
             {/*login or logout button depending on user status*/}
             {userDetails ? <MenuItem onClick={handleLogout}><MenuItemIcon><ExitToAppIcon /></MenuItemIcon>Logout</MenuItem> : <MenuItem component={Link} to="/login"><MenuItemIcon><LoginIcon /></MenuItemIcon>Login</MenuItem> }
@@ -148,7 +152,7 @@ export default function NavDrawer() {
         </Box>
 </>
     );
-    console.log('User info:', userDetails);
+    // console.log('User info:', userDetails);
 
 
     return (

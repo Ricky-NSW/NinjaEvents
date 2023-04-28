@@ -39,6 +39,10 @@ import LoginPage from './pages/login'
 import LeagueDetails from "./components/leagues/LeagueDetails";
 // import UserProfilePage from "./components/user/UserProfilePage";
 
+//Timers
+import SimpleTimerPage from "./pages/timers/SimpleTimerPage";
+import SimpleTimer from "./components/timers/SimpleTimer";
+
 export default function App() {
     return (
         <BrowserRouter>
@@ -65,6 +69,10 @@ export default function App() {
                     <Route path="leagues" element={<LeaguesPage />} />
                     <Route path="add-league" element={<AddLeaguePage />} />
                     <Route exact path="/leagues/:id" element={<LeagueDetails />} />
+                    {/*Timers Pages*/}
+                    <Route path="timers/" element={<SimpleTimerPage />} />
+                    <Route exact path="/timers/:id" element={<SimpleTimer />} />
+
                     {/*Extra Pages*/}
                     <Route path="*" element={<NoPage />} />
 

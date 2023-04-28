@@ -1,20 +1,9 @@
-
-//NOTES
-//Now, in your other components, you can import the DataLayer component and wrap your components with it. You can also use the useDataLayer custom hook to access the data.
-//And here's an example of how to use the useDataLayer custom hook in SomeComponent.js:
-// import React from 'react';
-// import { useDataLayer } from './DataLayer';
-//
-// const SomeComponent = () => {
-//     const { user, gyms, leagues, events } = useDataLayer();
-//
-//     // Your component logic and rendering here
-// };
-//
-// export default SomeComponent;
-
+// DataLayer.js
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { db } from '../../FirebaseSetup';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '../../FirebaseSetup';
+import { doc, onSnapshot } from 'firebase/firestore';
 
 // Creating a data layer context
 export const DataLayerContext = createContext();
@@ -33,14 +22,25 @@ const DataLayer = ({ children }) => {
 
     // Fetching and listening to real-time updates from firestore
     useEffect(() => {
-        const unsubscribeUsers = db.collection('users').onSnapshot((snapshot) => {
-            const usersData = snapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
-            setUser(usersData);
+        let unsubscribeUserDoc; // Declare unsubscribeUserDoc here
 
-            // Assuming the first user in the list is the current user
-            // Replace this logic with your own implementation for getting the current user
-            const loggedInUser = usersData[0];
-            setCurrentUser(loggedInUser);
+        const unsubscribeAuth = onAuthStateChanged(auth, (loggedInUser) => {
+            if (loggedInUser) {
+                // User is signed in
+                const userDocRef = doc(db, 'users', loggedInUser.uid);
+                unsubscribeUserDoc = onSnapshot(userDocRef, (docSnapshot) => { // Assign the unsubscribe function here
+                    if (docSnapshot.exists()) {
+                        setCurrentUser({ ...docSnapshot.data(), id: loggedInUser.uid });
+                    } else {
+                        console.error('User not found in Firestore');
+                    }
+                });
+
+                // No need to return an unsubscribe function here anymore
+            } else {
+                // User is signed out
+                setCurrentUser(null);
+            }
         });
 
         const unsubscribeGyms = db.collection('gyms').onSnapshot((snapshot) => {
@@ -57,12 +57,17 @@ const DataLayer = ({ children }) => {
 
         // Cleanup function to unsubscribe from snapshot listeners when the component is unmounted
         return () => {
-            unsubscribeUsers();
+            unsubscribeAuth();
+            if (unsubscribeUserDoc) { // Make sure to only unsubscribe if the function has been assigned
+                unsubscribeUserDoc();
+            }
             unsubscribeGyms();
             unsubscribeLeagues();
             unsubscribeEvents();
         };
     }, []);
+
+
 
     const value = {
         currentUser,
