@@ -43,7 +43,7 @@ const TimerList = () => {
     };
 
     const handleTimerClick = (timerId) => {
-        navigate(`/timers/${timerId}`);
+        navigate(`/users/${currentUser.id}/timers/${timerId}`);
     };
 
     const formatDate = (date) => {
@@ -63,9 +63,20 @@ const TimerList = () => {
                 label="Timer Name"
                 value={timerName}
                 onChange={(e) => setTimerName(e.target.value)}
+                size={'small'}
+                // margin-right
+                sx={{ mr: 2 }}
             />
-            <Button onClick={createTimer} disabled={!timerName}>
-                Create
+            <Button
+                onClick={createTimer}
+                disabled={!timerName}
+                // style the button
+                variant="contained"
+                color="primary"
+
+
+            >
+                Create a new timer
             </Button>
             <List>
                 {timers.map((timer) => (
@@ -73,6 +84,7 @@ const TimerList = () => {
                         button
                         key={timer.id}
                         onClick={() => handleTimerClick(timer.id)}
+                        sx={{ borderColor: 'grey.500', borderWidth: '1px' }}
                     >
                         <ListItemText
                             primary={timer.name}

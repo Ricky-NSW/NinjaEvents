@@ -8,25 +8,22 @@ import GoogleMapsApi from "../src/components/api/GoogleMapsApi";
 import DataLayer from "./components/data/DataLayer";
 
 //import theme
-import getTheme from './components/theming/theme';
-import { ThemeProvider } from '@mui/material/styles';
+import { ThemeProvider, createTheme } from '@mui/material/styles'; // Add createTheme import here
 import ThemeContext from './contexts/ThemeContext';
 import CssBaseline from '@mui/material/CssBaseline';
-import '../src/components/theming/theme.css';
+import getTheme from './components/theming/theme';
+import createThemeOptions from './components/theming/theme';
 
 //MUI date localization
 
 const Root = () => {
 
     const libraries = ["places"];
-// todo: make api a .env file
-    const [darkMode, setDarkMode] = useState(false);
     const apiKey = process.env.REACT_APP_GOOGLE_API_KEY;
 
-    const toggleDarkMode = () => {
-        setDarkMode(!darkMode);
-    };
-    // console.log(reportWebVitals())
+    const [darkMode, setDarkMode] = useState(false);
+    const toggleDarkMode = () => setDarkMode((prevMode) => !prevMode);
+    const theme = createTheme(createThemeOptions(darkMode ? 'dark' : 'light'));
 
 
     return (
@@ -34,7 +31,7 @@ const Root = () => {
             <AuthProvider>
                 <DataLayer>
                     <ThemeContext.Provider value={{ darkMode, toggleDarkMode }}>
-                        <ThemeProvider theme={getTheme(darkMode)}>
+                        <ThemeProvider theme={theme}>
                             <CssBaseline />
                             <GoogleMapsApi
                                 libraries={libraries}

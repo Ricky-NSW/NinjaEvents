@@ -10,8 +10,8 @@ function SimpleTimerPage() {
     return (
         <>
             <Typography
-                variant="h4"
-                component="h2"
+                variant="h1"
+                component="h1"
                 gutterBottom
                 sx={{ textAlign: 'center' }}
             >

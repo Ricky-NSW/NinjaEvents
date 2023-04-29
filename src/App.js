@@ -71,7 +71,9 @@ export default function App() {
                     <Route exact path="/leagues/:id" element={<LeagueDetails />} />
                     {/*Timers Pages*/}
                     <Route path="timers/" element={<SimpleTimerPage />} />
-                    <Route exact path="/timers/:id" element={<SimpleTimer />} />
+                    {/*<Route exact path="/timers/:id" element={<SimpleTimer />} />*/}
+                    {/*//element below  is correct (changing it to compeont will break it*/}
+                    <Route path="/users/:userId/timers/:timerId" element={<SimpleTimer />} />
 
                     {/*Extra Pages*/}
                     <Route path="*" element={<NoPage />} />
