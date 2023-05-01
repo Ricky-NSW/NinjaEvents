@@ -29,6 +29,7 @@ const GymsList = () => {
         setTriggerFetchMore(false);
     };
 
+    console.log('gyms info', gyms);
     return (
         <>
             <FormControl>

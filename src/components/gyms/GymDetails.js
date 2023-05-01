@@ -1,5 +1,4 @@
-// TODO: add a createdDate prop
-//TODO: ratings for gyms
+//GymDetails.js
 //TODO: add a MUI love heart icon that acts as a <Switch /> on this Gym page, when the user clicks the <Switch /> it adds the gym id to an array on the 'user' called 'subscribedGyms'. If they disable the <Switch /> it removes it from the array
 // TODO: SHow all the events that are taking place at this gym
 // TODO: check through all events, look for events with the gym array. if an event has this gym's id in the gym.id document then show that event
@@ -25,6 +24,7 @@ import Typography from "@mui/material/Typography";
 import CardActions from "@mui/material/CardActions";
 import Button from "@mui/material/Button";
 import Grid from "@mui/material/Grid";
+import EditGymDetails from './EditGymDetails';
 
 
 //dialogue
@@ -44,6 +44,7 @@ const GymDetails = () => {
     const [isSubscribed, setIsSubscribed] = useState(false);
     const [events, setEvents] = useState([]);
     const [mapDialogOpen, setMapDialogOpen] = useState(false);
+    // const [editDialogOpen, setEditDialogOpen] = useState(false);
 
     // Fetch gym data from Firestore using gym ID
     useEffect(() => {
@@ -130,14 +131,11 @@ const GymDetails = () => {
         setMapDialogOpen(false);
     };
 
-    // Render the component
-    console.log('gym', gym)
-    console.log('found events', events);
+
     return (
         <div>
             {gym ? (
                 <>
-                {/*{gym.name ? <h2>{gym.name}</h2> : null }*/}
                     <div>
                         <IsSubscribedSwitch
                             isSubscribed={isSubscribed}
@@ -146,10 +144,25 @@ const GymDetails = () => {
                         <span>Follow this Gym</span>
                     </div>
                     {/*<Button variant="contained" onClick={sendNotification}>Send Test Notification</Button>*/}
-
+                    <Typography variant={"h1"}>{gym.name}</Typography>
                     <p>{gym.location}</p>
                     <p>Location: {gym.address}</p>
-                    <Button variant="contained" onClick={openMapDialog}>Show Map</Button>
+                    {/*<Typography variant={"p"}>{gym.description}</Typography>*/}
+                    <div dangerouslySetInnerHTML={{ __html: gym.description }} />
+
+                    <Grid >
+                        <Grid item xs={12} sm={6}>
+                            <Button variant="contained" onClick={openMapDialog}>Show Map</Button>
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                            {/* Pass the `editDialogOpen` state as open prop and `modalClosed` as handleClose prop */}
+                            {/*<EditGymDetails open={editDialogOpen} handleClose={modalClosed} gym={gym} />*/}
+                            <EditGymDetails gym={gym} />
+
+                        </Grid>
+                    </Grid>
+
+
                     <Dialog
                         open={mapDialogOpen}
                         onClose={closeMapDialog}
@@ -170,70 +183,79 @@ const GymDetails = () => {
                 <p>Loading gym details...</p>
             )}
 
+            {/* Display events associated with the gym */}
 
             {/*//TODO: wrap this in a ternary so that it only shows if there are events*/}
+            {events.length > 0 ? (
+                events.map((event) => (
+                    <>
+                        {events.map((event) => (
+                            <Grid item xs={12} sm={6} md={4} lg={3} key={event.id} sx={{ marginBottom: 2 }}>
+                                <Card sx={{ maxWidth: 768 }}>
+                                    {/* Event card header */}
+                                    <CardHeader
+                                        avatar={
+                                            <Avatar sx={{ bgcolor: red[500] }} aria-label="recipe">
+                                                {event.createdBy ? event.createdBy.charAt(0) : "X"}
+                                            </Avatar>
+                                        }
+                                        action={
+                                            <IconButton aria-label="settings">
+                                                <MoreVertIcon />
+                                            </IconButton>
+                                        }
+                                        title={event.address}
+                                        subheader={event.date}
+                                    />
+                                    {
+                                        event.imageUrl ? (
+                                            <CardMedia
+                                                sx={{ height: 140 }}
+                                                image={event.imageUrl}
+                                                title="green iguana"
+                                                type="image"
+                                            />
+                                        ) : (
+                                            null
+                                        )
+                                    }
+                                    {/* Event details */}
+                                    {/*TODO: make this card a component and pass the data as props*/}
+                                    <CardContent>
+                                        <Typography gutterBottom variant="h5" component="div">
+                                            <Link component={Link} to={`/events/` + (event.id)} size="small">{event.title}</Link>
+                                        </Typography>
+                                        <Typography variant="body2" color="text.secondary">
+                                            {event.description}
 
-            {/* Display events associated with the gym */}
-            {events.map((event) => (
-                <Grid item xs={12} sm={6} md={4} lg={3} key={event.id} sx={{ marginBottom: 2 }}>
-                    <Card sx={{ maxWidth: 768 }}>
-                        {/* Event card header */}
-                        <CardHeader
-                            avatar={
-                                <Avatar sx={{ bgcolor: red[500] }} aria-label="recipe">
-                                    {event.createdBy ? event.createdBy.charAt(0) : "X"}
-                                </Avatar>
-                            }
-                            action={
-                                <IconButton aria-label="settings">
-                                    <MoreVertIcon />
-                                </IconButton>
-                            }
-                            title={event.address}
-                            subheader={event.date}
-                        />
-                        {
-                            event.imageUrl ? (
-                                <CardMedia
-                                    sx={{ height: 140 }}
-                                    image={event.imageUrl}
-                                    title="green iguana"
-                                    type="image"
-                                />
-                            ) : (
-                                null
-                            )
-                        }
-                        {/* Event details */}
-                        <CardContent>
-                            <Typography gutterBottom variant="h5" component="div">
-                                <Link component={Link} to={`/events/` + (event.id)} size="small">{event.title}</Link>
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                                {event.description}
+                                            {/*{description.length > maxLength*/}
+                                            {/*    ? description.substring(0, maxLength) + '...'*/}
+                                            {/*    : description;}*/}
+                                        </Typography>
+                                        <Typography>
+                                            <span>Gym: {event.gym.name}</span>
+                                        </Typography>
+                                        <Typography>
+                                            <span>Price: {event.price}</span>
+                                        </Typography>
+                                        <Typography>
+                                            <span>Age: {event.age}</span>
+                                            {/*{event.GeoPoint.latitude} {event.GeoPoint.longitude}*/}
+                                        </Typography>
+                                    </CardContent>
+                                    <CardActions>
+                                        <Button size="small">Share</Button>
+                                        <Button component={Link} to={`/events/` + (event.id)} size="small">Learn More</Button>
+                                    </CardActions>
+                                </Card>
+                            </Grid>
+                        ))}
+                    </>
+                ))
+            ) : (
+                <p>No events found for this gym.</p>
+            )}
 
-                                {/*{description.length > maxLength*/}
-                                {/*    ? description.substring(0, maxLength) + '...'*/}
-                                {/*    : description;}*/}
-                            </Typography>
-                            <Typography>
-                                <span>Gym: {event.gym.name}</span>
-                            </Typography>
-                            <Typography>
-                                <span>Price: {event.price}</span>
-                            </Typography>
-                            <Typography>
-                                <span>Age: {event.age}</span>
-                                {/*{event.GeoPoint.latitude} {event.GeoPoint.longitude}*/}
-                            </Typography>
-                        </CardContent>
-                        <CardActions>
-                            <Button size="small">Share</Button>
-                            <Button component={Link} to={`/events/` + (event.id)} size="small">Learn More</Button>
-                        </CardActions>
-                    </Card>
-                </Grid>
-            ))}
 
 
         </div>
