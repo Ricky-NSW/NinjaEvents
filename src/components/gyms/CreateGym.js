@@ -14,8 +14,8 @@ import { Box, Button, TextField } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import Alert from '@mui/material/Alert';
-//wysiwyg https://www.npmjs.com/package/react-mui-draft-wysiwyg
 
+//wysiwyg https://www.npmjs.com/package/react-mui-draft-wysiwyg
 import { Editor, EditorState, ContentState, convertToRaw } from "draft-js";
 import { stateToHTML } from 'draft-js-export-html';
 import { stateFromHTML } from 'draft-js-import-html';
@@ -23,16 +23,11 @@ import { Editor as WysiwygEditor } from 'react-draft-wysiwyg';
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
 import { convertToHTML, convertFromHTML } from 'draft-convert';
 import htmlToDraft from 'html-to-draftjs';
-
-
 // Define the HTML string you want to convert to a Draft.js ContentState
 const htmlString = '<p>Hello World!</p>';
-
 // Convert the HTML string to a Draft.js ContentState
 const contentState = htmlToDraft(htmlString);
 const editorState = EditorState.createEmpty();
-
-
 
 const toolbarOptions = {
     options: ['inline', 'blockType', 'fontSize', 'fontFamily', 'list', 'textAlign', 'colorPicker', 'link', 'embedded', 'image', 'remove', 'history'],

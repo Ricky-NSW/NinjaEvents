@@ -104,6 +104,7 @@ const UserProfile = () => {
                     )}
 
                     {/*//TODO: list HERE - the gyms that the user has subscribed to, in the subscribedGyms array*/}
+                    {/*TODO: make the gym a link to its gym page*/}
                     {userDetails.subscribedGyms && (
                         <>
                             <h2>Subscribed Gyms</h2>
