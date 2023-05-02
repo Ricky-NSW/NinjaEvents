@@ -1,115 +1,93 @@
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { getFirestore, doc, getDoc, updateDoc } from 'firebase/firestore';
+import React, { useState, useEffect } from 'react';
 import {
     Dialog,
     DialogTitle,
     DialogContent,
     DialogActions,
+    Button,
     TextField,
-    Button
 } from '@mui/material';
+import { getFirestore, updateDoc, doc, getDoc } from 'firebase/firestore';
+import { useParams } from 'react-router-dom';
 
-const EditGymDetails = ({ gym }) => {
+const EditGymDetails = ({ onUpdate }) => {
     const { id } = useParams();
-    const [formData, setFormData] = useState(null);
     const [open, setOpen] = useState(false);
+    const [gym, setGym] = useState(null);
+    const [updatedGym, setUpdatedGym] = useState(null);
 
     useEffect(() => {
-        if (gym) {
-            setFormData(gym);
-        }
-    }, [gym]);
+        const fetchGym = async () => {
+            const gymRef = doc(getFirestore(), 'gyms', id);
+            const gymDoc = await getDoc(gymRef);
+            if (gymDoc.exists()) {
+                setGym({ id, ...gymDoc.data() });
+            }
+        };
 
-    // Update the formData object when input values change
-    const handleInputChange = (event) => {
-        const { name, value } = event.target;
-        setFormData({ ...formData, [name]: value });
-    };
+        fetchGym();
+    }, [id]);
 
-    // Save the updated gym data to Firestore
-// Save the updated gym data to Firestore
-    const saveGymData = async (handleClose) => {
-        const gymRef = doc(getFirestore(), 'gyms', gym.id);
-        await updateDoc(gymRef, formData);
-        handleClose();
-    };
-
-
-    const handleOpen = () => {
+    const handleClickOpen = () => {
         setOpen(true);
+        if (gym) setUpdatedGym({ ...gym });
     };
 
     const handleClose = () => {
         setOpen(false);
     };
 
-    console.log('editgymdetails', gym);
+    const handleSave = async () => {
+        if (gym && updatedGym) {
+            try {
+                // Save the updated gym data to Firestore
+                const gymRef = doc(getFirestore(), 'gyms', gym.id);
+                await updateDoc(gymRef, { name: updatedGym.name });
+
+                // Call the onUpdate callback to update the parent component's state
+                onUpdate();
+                handleClose();
+            } catch (error) {
+                console.error('Error updating gym:', error);
+            }
+        }
+    };
+
+    if (!gym) {
+        return <div>Loading...</div>;
+    }
+
+
+
+
     return (
         <>
-            <Button variant="contained" onClick={handleOpen}>
+            <Button variant="contained" onClick={handleClickOpen}>
                 Edit Gym Details
             </Button>
             <Dialog open={open} onClose={handleClose}>
                 <DialogTitle>Edit Gym Details</DialogTitle>
                 <DialogContent>
-                    {formData && (
-                        <>
-                            <TextField
-                                label="Name"
-                                name="name"
-                                value={formData.name || ''}
-                                onChange={handleInputChange}
-                                fullWidth
-                                margin="normal"
-                            />
-                            <TextField
-                                label="Location"
-                                name="location"
-                                value={formData.location || ''}
-                                onChange={handleInputChange}
-                                fullWidth
-                                margin="normal"
-                            />
-                            <TextField
-                                label="State"
-                                name="state"
-                                value={formData.state || ''}
-                                onChange={handleInputChange}
-                                fullWidth
-                                margin="normal"
-                            />
-                            <TextField
-                                label="Country"
-                                name="country"
-                                value={formData.country || ''}
-                                onChange={handleInputChange}
-                                fullWidth
-                                margin="normal"
-                            />
-                            <TextField
-                                label="Website"
-                                name="website"
-                                value={formData.website || ''}
-                                onChange={handleInputChange}
-                                fullWidth
-                                margin="normal"
-                            />
-                            <TextField
-                                label="Description"
-                                name="description"
-                                value={formData.description || ''}
-                                onChange={handleInputChange}
-                                fullWidth
-                                margin="normal"
-                            />
-                            {/* Add more form fields for other gym properties */}
-                        </>
-                    )}
+                    <TextField
+                        autoFocus
+                        margin="dense"
+                        id="name"
+                        label="Gym Name"
+                        type="text"
+                        fullWidth
+                        defaultValue={gym.name}
+                        onChange={(e) => setUpdatedGym({ ...updatedGym, name: e.target.value })}
+                    />
+
+                    {/* Add more TextField components for other gym properties here */}
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleClose}>Cancel</Button>
-                    <Button onClick={() => saveGymData(handleClose)}>Save</Button>
+                    <Button onClick={handleClose} color="primary">
+                        Cancel
+                    </Button>
+                    <Button onClick={handleSave} color="primary">
+                        Save
+                    </Button>
                 </DialogActions>
             </Dialog>
         </>

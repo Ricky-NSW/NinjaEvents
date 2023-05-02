@@ -48,18 +48,15 @@ const GymDetails = () => {
 
     // Fetch gym data from Firestore using gym ID
     useEffect(() => {
-        const gymRef = doc(getFirestore(), 'gyms', id);
-        const getGym = async () => {
+        const fetchGym = async () => {
+            const gymRef = doc(getFirestore(), 'gyms', id);
             const gymDoc = await getDoc(gymRef);
             if (gymDoc.exists()) {
-                console.log('gymDoc:', gymDoc.data());
-                setGym(gymDoc.data());
-                console.log('gym state:', gym);
+                setGym({ id, ...gymDoc.data() });
             }
         };
 
-
-        getGym();
+        fetchGym();
     }, [id]);
 
     // Fetch events associated with the gym from Firestore
@@ -121,6 +118,13 @@ const GymDetails = () => {
         }
     };
 
+    const handleGymUpdate = async () => {
+        // Fetch the updated gym data and update the state
+        const gymRef = doc(getFirestore(), 'gyms', id);
+        const gymSnap = await getDoc(gymRef);
+        setGym(gymSnap.data());
+    };
+
 
     // Functions to open and close the map dialog
     const openMapDialog = () => {
@@ -155,9 +159,9 @@ const GymDetails = () => {
                             <Button variant="contained" onClick={openMapDialog}>Show Map</Button>
                         </Grid>
                         <Grid item xs={12} sm={6}>
-                            {/* Pass the `editDialogOpen` state as open prop and `modalClosed` as handleClose prop */}
-                            {/*<EditGymDetails open={editDialogOpen} handleClose={modalClosed} gym={gym} />*/}
-                            <EditGymDetails gym={gym} />
+                            {/*//This component is used to control the modal which contains the gym editing form*/}
+                            {/*<EditGymDetails gym={gym} onUpdate={handleGymUpdate} />*/}
+                            <EditGymDetails onUpdate={handleGymUpdate} />
 
                         </Grid>
                     </Grid>
