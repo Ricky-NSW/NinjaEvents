@@ -2,7 +2,8 @@ import React, { useContext, useEffect, useState } from "react";
 import UpdateUserForm from "../components/user/UpdateUserForm";
 import AuthContext from "../contexts/AuthContext";
 import { doc, getDoc, getFirestore } from "firebase/firestore";
-
+import { Link as MuiLink } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom';
 //MUI
 import Avatar from '@mui/material/Avatar';
 import Typography from "@mui/material/Typography";
@@ -111,8 +112,9 @@ const UserProfile = () => {
                             <ul>
                                 {userDetails.subscribedGyms.map((gym) => (
                                     <li key={gym.id}>
-                                        <Typography>{gym.name}</Typography>
-                                    </li>
+                                        <MuiLink component={RouterLink} to={`/gyms/${gym.id}`}>
+                                            {gym.name}
+                                        </MuiLink>                                    </li>
                                 ))}
                             </ul>
                         </>

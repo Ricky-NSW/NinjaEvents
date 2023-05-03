@@ -11,6 +11,8 @@ import { getFirestore, updateDoc, doc, getDoc } from 'firebase/firestore';
 import { useParams } from 'react-router-dom';
 
 //wysiwyg https://www.npmjs.com/package/react-mui-draft-wysiwyg
+import WysiwygEditorComponent from '../layout/tools/WysiwygEditorComponent';
+
 import { Editor, EditorState, ContentState, convertToRaw } from "draft-js";
 import { stateToHTML } from 'draft-js-export-html';
 import { stateFromHTML } from 'draft-js-import-html';
@@ -23,36 +25,6 @@ const htmlString = '<p>Hello World!</p>';
 // Convert the HTML string to a Draft.js ContentState
 const contentState = htmlToDraft(htmlString);
 const editorState = EditorState.createEmpty();
-
-const toolbarOptions = {
-    options: ['inline', 'blockType', 'fontSize', 'fontFamily', 'list', 'textAlign', 'colorPicker', 'link', 'embedded', 'image', 'remove', 'history'],
-    inline: {
-        options: ['bold', 'italic', 'underline', 'strikethrough'],
-    },
-    list: {
-        options: ['unordered', 'ordered'],
-    },
-    textAlign: {
-        options: ['left', 'center', 'right'],
-    },
-    link: {
-        defaultTargetOption: '_self',
-        showOpenOptionOnHover: true,
-        defaultLinkTarget: '_blank',
-    },
-    embedded: {
-        defaultSize: {
-            height: 'auto',
-            width: 'auto',
-        },
-    },
-    image: {
-        defaultSize: {
-            height: 'auto',
-            width: '100%',
-        },
-    },
-};
 
 const EditGymDetails = ({ onUpdate }) => {
     const { id } = useParams();
@@ -152,8 +124,7 @@ const EditGymDetails = ({ onUpdate }) => {
                         onChange={(e) => setUpdatedGym({ ...updatedGym, name: e.target.value })}
                     />
 
-                    <WysiwygEditor
-                        toolbar={toolbarOptions}
+                    <WysiwygEditorComponent
                         editorState={editorState}
                         onEditorStateChange={handleEditorChange}
                     />

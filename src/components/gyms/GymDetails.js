@@ -154,6 +154,8 @@ const GymDetails = () => {
                     {/*<Typography variant={"p"}>{gym.description}</Typography>*/}
                     <div dangerouslySetInnerHTML={{ __html: gym.description }} />
 
+                    {/*TODO: for the image gallery use the MUI Masanory card thingy https://mui.com/material-ui/react-masonry/*/}
+
                     <Grid >
                         <Grid item xs={12} sm={6}>
                             <Button variant="contained" onClick={openMapDialog}>Show Map</Button>

@@ -2,10 +2,11 @@ import React, { useEffect, useState, useContext } from 'react';
 
 //Firebase
 import firebase, { db, auth, storage } from '../../FirebaseSetup';
-import { collection, addDoc, doc, updateDoc } from 'firebase/firestore';
+import { collection, addDoc, doc, updateDoc, arrayUnion } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { getDoc } from 'firebase/firestore';
 import AuthContext from '../../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 //google maps
 import { StandaloneSearchBox } from '@react-google-maps/api';
@@ -29,36 +30,6 @@ const htmlString = '<p>Hello World!</p>';
 const contentState = htmlToDraft(htmlString);
 const editorState = EditorState.createEmpty();
 
-const toolbarOptions = {
-    options: ['inline', 'blockType', 'fontSize', 'fontFamily', 'list', 'textAlign', 'colorPicker', 'link', 'embedded', 'image', 'remove', 'history'],
-    inline: {
-        options: ['bold', 'italic', 'underline', 'strikethrough'],
-    },
-    list: {
-        options: ['unordered', 'ordered'],
-    },
-    textAlign: {
-        options: ['left', 'center', 'right'],
-    },
-    link: {
-        defaultTargetOption: '_self',
-        showOpenOptionOnHover: true,
-        defaultLinkTarget: '_blank',
-    },
-    embedded: {
-        defaultSize: {
-            height: 'auto',
-            width: 'auto',
-        },
-    },
-    image: {
-        defaultSize: {
-            height: 'auto',
-            width: '100%',
-        },
-    },
-};
-
 function CreateGym() {
     const [error, setError] = useState('');
     const [alert, setAlert] = useState(null);
@@ -73,6 +44,8 @@ function CreateGym() {
     const [createdBy, setCreatedBy] = useState(null);
     const [isApiLoaded, setIsApiLoaded] = useState(false);
     const [loadError, setLoadError] = useState(null);
+    const navigate = useNavigate();
+
     // const [editorState, setEditorState] = useState(EditorState.createEmpty());
 
     const [editorState, setEditorState] = useState(() => {
@@ -164,6 +137,16 @@ function CreateGym() {
                 await updateDoc(gymDocRef, { imageUrl });
             }
 
+            // Update the user document with the new gym id in the managedGyms field
+            const userDocRef = doc(db, 'users', currentUser.uid);
+            await updateDoc(userDocRef, {
+                managedGyms: arrayUnion({ id: docRef.id, name: gymName }),
+            });
+
+
+            //navigate to the new gym
+            navigate(`/gyms/${docRef.id}`);
+
         } catch (error) {
             console.error('Error adding document: ', error);
             setAlert('error');
@@ -228,11 +211,6 @@ function CreateGym() {
         setShowAlert(false);
     };
 
-    // const [editorState, setEditorState] = React.useState(
-    //     () => EditorState.createEmpty(),
-    // );
-
-
     return (
         <>
             <Box component="form" onSubmit={handleSubmit}>
@@ -270,7 +248,6 @@ function CreateGym() {
 
                 {/*//this needs to be a description field with a qysiwyg editor */}
                 <WysiwygEditor
-                    toolbar={toolbarOptions}
                     editorState={editorState}
                     onEditorStateChange={handleEditorChange}
                 />

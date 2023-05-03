@@ -32,6 +32,7 @@ import LoginIcon from '@mui/icons-material/Login';
 import AddLocationIcon from '@mui/icons-material/AddLocation';
 import Typography from '@mui/material/Typography';
 import DarkModeToggle from './DarkModeToggle';
+import Stack from '@mui/material/Stack';
 
 //MUI icons
 import HomeIcon from '@mui/icons-material/Home';
@@ -87,7 +88,6 @@ export default function NavDrawer() {
         }
     }, [currentUser]);
 
-
     // console.log("user from navDrawer", userDetails.avatarUrl)
     const list = (anchor) => (
 <>
@@ -121,9 +121,30 @@ export default function NavDrawer() {
                 {/*if the user is a gym owner then show these menu items*/}
                 {userDetails && userDetails.userType === 'Gym Owner' && (
                     <>
+                    {userDetails.managedGyms.length !== 0 && (
                         <MenuItem component={Link} to="/addevent"><MenuItemIcon><EmojiEventsIcon /></MenuItemIcon>Add an Event</MenuItem>
-                        <MenuItem component={Link} to="/create-gym"><MenuItemIcon><AddLocationIcon /></MenuItemIcon>Add your Gym</MenuItem>
-                    {/*    TODO: add a button to edit the users gym*/}
+                    )}
+                        {/*// if userDetails.managedGym is equal to or less than 0 then show the add gym menu item*/}
+                        {/*// if userDetails.managedGym is equal 1 then show the menu item linking to their gym*/}
+                        {userDetails.managedGyms.length === 1 && (
+                            <>
+                                <MenuItem component={Link} to="/create-gym"><MenuItemIcon><AddLocationIcon /></MenuItemIcon>Add another Gym</MenuItem>
+
+                                <MenuItem component={Link} to={`/gyms/${userDetails.managedGyms}`} style={{ textDecoration: 'none' }}>
+                                    <MenuItemIcon><AddLocationIcon /></MenuItemIcon>Manage your Gym
+                                </MenuItem>
+                            </>
+                        )}
+                        {/*// if userDetails.managedGym is greater than 1 then show the menu item linking to their gyms*/}
+                        {userDetails.managedGyms.length >= 2 && (
+                            <>
+                                <MenuItem component={Link} to="/create-gym"><MenuItemIcon><AddLocationIcon /></MenuItemIcon>Add another Gym</MenuItem>
+
+                                <MenuItem component={Link} to="/gyms/manage-gyms" style={{ textDecoration: 'none' }}>
+                                    <MenuItemIcon><AddLocationIcon /></MenuItemIcon>Manage your Gyms
+                                </MenuItem>
+                            </>
+                        )}
                     </>
                 )}
                 {/*if the user is a leage admin and has not created a league yet*/}

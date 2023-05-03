@@ -4,7 +4,7 @@ import { Card, CardContent, Typography, Select, MenuItem, FormControl } from '@m
 import InfiniteScroll from 'react-infinite-scroll-component';
 import {states, countries} from './ListOfStates';
 import { useDataLayer } from '../data/DataLayer';
-
+import GymCard from './GymCard';
 const GymsList = () => {
     const [filters, setFilters] = useState({ country: '', state: '' });
     const [triggerFetchMore, setTriggerFetchMore] = useState(false);
@@ -29,7 +29,7 @@ const GymsList = () => {
         setTriggerFetchMore(false);
     };
 
-    console.log('gyms info', gyms);
+    // console.log('gyms list info', gyms);
     return (
         <>
             <FormControl>
@@ -66,22 +66,7 @@ const GymsList = () => {
                 loader={gyms.length === 0 && <h4>Loading...</h4>}
             >
                 {gyms.map((gym, index) => (
-                    <a key={`${gym.id}-${index}`}
-                       href={`gyms/${gym.id}`}
-                       target="_self"
-                       rel="noopener noreferrer"
-                       style={{ textDecoration: 'none', display: 'block', marginBottom: '16px' }}>
-                        <Card key={`${gym.id}-${index}`} style={{ marginBottom: '16px' }}>
-                            <CardContent>
-                                <Typography variant="h5">{gym.name}</Typography>
-                                <Typography variant="subtitle1">{gym.address}</Typography>
-                                <Typography variant="subtitle2">{gym.state}, {gym.country}</Typography>
-                                {/*<Typography variant="body1">Latitude: {gym.latitude}</Typography>*/}
-                                {/*<Typography variant="body1">Longitude: {gym.longitude}</Typography>*/}
-
-                            </CardContent>
-                        </Card>
-                    </a>
+                    <GymCard key={`${gym.id}-${index}`} gym={gym} />
                 ))}
             </InfiniteScroll>
         </>

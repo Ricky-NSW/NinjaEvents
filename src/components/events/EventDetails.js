@@ -13,6 +13,7 @@ import {auth, db} from "../../FirebaseSetup";
 import { Switch } from '@mui/material';
 import IsSubscribedSwitch from "../user/isSubscribedSwitch";
 import SubmitResultsForm from "./results/SubmitResultsForm";
+import GymCard from "../gyms/GymCard";
 const EventDetails = () => {
     const { id } = useParams();
     const [event, setEvent] = useState(null);
@@ -234,11 +235,9 @@ const EventDetails = () => {
                     <p>Location: {event.gym.name}</p>
 
                     <h3>Event Location</h3>
+                    <GymCard gym={event.gym} />
                     {/*TODO: add the avatar for the gym*/}
-                    <p>Gym's Address: {event.gym.address}</p>
-                    <p>Lat: {event.gym.latitude}</p>
-                    <p>Long: {event.gym.longitude}</p>
-                    <a href={`/gyms/${event.gym.id}`}>View {event.gym.name}</a>
+
 
                     <h3>Event League</h3>
                     {/*TODO: add the avatar for the league*/}
@@ -349,9 +348,6 @@ const EventDetails = () => {
                                     />
                                 )}
                             />
-
-
-
                         </DialogContent>
                         <DialogActions>
                             <Button onClick={handleClose}>Cancel</Button>

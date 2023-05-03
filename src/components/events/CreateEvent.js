@@ -21,6 +21,8 @@ import { getDoc } from 'firebase/firestore';
 
 //autocomplete
 import Autocomplete from '@mui/material/Autocomplete';
+import WysiwygEditorComponent from '../layout/tools/WysiwygEditorComponent';
+
 // MUI
 import { Box, Button, TextField } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
@@ -33,6 +35,8 @@ import { MenuItem } from '@mui/material';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { DatePicker, TimePicker, DateTimePicker } from '@mui/lab';
+import { Editor, EditorState, ContentState, convertToRaw } from "draft-js";
+import htmlToDraft from "html-to-draftjs";
 
 const CreateEvent = () => {
     const [title, setTitle] = useState('');
@@ -50,13 +54,18 @@ const CreateEvent = () => {
     const [selectedLeague, setSelectedLeague] = useState(null);
     const [selectedGym, setSelectedGym] = useState({});
 
-
     // Fetch leagues from Firebase
     const fetchLeagues = async () => {
         const leaguesSnapshot = await getDocs(collection(db, 'leagues'));
         const leaguesData = leaguesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         setLeagues(leaguesData);
     };
+
+    const [editorState, setEditorState] = useState(() => {
+        const contentBlock = htmlToDraft(''); // set your default HTML content here
+        const contentState = contentBlock ? ContentState.createFromBlockArray(contentBlock.contentBlocks) : ContentState.createFromText('');
+        return EditorState.createWithContent(contentState);
+    });
 
     useEffect(() => {
         fetchLeagues();
@@ -123,7 +132,9 @@ const CreateEvent = () => {
         }
     };
 
-
+    const handleEditorChange = (state) => {
+        setEditorState(state);
+    };
 
     const handlePlacesChanged = () => {
         if (searchBox) {
@@ -250,16 +261,21 @@ const CreateEvent = () => {
                     required
                     fullWidth
                 />
-                <TextField
-                    maxRows={30}
-                    minRows={5}
-                    label="Description"
-                    variant="outlined"
-                    value={description}
-                    onChange={handleDescriptionChange}
-                    margin="normal"
-                    required
-                    fullWidth
+                {/*<TextField*/}
+                {/*    maxRows={30}*/}
+                {/*    minRows={5}*/}
+                {/*    label="Description"*/}
+                {/*    variant="outlined"*/}
+                {/*    value={description}*/}
+                {/*    onChange={handleDescriptionChange}*/}
+                {/*    margin="normal"*/}
+                {/*    required*/}
+                {/*    fullWidth*/}
+                {/*/>*/}
+
+                <WysiwygEditorComponent
+                    editorState={editorState}
+                    onEditorStateChange={handleEditorChange}
                 />
                 <TextField
                     label="Price"

@@ -25,6 +25,7 @@ import AddEventPage from "./pages/events/AddEventPage";
 // Gyms
 import AddGymPage from "./pages/gyms/AddGymPage";
 import GymsPage from "./pages/gyms/GymsPage";
+import UsersGymList from "./pages/gyms/UsersGymList";
 import GymDetails from "./components/gyms/GymDetails";
 
 // Leagues
@@ -61,11 +62,12 @@ export default function App() {
                     <Route path="events" element={<EventsPage />} />
                     <Route path="addevent" element={<AddEventPage />} />
                     <Route exact path="/events/:id" element={<EventDetails />} />
-                    {/*Gym Pages*/}
+                    {/*---------Gym Pages*/}
                     <Route path="gyms" element={<GymsPage />} />
+                    <Route path="/gyms/manage-gyms" element={<UsersGymList />} />
                     <Route path="create-gym" element={<AddGymPage />} />
                     <Route exact path="/gyms/:id" element={<GymDetails />} />
-                    {/*League Pages*/}
+                    {/* -------League Pages*/}
                     <Route path="leagues" element={<LeaguesPage />} />
                     <Route path="add-league" element={<AddLeaguePage />} />
                     <Route exact path="/leagues/:id" element={<LeagueDetails />} />
