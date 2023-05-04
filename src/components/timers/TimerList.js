@@ -5,7 +5,7 @@ import { collection, addDoc, onSnapshot, query, orderBy } from 'firebase/firesto
 import { TextField, Button, List, ListItem, ListItemText } from '@mui/material';
 import { useDataLayer } from '../data/DataLayer';
 import { db } from '../../FirebaseSetup';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'; // this replaces useHistory
 
 const TimerList = () => {
     const [timerName, setTimerName] = useState('');

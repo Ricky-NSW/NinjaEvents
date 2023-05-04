@@ -37,6 +37,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers';
 import { DatePicker, TimePicker, DateTimePicker } from '@mui/lab';
 import { Editor, EditorState, ContentState, convertToRaw } from "draft-js";
 import htmlToDraft from "html-to-draftjs";
+import Typography from "@mui/material/Typography";
 
 const CreateEvent = () => {
     const [title, setTitle] = useState('');
@@ -272,7 +273,11 @@ const CreateEvent = () => {
                 {/*    required*/}
                 {/*    fullWidth*/}
                 {/*/>*/}
-
+<Typography
+    variant="p"
+    component="p"
+    style={{ marginBottom: "10px" }}
+>Event Description</Typography>
                 <WysiwygEditorComponent
                     editorState={editorState}
                     onEditorStateChange={handleEditorChange}

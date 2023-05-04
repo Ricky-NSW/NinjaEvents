@@ -1,6 +1,6 @@
 import React from 'react';
 import { Avatar as MuiAvatar } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'; // this replaces useHistory
 
 const Avatar = ({ user, avatarURL }) => {
     const navigate = useNavigate();

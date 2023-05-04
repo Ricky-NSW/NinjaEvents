@@ -9,6 +9,7 @@ import authContext from "../../contexts/AuthContext";
 
 //avatar
 import Avatar from '../user/Avatar';
+import { useNavigate } from 'react-router-dom';
 
 
 //MUI
@@ -56,6 +57,7 @@ export default function NavDrawer() {
     const [userData, setUserData] = useState(null);
     const { currentUser } = useContext(authContext);
     const [userDetails, setUserDetails] = useState({});
+    const navigate = useNavigate();
 
     const toggleDrawer = (anchor, open) => (event) => {
         if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
@@ -70,6 +72,7 @@ export default function NavDrawer() {
         } catch (error) {
             console.error('Error signing out: ', error);
         }
+        navigate('/');
     };
 
 
@@ -116,6 +119,8 @@ export default function NavDrawer() {
                 {/*Event*/}
                 <MenuItem component={Link} to="/events"><MenuItemIcon><EmojiEventsIcon /></MenuItemIcon>Event Finder</MenuItem>
                 <MenuItem component={Link} to="/gyms"><MenuItemIcon><AddLocationIcon /></MenuItemIcon>Gym Finder</MenuItem>
+                <MenuItem component={Link} to="/leagues"><MenuItemIcon><AddLocationIcon /></MenuItemIcon>Leagues</MenuItem>
+
                 <Divider/>
 
                 {/*if the user is a gym owner then show these menu items*/}
@@ -159,7 +164,6 @@ export default function NavDrawer() {
                         <Button variant="contained">Go to Your League</Button>
                     </Link>
                 )}
-                <MenuItem component={Link} to="/leagues"><MenuItemIcon><AddLocationIcon /></MenuItemIcon>Leagues</MenuItem>
             </MenuList>
             <Divider/>
             <MenuItem component={Link} to="/timers"><MenuItemIcon><AddLocationIcon /></MenuItemIcon>Timers</MenuItem>

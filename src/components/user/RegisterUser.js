@@ -3,7 +3,7 @@ import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { setDoc, doc } from 'firebase/firestore';
 import { auth, db } from '../../FirebaseSetup';
 import { TextField, Button, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'; // this replaces useHistory
 
 function RegisterUser() {
     const [firstName, setFirstName] = useState('');

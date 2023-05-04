@@ -6,7 +6,7 @@ import { collection, addDoc, doc, updateDoc, arrayUnion } from 'firebase/firesto
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { getDoc } from 'firebase/firestore';
 import AuthContext from '../../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'; // this replaces useHistory
 
 //google maps
 import { StandaloneSearchBox } from '@react-google-maps/api';
