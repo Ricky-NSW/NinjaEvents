@@ -153,7 +153,7 @@ export default function NavDrawer() {
                     </>
                 )}
                 {/*if the user is a leage admin and has not created a league yet*/}
-                {userDetails && userDetails.userType === 'League Admin' && !userDetails.league && (
+                {userDetails && (userDetails.userType === 'League Admin' || userDetails.userType === 'admin') && !userDetails.league && (
                     <>
                         <MenuItem component={Link} to="add-league"><MenuItemIcon><EmojiEventsIcon /></MenuItemIcon>Add your League</MenuItem>
                     </>

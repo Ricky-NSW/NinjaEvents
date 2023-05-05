@@ -7,6 +7,8 @@ import {Link} from "react-router-dom";
 //firebase
 import { db, auth } from '../../FirebaseSetup';
 import { collection, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
+import useDataLayer from '../data/DataLayer';
+
 //MUI
 import Card from "@mui/material/Card";
 import CardMedia from "@mui/material/CardMedia";
@@ -58,6 +60,8 @@ const EventsList = ({events, noFilter} ) => {
 
     const [search, setSearch] = useState(''); // Add this state
     const [filteredEvents, setFilteredEvents] = useState(events); // Add this state
+    const { currentUser } = useDataLayer();
+    const userType = currentUser ? currentUser.userType : null;
 
     useEffect(() => {
         setFilteredEvents(
@@ -163,7 +167,7 @@ const EventsList = ({events, noFilter} ) => {
                                         <Button size="small">Share</Button>
                                         <Button component={Link} to={`/events/` + (event.id)} size="small">Learn More</Button>
 
-                                        {auth.currentUser && auth.currentUser.uid === event.createdBy ?
+                                        {auth.currentUser && auth.currentUser.uid === event.createdBy  || userType === "admin" ?(
                                             <EventDelete
                                                 onClick={() => handleDelete(event.id)}
                                                 size="small"
@@ -172,7 +176,7 @@ const EventsList = ({events, noFilter} ) => {
                                             >
                                                 <DeleteIcon />
                                             </EventDelete>
-                                            : null }
+                                        ): null }
 
                                     </CardActions>
                                 </Card>

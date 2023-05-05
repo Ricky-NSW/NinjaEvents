@@ -18,7 +18,27 @@ import AuthContext from '../../contexts/AuthContext';
 // MUI
 import { Box, Button, TextField } from '@mui/material';
 import Alert from '@mui/material/Alert';
+import {Editor as WysiwygEditor} from "react-draft-wysiwyg";
+import htmlToDraft from "html-to-draftjs";
+import {ContentState, EditorState} from "draft-js";
 
+//wysiwyg https://www.npmjs.com/package/react-mui-draft-wysiwyg
+// import { EditorState, ContentState } from "draft-js";
+
+// import { Editor as WysiwygEditor } from 'react-draft-wysiwyg';
+import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
+// import htmlToDraft from 'html-to-draftjs';
+import {stateToHTML} from "draft-js-export-html";
+
+// const editorState = EditorState.createEmpty();
+// import { Editor as WysiwygEditor } from 'react-draft-wysiwyg';
+import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
+import { convertToHTML, convertFromHTML } from 'draft-convert';
+// Define the HTML string you want to convert to a Draft.js ContentState
+// Convert the HTML string to a Draft.js ContentState
+const editorState = EditorState.createEmpty();
+const htmlString = '<p>Hello World!</p>';
+const contentState = htmlToDraft(htmlString);
 function CreateLeague() {
     const [error, setError] = useState('');
     const [alert, setAlert] = useState(null);
@@ -31,23 +51,28 @@ function CreateLeague() {
     const { currentUser } = useContext(AuthContext);
     const [createdBy, setCreatedBy] = useState(null);
 
+    const [editorState, setEditorState] = useState(() => {
+        const contentBlock = htmlToDraft(''); // set your default HTML content here
+        const contentState = contentBlock ? ContentState.createFromBlockArray(contentBlock.contentBlocks) : ContentState.createFromText('');
+        return EditorState.createWithContent(contentState);
+    });
+    console.log( 'create league', userType)
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!auth.currentUser) {
-            setError('You need to be logged in as a League Admin to create an event');
+        if (!auth.currentUser || (auth.currentUser && userType !== "Admin" && userType !== "League Owner")) {
+            setError('You need to be logged in as a League Admin or an admin to create an event');
             return;
         }
+
+
         if (!leagueName) {
             setError('League Name is required');
             return;
         }
 
-        if (userType !== 'League Admin') {
-            setError('You need to be a League Admin to Create a League, contact Admin for help');
-            return;
-        }
-
+        const contentHTML = stateToHTML(editorState.getCurrentContent());
 
         try {
             //Once you've confirmed that the user is signed in, you can get their UID by accessing the uid property of the auth.currentUser object:
@@ -58,7 +83,7 @@ function CreateLeague() {
             //create the league document
             const docRef = await addDoc(collection(db, 'leagues'), {
                 name: leagueName,
-                description: description, // Include the description field
+                description: contentHTML,
                 OwnerUid: currentUser.uid,
                 createdBy: uid // Include the user's UID as a field in the document
             });
@@ -104,6 +129,10 @@ function CreateLeague() {
         fetchUserType();
     }, []);
 
+    const handleEditorChange = (state) => {
+        setEditorState(state);
+    };
+
 
     const handleLeagueNameChange = (e) => {
         setLeagueName(e.target.value);
@@ -111,15 +140,8 @@ function CreateLeague() {
     };
 
 
-
     const handleCloseAlert = () => {
         setShowAlert(false);
-    };
-
-
-    const handleDescriptionChange = (e) => {
-        setDescription(e.target.value);
-        setError('');
     };
 
 
@@ -135,17 +157,11 @@ function CreateLeague() {
                     required
                     fullWidth
                 />
-                <TextField // Added description TextField
-                    label="Description"
-                    value={description}
-                    variant="outlined"
-                    onChange={handleDescriptionChange}
-                    margin="normal"
-                    required
-                    fullWidth
-                    multiline
-                    rows={4}
+                <WysiwygEditor
+                    editorState={editorState}
+                    onEditorStateChange={handleEditorChange}
                 />
+                <br />
                 <br />
                 {showAlert && (
                     <Alert severity={alert} onClose={handleCloseAlert}>

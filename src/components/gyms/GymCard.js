@@ -4,7 +4,7 @@ import React from "react";
 const GymCard = ({ gym }) => (
     <>
         <a
-            href={`${gym.id}`}
+            href={`gyms/${gym.id}`}
             target="_self"
             rel="noopener noreferrer"
             style={{ textDecoration: 'none', display: 'block', marginBottom: '16px' }}

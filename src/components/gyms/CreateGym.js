@@ -88,7 +88,7 @@ function CreateGym() {
         }
 
         const contentHTML = stateToHTML(editorState.getCurrentContent());
-        console.log('Content HTML:', contentHTML);
+        // console.log('Content HTML:', contentHTML);
 
         try {
             //Once you've confirmed that the user is signed in, you can get their UID by accessing the uid property of the auth.currentUser object:

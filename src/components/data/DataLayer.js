@@ -1,9 +1,7 @@
-// DataLayer.js
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { db } from '../../FirebaseSetup';
-import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '../../FirebaseSetup';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { getFirestore, doc, onSnapshot, updateDoc } from 'firebase/firestore';
 
 // Creating a data layer context
 export const DataLayerContext = createContext();
@@ -14,67 +12,67 @@ export const useDataLayer = () => {
 };
 
 const DataLayer = ({ children }) => {
-    const [user, setUser] = useState(null);
     const [gyms, setGyms] = useState([]);
     const [leagues, setLeagues] = useState([]);
     const [events, setEvents] = useState([]);
     const [currentUser, setCurrentUser] = useState(null);
 
+    const updateUserData = async (userId, updatedData) => {
+        if (currentUser && currentUser.id === userId) {
+            setCurrentUser({ ...currentUser, ...updatedData });
+        }
+    };
+
+    const updateUserDetailsInDB = async (userId, userDetails) => {
+        const userDocRef = doc(db, 'users', userId);
+
+        try {
+            await updateDoc(userDocRef, userDetails);
+        } catch (error) {
+            console.error("Error updating user details: ", error);
+            throw error;
+        }
+    };
+
     // Fetching and listening to real-time updates from firestore
     useEffect(() => {
-        let unsubscribeUserDoc; // Declare unsubscribeUserDoc here
+        const auth = getAuth();
+        const db = getFirestore();
 
         const unsubscribeAuth = onAuthStateChanged(auth, (loggedInUser) => {
+            console.log("loggedInUser:", loggedInUser);
+
             if (loggedInUser) {
-                // User is signed in
                 const userDocRef = doc(db, 'users', loggedInUser.uid);
-                unsubscribeUserDoc = onSnapshot(userDocRef, (docSnapshot) => { // Assign the unsubscribe function here
+                const unsubscribeUserDoc = onSnapshot(userDocRef, (docSnapshot) => {
                     if (docSnapshot.exists()) {
+                        console.log("User data from Firestore:", docSnapshot.data());
                         setCurrentUser({ ...docSnapshot.data(), id: loggedInUser.uid });
                     } else {
                         console.error('User not found in Firestore');
                     }
                 });
 
-                // No need to return an unsubscribe function here anymore
+                return () => {
+                    unsubscribeUserDoc();
+                };
             } else {
-                // User is signed out
                 setCurrentUser(null);
             }
         });
 
-        const unsubscribeGyms = db.collection('gyms').onSnapshot((snapshot) => {
-            setGyms(snapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
-        });
-
-        const unsubscribeLeagues = db.collection('leagues').onSnapshot((snapshot) => {
-            setLeagues(snapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
-        });
-
-        const unsubscribeEvents = db.collection('events').onSnapshot((snapshot) => {
-            setEvents(snapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
-        });
-
-        // Cleanup function to unsubscribe from snapshot listeners when the component is unmounted
         return () => {
             unsubscribeAuth();
-            if (unsubscribeUserDoc) { // Make sure to only unsubscribe if the function has been assigned
-                unsubscribeUserDoc();
-            }
-            unsubscribeGyms();
-            unsubscribeLeagues();
-            unsubscribeEvents();
         };
     }, []);
 
-
-
     const value = {
         currentUser,
-        user,
         gyms,
         leagues,
         events,
+        updateUserData,
+        updateUserDetailsInDB,
     };
 
     return (
@@ -85,4 +83,3 @@ const DataLayer = ({ children }) => {
 };
 
 export default DataLayer;
-

@@ -1,10 +1,11 @@
+//TODO: add a mark for gyms that are part of thei league
 import { Card, CardContent, Typography } from "@mui/material";
 import React from "react";
 
 const LeagueCard = ({ league }) => (
     <>
         <a
-            href={`${league.id}`}
+            href={`leagues/${league.id}`}
             target="_self"
             rel="noopener noreferrer"
             style={{ textDecoration: 'none', display: 'block', marginBottom: '16px' }}

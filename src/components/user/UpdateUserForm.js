@@ -6,14 +6,13 @@
 //TODO: needs to refresh the page after the user has updated their details
 
 import { useState, useEffect, useContext } from 'react';
-import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes } from 'firebase/storage';
 import { getDownloadURL } from 'firebase/storage';
 import { Dialog, DialogTitle, DialogContent } from '@mui/material';
+// Add this import at the top of UpdateUserForm.js
+import { useDataLayer, updateUserDetailsInDB } from '../data/DataLayer';
 
-import { useDataLayer } from '../data/DataLayer';
-
-import AuthContext from '../../contexts/AuthContext';
 import {
     Box,
     Button,
@@ -29,36 +28,58 @@ import {
 } from '@mui/material';
 
 const UpdateUserForm = () => {
-    const { currentUser } = useContext(AuthContext);
     const [userDetails, setUserDetails] = useState({});
     const [avatarFile, setAvatarFile] = useState(null);
     const [avatarUrl, setAvatarUrl] = useState(null);
     const [open, setOpen] = useState(false);
     const [likedGyms, setLikedGyms] = useState([]);
-
-    const { user, gyms, leagues } = useDataLayer(); // <-- Use the custom hook
+    const { currentUser, gyms, leagues, updateUserData, updateUserDetailsInDB } = useDataLayer();
+    const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+
+        if (!currentUser) {
+            setError("User not authenticated");
+            return;
+        }
+        setError(null);
+
+
         const fetchUserDetails = async () => {
             const db = getFirestore();
             const userDocRef = doc(db, 'users', currentUser.uid);
             const userDocSnapshot = await getDoc(userDocRef);
             const userDetails = userDocSnapshot.data();
-            setUserDetails(userDetails);
-
+            setUserDetails(userDetails || currentUser || {});
             // Initialize likedGyms state here
             setLikedGyms(userDetails.likedGyms || []);
         };
 
+        setLoading(false); // Add this line
+
+
         fetchUserDetails();
-    }, [currentUser.uid]);
+    }, [currentUser?.uid]);
 
     const handleChange = (event) => {
-        setUserDetails({
-            ...userDetails,
-            [event.target.name]: event.target.value,
-        });
+        if (event.target.name === 'likedGyms' || event.target.name === 'leagues') {
+            setUserDetails({
+                ...userDetails,
+                [event.target.name]: event.target.value,
+            });
+            // Update likedGyms state as well
+            if (event.target.name === 'likedGyms') {
+                setLikedGyms(event.target.value);
+            }
+        } else {
+            setUserDetails({
+                ...userDetails,
+                [event.target.name]: event.target.value,
+            });
+        }
     };
+
 
     const handleFileChange = (event) => {
         const file = event.target.files[0];
@@ -68,10 +89,8 @@ const UpdateUserForm = () => {
     // Modify the handleSubmit function
     const handleSubmit = async (event) => {
         event.preventDefault();
-        const db = getFirestore();
-        const userDocRef = doc(db, 'users', currentUser.uid);
-
         let updatedUserDetails = { ...userDetails };
+
 
         if (avatarFile) {
             const storage = getStorage();
@@ -91,10 +110,16 @@ const UpdateUserForm = () => {
             setUserDetails(updatedUserDetails);
         }
 
-        await setDoc(userDocRef, updatedUserDetails);
-        handleClose(); // Call handleClose after successfully updating the user's details
-
+        try {
+            // Call the imported function here
+            await updateUserDetailsInDB(currentUser.uid, updatedUserDetails);
+            updateUserData(currentUser.uid, updatedUserDetails); // Update the user data in the context
+            handleClose();
+        } catch (error) {
+            console.error("Error updating user details: ", error);
+        }
     };
+
 
     //manages liked gyms
     const handleLikeToggle = (gymId) => {
@@ -115,6 +140,7 @@ const UpdateUserForm = () => {
     };
 
 
+
     const handleClose = () => {
         setOpen(false);
     };
@@ -124,11 +150,21 @@ const UpdateUserForm = () => {
     };
 
     console.log("updateUserForm", userDetails);
+    console.log("loading", loading);
 
-    return (
+    return currentUser ? (
         <>
+
+            {error && (
+                <>
+                    {console.log('users modal error', error)}
+                    <div>{error}</div>
+                </>
+            )}
+
             <Button onClick={handleOpen}>Open Update User Form</Button>
 
+            {!loading && (
             <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
                 <DialogTitle>Update User Information</DialogTitle>
                 <DialogContent>
@@ -231,16 +267,10 @@ const UpdateUserForm = () => {
                                         <Select
                                             labelId="gyms-label"
                                             id="gyms"
-                                            name="gyms"
+                                            name="likedGyms" // Change the name to "likedGyms"
                                             multiple
                                             value={likedGyms} // Use likedGyms as the value
-                                            onChange={(event) => {
-                                                setLikedGyms(event.target.value); // Update likedGyms state directly
-                                                setUserDetails({
-                                                    ...userDetails,
-                                                    likedGyms: event.target.value,
-                                                });
-                                            }}
+                                            onChange={handleChange} // Use the new handleChange function
                                             label="Local Gym"
                                         >
                                             {gyms.map(gym => (
@@ -249,6 +279,7 @@ const UpdateUserForm = () => {
                                                 </MenuItem>
                                             ))}
                                         </Select>
+
                                     </FormControl>
                                 </Grid>
 
@@ -270,7 +301,7 @@ const UpdateUserForm = () => {
                                             name="leagues"
                                             multiple
                                             value={userDetails.leagues || []}
-                                            onChange={handleChange}
+                                            onChange={handleChange} // Use the new handleChange function
                                             label="Associated Leagues"
                                         >
                                             {leagues.map(league => (
@@ -308,21 +339,22 @@ const UpdateUserForm = () => {
                                         </Grid>
                                     </>
                                 )}
-                                <Grid item xs={12}>
-                                    <Button type="submit" variant="contained">
-                                        Update
-                                    </Button>
-                                    <Button onClick={handleClose} variant="outlined" color="secondary">
-                                        Close
-                                    </Button>
-                                </Grid>
                             </Grid>
                         </Box>
+                        <Grid item xs={12}>
+                            <Button type="submit" variant="contained">
+                                Update
+                            </Button>
+                            <Button onClick={handleClose} variant="outlined" color="secondary">
+                                Close
+                            </Button>
+                        </Grid>
                     </Container>
                 </DialogContent>
             </Dialog>
+            )}
         </>
-    );
+    ) : null;
 };
 
 export default UpdateUserForm;
