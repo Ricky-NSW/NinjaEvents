@@ -33,7 +33,7 @@ import LeaguesPage from "./pages/leagues/Leagues-Page";
 import AddLeaguePage from "./pages/leagues/AddLeague-Page";
 
 // /User
-import ManageProfile from "./pages/EditProfile";
+import UserprofilePage from "./pages/UserprofilePage";
 import NoPage from "./pages/NoPage";
 import EventDetails from './components/events/EventDetails';
 import LoginPage from './pages/login'
@@ -55,7 +55,7 @@ export default function App() {
                     <Route path="contact" element={<Contact />} />
                     {/*User pages*/}
                     <Route exact path="login" element={<LoginPage />} />
-                    <Route path="manageprofile" element={<ManageProfile />} />
+                    <Route path="manageprofile" element={<UserprofilePage />} />
                     <Route path="register" element={<Register />} />
                     {/*<Route path="/users/:userId" element={<UserProfilePage />} />*/}
                     {/*Events Pages*/}

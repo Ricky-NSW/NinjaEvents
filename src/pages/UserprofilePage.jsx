@@ -25,9 +25,32 @@ const Item = styled(Paper)(({ theme }) => ({
     boxShadow: 'none', // Add this line to remove the drop shadow
 }));
 
-const UserProfile = () => {
+const UserprofilePage = () => {
+    const {
+        currentUser,
+        gyms,
+        leagues,
+        getGymById,
+        getLeagueById,
+        // getEventById,
+    } = useDataLayer();
 
-    const { currentUser, gyms, leagues } = useDataLayer();
+    const {
+        ninjaName,
+        avatarUrl,
+        achievements,
+        country,
+        dob,
+        email,
+        firstName,
+        lastName,
+        phone,
+        trainingDuration,
+        subscribedLeagues,
+        subscribedGyms,
+    } = currentUser || {};
+
+
 
     if (!currentUser) {
         return (
@@ -58,8 +81,8 @@ const UserProfile = () => {
         );
     }
 
-    console.log('editProfile page:', currentUser)
-
+    // console.log('editProfile page:', currentUser)
+// console.log('user page gyms',currentUser.subscribedGyms)
     return (
         <Grid
             container
@@ -68,78 +91,95 @@ const UserProfile = () => {
             alignItems="center" // Add this line to vertically align the items
             justifyContent="center" // Add this line to horizontally align the items
         >
-            <Grid xs={8}>
+            <Grid item xs={8}>
                 <Item>
                     <Typography
                         variant="h1"
                         component="h1"
                         gutterBottom
-                        gutterTop
                     >
-                        {currentUser.ninjaName}
+                        {ninjaName}
                     </Typography>
                 </Item>
             </Grid>
-            <Grid xs={4}>
+            <Grid item xs={4}>
                 <Item>
                     <Avatar
-                        alt={currentUser.ninjaName}
-                        src={currentUser.avatarUrl}
+                        alt={ninjaName}
+                        src={avatarUrl}
                         sx={{ width: 56, height: 56 }}
                     />
                 </Item>
             </Grid>
-            <Grid xs={12}>
+            <Grid item xs={12}>
                 <UpdateUserForm />
             </Grid>
-            <Grid xs={12}>
+            <Grid item xs={12}>
                 <Item>
                     <Typography variant="body1" component="p" gutterBottom>
-                        <span style={{ fontWeight: 'bold' }}>Achievements:</span> {currentUser.achievements}
+                        <span style={{ fontWeight: 'bold' }}>Achievements:</span> {achievements}
                     </Typography>
                     <Typography variant="body1" component="p" gutterBottom>
-                        <span style={{ fontWeight: 'bold' }}>Country:</span> {currentUser.country}
+                        <span style={{ fontWeight: 'bold' }}>Country:</span> {country}
                     </Typography>
                     <Typography variant="body1" component="p" gutterBottom>
-                        <span style={{ fontWeight: 'bold' }}>Ninja Name:</span> {currentUser.ninjaName}
+                        <span style={{ fontWeight: 'bold' }}>Ninja Name:</span> {ninjaName}
                     </Typography>
                     <Typography variant="body1" component="p" gutterBottom>
-                        <span style={{ fontWeight: 'bold' }}>Date of Birth:</span> {currentUser.dob}
+                        <span style={{ fontWeight: 'bold' }}>Date of Birth:</span> {dob}
                     </Typography>
                     <Typography variant="body1" component="p" gutterBottom>
-                        <span style={{ fontWeight: 'bold' }}>Email:</span> {currentUser.email}
+                        <span style={{ fontWeight: 'bold' }}>Email:</span> {email}
                     </Typography>
                     <Typography variant="body1" component="p" gutterBottom>
-                        <span style={{ fontWeight: 'bold' }}>First Name:</span> {currentUser.firstName}
+                        <span style={{ fontWeight: 'bold' }}>First Name:</span> {firstName}
                     </Typography>
                     <Typography variant="body1" component="p" gutterBottom>
-                        <span style={{ fontWeight: 'bold' }}>Last Name:</span> {currentUser.lastName}
+                        <span style={{ fontWeight: 'bold' }}>Last Name:</span> {lastName}
                     </Typography>
                     <Typography variant="body1" component="p" gutterBottom>
-                        <span style={{ fontWeight: 'bold' }}>Phone:</span> {currentUser.phone}
+                        <span style={{ fontWeight: 'bold' }}>Phone:</span> {phone}
                     </Typography>
                     <Typography variant="body1" component="p" gutterBottom>
-                        <span style={{ fontWeight: 'bold' }}>How long have you been training?</span> {currentUser.trainingDuration}
+                        <span style={{ fontWeight: 'bold' }}>How long have you been training?</span> {trainingDuration}
                     </Typography>
 <br />
                     <Divider>Leagues You're Following</Divider>
                 <br />
                     {/*List of Leagues that the user has subscribed to*/}
+                    {/*{leagues && currentUser.subscribedLeagues && (*/}
+                    {/*    <>*/}
+                    {/*        {currentUser.subscribedLeagues.map((leagueId) => {*/}
+                    {/*            const league = getLeagueById(leagueId);*/}
+                    {/*            return league ? <LeagueCard key={league.id} league={league} /> : null;*/}
+                    {/*        })}*/}
+                    {/*    </>*/}
+                    {/*)}*/}
+
                     {currentUser.subscribedLeagues && (
                         <>
                             {currentUser.subscribedLeagues.map((league) => (
                                 <LeagueCard key={league.id} league={league} />
-                                ))}
+                            ))}
                         </>
                     )}
                     <br />
                     <Divider>Gyms You're Following</Divider>
                     <br />
                     {/*List of Gyms that the user has subscribed to*/}
+                    {/*{gyms && currentUser.subscribedGyms && (*/}
+                    {/*    <>*/}
+                    {/*        {currentUser.subscribedGyms.map((gymId) => {*/}
+                    {/*            const gym = getGymById(gymId);*/}
+                    {/*            return gym ? <GymCard key={gym.id} gym={gym} /> : null;*/}
+                    {/*        })}*/}
+                    {/*    </>*/}
+                    {/*)}*/}
+
                     {currentUser.subscribedGyms && (
                         <>
                             {currentUser.subscribedGyms.map((gym) => (
-                                <GymCard key={gym.id} gym={gym} />
+                                <LeagueCard key={gym.id} league={gym} />
                             ))}
                         </>
                     )}
@@ -149,4 +189,4 @@ const UserProfile = () => {
     );
 };
 
-export default UserProfile;
+export default UserprofilePage;

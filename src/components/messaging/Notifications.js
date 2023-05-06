@@ -91,7 +91,7 @@ const Notifications = ({ lightMode }) => {
                         <Box sx={{ width: '100%' }}>
                             {unreadNotifications.map((notification) => {
                                 const timestamp = notification.timestamp; // Access the timestamp property of each notification
-console.log('notifications', {notification})
+// console.log('notifications', {notification})
                                 let formattedDate = '';
                                 if (timestamp) {
                                     const date = timestamp.toDate(); // Convert the Timestamp to a JavaScript Date object
