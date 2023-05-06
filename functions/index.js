@@ -3,13 +3,13 @@
 //
 const functions = require("firebase-functions");
 const {get} = require("lodash");
-
-// exports.helloWorld = functions.https.onRequest((request, response) => {
-//   functions.logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
-
 const admin = require("firebase-admin");
+
+const firebaseFunctions = require("firebase-functions");
+const sharp = require("sharp");
+const path = require("path");
+const os = require("os");
+const fs = require("fs");
 
 admin.initializeApp();
 
@@ -127,3 +127,41 @@ exports.processEventResults = functions.region("australia-southeast1").firestore
       console.log(`Processed event results and sent results for event ${eventName} at ${gymName}`);
     });
 
+// handles images
+
+
+exports.resizeAvatar = firebaseFunctions.storage.object().onFinalize(async (object) => {
+  const filePath = object.name;
+  const fileName = path.basename(filePath);
+  const tempLocalFile = path.join(os.tmpdir(), fileName);
+  const tempLocalDir = path.dirname(tempLocalFile);
+  const bucket = admin.storage().bucket(object.bucket);
+
+  if (!filePath.startsWith("users/uploads/")) {
+    console.log("Not an avatar image. Exiting...");
+    return null;
+  }
+
+  if (fileName.includes("_200x200")) {
+    console.log("Image is already resized. Exiting...");
+    return null;
+  }
+
+  await fs.promises.mkdir(tempLocalDir, {recursive: true});
+  await bucket.file(filePath).download({destination: tempLocalFile});
+  console.log("Avatar image downloaded locally to", tempLocalFile);
+
+  const resizedFileName = `${fileName.split(".")[0]}_200x200.${fileName.split(".")[1]}`;
+  const tempResizedLocalFile = path.join(os.tmpdir(), resizedFileName);
+  await sharp(tempLocalFile).resize(200, 200).toFile(tempResizedLocalFile);
+  console.log("Resized avatar image created at", tempResizedLocalFile);
+
+  const uploadResizedFilePath = `users/uploads/${object.metadata.uid}/avatars/${resizedFileName}`;
+  await bucket.upload(tempResizedLocalFile, {destination: uploadResizedFilePath});
+
+  fs.unlinkSync(tempLocalFile);
+  fs.unlinkSync(tempResizedLocalFile);
+  console.log("Resized avatar image uploaded to", uploadResizedFilePath);
+
+  return null;
+});

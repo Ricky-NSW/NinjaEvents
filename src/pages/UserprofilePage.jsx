@@ -48,6 +48,7 @@ const UserprofilePage = () => {
         trainingDuration,
         subscribedLeagues,
         subscribedGyms,
+        favouriteObstacle,
     } = currentUser || {};
 
 
@@ -142,6 +143,9 @@ const UserprofilePage = () => {
                     </Typography>
                     <Typography variant="body1" component="p" gutterBottom>
                         <span style={{ fontWeight: 'bold' }}>How long have you been training?</span> {trainingDuration}
+                    </Typography>
+                    <Typography variant="body1" component="p" gutterBottom>
+                        <span style={{ fontWeight: 'bold' }}>What is your favourite obstacle</span> {favouriteObstacle}
                     </Typography>
 <br />
                     <Divider>Leagues You're Following</Divider>

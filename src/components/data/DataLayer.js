@@ -26,7 +26,7 @@ const DataLayer = ({ children }) => {
                 gymsData.push({ ...doc.data(), id: doc.id });
             });
             setGyms(gymsData);
-            console.log("Fetched gyms in datalayer:", gymsData); // Add this line
+            // console.log("Fetched gyms in datalayer:", gymsData); // Add this line
         });
 
         return unsubscribeGyms;
@@ -46,7 +46,7 @@ const DataLayer = ({ children }) => {
                 leaguesData.push({ ...doc.data(), id: doc.id });
             });
             setLeagues(leaguesData);
-            console.log("Fetched leagues in datalayer:", leaguesData); // Add this line
+            // console.log("Fetched leagues in datalayer:", leaguesData); // Add this line
         });
 
         return unsubscribeLeagues;
@@ -84,11 +84,11 @@ const DataLayer = ({ children }) => {
     };
 
     const updateUserDetailsInDB = async (userId, userDetails) => {
-        console.log("updateUserDetailsInDB called with:", userId, userDetails); // Add this line
+        // console.log("updateUserDetailsInDB called with:", userId, userDetails); // Add this line
 
         const userDocRef = doc(db, 'users', userId);
 
-        console.log("userDocRef:", userDocRef); // Add this line
+        // console.log("userDocRef:", userDocRef); // Add this line
 
         try {
             await updateDoc(userDocRef, userDetails);
@@ -110,15 +110,15 @@ const DataLayer = ({ children }) => {
         const unsubscribeEvents = fetchEvents();
 
         const unsubscribeAuth = onAuthStateChanged(auth, (loggedInUser) => {
-            console.log("loggedInUser:", loggedInUser);
+            // console.log("loggedInUser:", loggedInUser);
 
             if (loggedInUser) {
                 const userDocRef = doc(db, 'users', loggedInUser.uid);
                 const unsubscribeUserDoc = onSnapshot(userDocRef, (docSnapshot) => {
                     if (docSnapshot.exists()) {
-                        console.log("User data from Firestore:", docSnapshot.data());
+                        // console.log("User data from Firestore:", docSnapshot.data());
                         setCurrentUser({ ...docSnapshot.data(), id: loggedInUser.uid });
-                        console.log("Fetched currentUser:", { ...docSnapshot.data(), id: loggedInUser.uid }); // Add this line
+                        // console.log("Fetched currentUser:", { ...docSnapshot.data(), id: loggedInUser.uid }); // Add this line
                     } else {
                         console.error('User not found in Firestore');
                     }

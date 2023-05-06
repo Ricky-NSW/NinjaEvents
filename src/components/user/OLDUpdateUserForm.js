@@ -69,7 +69,7 @@ const OLDUpdateUserForm = ({ currentUser, onSubmit }) => {
             setUserType(userData.userType || '');
 
             // Log the current user's userType
-            console.log("Current user's userType:", userData.userType);
+            // console.log("Current user's userType:", userData.userType);
         } else {
             console.log('No such document!');
         }
@@ -187,7 +187,7 @@ const OLDUpdateUserForm = ({ currentUser, onSubmit }) => {
         fetchLeagues();
     }, []);
 
-    console.log("avatar image is", userData);
+    // console.log("avatar image is", userData);
 
     return (
         <Box component="form" onSubmit={handleSubmit} noValidate autoComplete="off">
