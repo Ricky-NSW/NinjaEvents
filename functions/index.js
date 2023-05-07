@@ -127,9 +127,7 @@ exports.processEventResults = functions.region("australia-southeast1").firestore
       console.log(`Processed event results and sent results for event ${eventName} at ${gymName}`);
     });
 
-// handles images
-
-
+// handles images for gyms leagues and users
 exports.resizeAvatar = firebaseFunctions.storage.object().onFinalize(async (object) => {
   const filePath = object.name;
   const fileName = path.basename(filePath);
@@ -137,7 +135,7 @@ exports.resizeAvatar = firebaseFunctions.storage.object().onFinalize(async (obje
   const tempLocalDir = path.dirname(tempLocalFile);
   const bucket = admin.storage().bucket(object.bucket);
 
-  if (!filePath.startsWith("users/uploads/")) {
+  if (!filePath.startsWith("users/uploads/") && !filePath.startsWith("gyms/uploads/")) {
     console.log("Not an avatar image. Exiting...");
     return null;
   }
@@ -147,6 +145,8 @@ exports.resizeAvatar = firebaseFunctions.storage.object().onFinalize(async (obje
     return null;
   }
 
+  const uploadType = filePath.startsWith("users/uploads/") ? "users" : "gyms";
+
   await fs.promises.mkdir(tempLocalDir, {recursive: true});
   await bucket.file(filePath).download({destination: tempLocalFile});
   console.log("Avatar image downloaded locally to", tempLocalFile);
@@ -155,8 +155,8 @@ exports.resizeAvatar = firebaseFunctions.storage.object().onFinalize(async (obje
   const tempResizedLocalFile = path.join(os.tmpdir(), resizedFileName);
   await sharp(tempLocalFile).resize(200, 200).toFile(tempResizedLocalFile);
   console.log("Resized avatar image created at", tempResizedLocalFile);
-
-  const uploadResizedFilePath = `users/uploads/${object.metadata.uid}/avatars/${resizedFileName}`;
+  // TODO: remove POOP from URL and test where the image is appearing in storage and in prop
+  const uploadResizedFilePath = `${uploadType}/uploads/${object.metadata.uid}/poop/${resizedFileName}`;
   await bucket.upload(tempResizedLocalFile, {destination: uploadResizedFilePath});
 
   fs.unlinkSync(tempLocalFile);

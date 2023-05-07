@@ -3,7 +3,7 @@
 // TODO: SHow all the events that are taking place at this gym
 // TODO: check through all events, look for events with the gym array. if an event has this gym's id in the gym.id document then show that event
 import React, { useEffect, useState } from 'react';
-import { getFirestore, doc, getDoc, collection, query, where, onSnapshot, getDocs } from 'firebase/firestore';
+import { getFirestore, doc, updateDoc, getDoc, collection, query, where, onSnapshot, arrayUnion, arrayRemove, } from 'firebase/firestore';
 import CardMedia from "@mui/material/CardMedia";
 import GoogleMapSingle from "../api/GoogleMapSingle";
 import GoogleMapsApi from "../api/GoogleMapsApi";
@@ -11,7 +11,6 @@ import {auth, db} from "../../FirebaseSetup";
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import Switch from '@mui/material/Switch';
-import { updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { useParams, Link } from 'react-router-dom';
 import Card from "@mui/material/Card";
 import CardHeader from "@mui/material/CardHeader";
@@ -25,7 +24,8 @@ import CardActions from "@mui/material/CardActions";
 import Button from "@mui/material/Button";
 import Grid from "@mui/material/Grid";
 import EditGymDetails from './EditGymDetails';
-
+import GymBannerImage from "./GymBannerImage";
+import GymBannerUpload from "./GymBannerUpload";
 
 //dialogue
 import Dialog from '@mui/material/Dialog';
@@ -135,11 +135,34 @@ const GymDetails = () => {
         setMapDialogOpen(false);
     };
 
+    const updateGymBannerUrl = async (gymId, bannerUrl) => {
+        const db = getFirestore();
+        const gymDocRef = doc(db, 'gyms', gymId);
+
+        try {
+            await updateDoc(gymDocRef, { bannerUrl });
+            console.log('Gym banner URL updated successfully');
+
+            // Fetch the updated gym data and update the state
+            const gymSnap = await getDoc(gymDocRef);
+            setGym({ id: gymId, ...gymSnap.data() });
+        } catch (error) {
+            console.error('Error updating gym banner URL:', error);
+        }
+    };
 
     return (
         <div>
             {gym ? (
                 <>
+                    <GymBannerUpload
+                        gymId={gym.id}
+                        onBannerUpload={(bannerUrl) => {
+                            console.log("Banner uploaded:", bannerUrl);
+                            updateGymBannerUrl(gym.id, bannerUrl);
+                        }}
+                    />
+                    <img src={gym.bannerUrl} alt="Gym Banner" />
                     <div>
                         <IsSubscribedSwitch
                             isSubscribed={isSubscribed}
@@ -148,13 +171,28 @@ const GymDetails = () => {
                         <span>Follow this Gym</span>
                     </div>
                     {/*<Button variant="contained" onClick={sendNotification}>Send Test Notification</Button>*/}
-                    <Typography variant={"h1"}>{gym.name}</Typography>
+                    <Grid
+                        container
+                        direction="row"
+                        justifyContent="center"
+                        alignItems="center"
+                        spacing={2}
+                    >
+                        <Grid item xs={12} sm={6}>
+                            <Typography variant={"h1"}>{gym.name}</Typography>
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                            {gym.avatarUrl ? (
+                                <Avatar alt={gym.name} src={gym.avatarUrl} />
+                            ) : null }
+                        </Grid>
+                    </Grid>
                     <p>{gym.location}</p>
                     <p>Location: {gym.address}</p>
                     {/*<Typography variant={"p"}>{gym.description}</Typography>*/}
                     <div dangerouslySetInnerHTML={{ __html: gym.description }} />
 
-                    {/*TODO: for the image gallery use the MUI Masanory card thingy https://mui.com/material-ui/react-masonry/*/}
+
 
                     <Grid >
                         <Grid item xs={12} sm={6}>
@@ -199,12 +237,8 @@ const GymDetails = () => {
                             <Grid item xs={12} sm={6} md={4} lg={3} key={event.id} sx={{ marginBottom: 2 }}>
                                 <Card sx={{ maxWidth: 768 }}>
                                     {/* Event card header */}
+                                    {/* Event card header */}
                                     <CardHeader
-                                        avatar={
-                                            <Avatar sx={{ bgcolor: red[500] }} aria-label="recipe">
-                                                {event.createdBy ? event.createdBy.charAt(0) : "X"}
-                                            </Avatar>
-                                        }
                                         action={
                                             <IconButton aria-label="settings">
                                                 <MoreVertIcon />
@@ -213,6 +247,8 @@ const GymDetails = () => {
                                         title={event.address}
                                         subheader={event.date}
                                     />
+
+
                                     {
                                         event.imageUrl ? (
                                             <CardMedia

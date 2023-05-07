@@ -20,11 +20,13 @@ import { Editor as WysiwygEditor } from 'react-draft-wysiwyg';
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
 import { convertToHTML, convertFromHTML } from 'draft-convert';
 import htmlToDraft from 'html-to-draftjs';
+import GymAvatarUpload from './GymAvatarUpload'; // Adjust the path as needed
+import GymBannerUpload from "./GymBannerUpload";
+
 // Define the HTML string you want to convert to a Draft.js ContentState
 const htmlString = '<p>Hello World!</p>';
 // Convert the HTML string to a Draft.js ContentState
 const contentState = htmlToDraft(htmlString);
-const editorState = EditorState.createEmpty();
 
 const EditGymDetails = ({ onUpdate }) => {
     const { id } = useParams();
@@ -40,6 +42,7 @@ const EditGymDetails = ({ onUpdate }) => {
         const contentState = contentBlock ? ContentState.createFromBlockArray(contentBlock.contentBlocks) : ContentState.createFromText('');
         return EditorState.createWithContent(contentState);
     });
+    const [avatarUrl, setAvatarUrl] = useState(null);
 
     const handleEditorChange = (state) => {
         setEditorState(state);
@@ -88,6 +91,7 @@ const EditGymDetails = ({ onUpdate }) => {
                 await updateDoc(gymRef, {
                     name: updatedGym.name,
                     description: contentHTML,
+                    avatarUrl: avatarUrl || gym.avatarUrl, // Add this line
                     // createdBy: uid, // Include the user's UID as a field in the document
                 });
 
@@ -98,6 +102,11 @@ const EditGymDetails = ({ onUpdate }) => {
                 console.error('Error updating gym:', error);
             }
         }
+    };
+
+    const handleAvatarUpload = (newAvatarUrl) => {
+        setAvatarUrl(newAvatarUrl);
+        setUpdatedGym({ ...updatedGym, avatarUrl: newAvatarUrl });
     };
 
 
@@ -128,8 +137,21 @@ const EditGymDetails = ({ onUpdate }) => {
                         editorState={editorState}
                         onEditorStateChange={handleEditorChange}
                     />
-
-                    {/* Add more TextField components for other gym properties here */}
+                    {(avatarUrl || gym.avatarUrl) && (
+                        <img
+                            src={`${avatarUrl || gym.avatarUrl}`}
+                            alt="Avatar"
+                            style={{ maxWidth: '100%', maxHeight: '200px' }}
+                        />
+                    )}
+                    <GymAvatarUpload gymId={gym.id} onAvatarUpload={handleAvatarUpload} />
+                    <GymBannerUpload
+                        gymId={gym.id}
+                        onBannerUpload={(bannerUrl) => {
+                            console.log("Banner uploaded:", bannerUrl);
+                            // Do something with the bannerUrl, e.g., save it to the gym document in Firestore
+                        }}
+                    />
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleClose} color="primary">

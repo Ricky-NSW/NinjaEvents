@@ -112,8 +112,9 @@ export default function NavDrawer() {
             </Box>
             <Divider />
             <DarkModeToggle />
+            {/*TODO: check wrapping on screen sizes*/}
             <MenuList>
-                <MenuItem component={Link} to="/"><MenuItemIcon><HomeIcon /></MenuItemIcon>Home</MenuItem>
+                <MenuItem  component={Link} to="/"><MenuItemIcon><HomeIcon /></MenuItemIcon>Home</MenuItem>
                 <MenuItem component={Link} to="/about"><MenuItemIcon><InfoIcon /></MenuItemIcon>About</MenuItem>
                 <MenuItem component={Link} to="/contact"><MenuItemIcon><PermContactCalendarIcon /></MenuItemIcon>Contact</MenuItem>
                 {/*Event*/}

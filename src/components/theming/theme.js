@@ -13,10 +13,11 @@ export const createThemeOptions = (mode) => ({
     },
     typography: {
         h1: {
-            fontSize: '3rem',
+            fontSize: '2.55rem',
+            fontWeight: 600,
         },
         h2: {
-            fontSize: '2.7rem',
+            fontSize: '2.45rem',
         },
         h3: {
             fontSize: '2.1rem',

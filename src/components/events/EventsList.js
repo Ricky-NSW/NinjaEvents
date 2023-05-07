@@ -7,7 +7,7 @@ import {Link} from "react-router-dom";
 //firebase
 import { db, auth } from '../../FirebaseSetup';
 import { collection, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
-import useDataLayer from '../data/DataLayer';
+import { useDataLayer } from '../data/DataLayer';
 
 //MUI
 import Card from "@mui/material/Card";

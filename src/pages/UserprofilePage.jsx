@@ -93,7 +93,7 @@ const UserprofilePage = () => {
             justifyContent="center" // Add this line to horizontally align the items
         >
             <Grid item xs={8}>
-                <Item>
+
                     <Typography
                         variant="h1"
                         component="h1"
@@ -101,16 +101,16 @@ const UserprofilePage = () => {
                     >
                         {ninjaName}
                     </Typography>
-                </Item>
+
             </Grid>
             <Grid item xs={4}>
-                <Item>
+
                     <Avatar
                         alt={ninjaName}
                         src={avatarUrl}
                         sx={{ width: 56, height: 56 }}
                     />
-                </Item>
+
             </Grid>
             <Grid item xs={12}>
                 <UpdateUserForm />
