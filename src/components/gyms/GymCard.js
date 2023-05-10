@@ -1,16 +1,23 @@
 import { Card, CardContent, Typography } from "@mui/material";
 import React from "react";
+import Grid from "@mui/material/Grid";
+import Avatar from "@mui/material/Avatar";
 
 const GymCard = ({ gym }) => (
     <>
         <a
-            href={gym.id}
+            href={`../gyms/${gym.id}`}
             target="_self"
             rel="noopener noreferrer"
             style={{ textDecoration: 'none', display: 'block', marginBottom: '16px' }}
         >
             <Card key={gym.id} style={{ marginBottom: '16px' }}>
                 <CardContent>
+                        {gym.avatarUrl ? (
+                            <Grid item xs={2} sm={6}>
+                                <Avatar alt={gym.name} src={gym.avatarUrl} />
+                            </Grid>
+                        ) : null}
                     <Typography variant="h5">{gym.name}</Typography>
                     {gym.address && (
                         <>

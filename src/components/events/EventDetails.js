@@ -14,6 +14,8 @@ import { Switch } from '@mui/material';
 import IsSubscribedSwitch from "../user/isSubscribedSwitch";
 import SubmitResultsForm from "./results/SubmitResultsForm";
 import GymCard from "../gyms/GymCard";
+import {formatDate} from '../data/formatDate';
+import LeagueCard from "../leagues/LeagueCard";
 const EventDetails = () => {
     const { id } = useParams();
     const [event, setEvent] = useState(null);
@@ -166,7 +168,24 @@ const EventDetails = () => {
         }
     }, [gyms]);
 
-    //allow user to register (subscribe) to the event
+    //The useEffect hook is used to check the subscription status when the component is loaded.
+    useEffect(() => {
+        const checkSubscriptionStatus = async () => {
+            if (auth.currentUser) {
+                const userRef = doc(getFirestore(), 'users', auth.currentUser.uid);
+                const userDoc = await getDoc(userRef);
+
+                if (userDoc.exists()) {
+                    const currentSubscriptions = userDoc.data()?.eventSubscriptions ?? [];
+                    const isUserSubscribed = currentSubscriptions.includes(id);
+                    setIsSubscribed(isUserSubscribed);
+                }
+            }
+        };
+        checkSubscriptionStatus();
+    }, [auth.currentUser, id]);
+
+    //The handleSubscription function is used to allow the user to subscribe to or unsubscribe from an event.
     const handleSubscription = async () => {
         const userRef = doc(getFirestore(), 'users', auth.currentUser.uid);
         const userDoc = await getDoc(userRef);
@@ -184,24 +203,6 @@ const EventDetails = () => {
             setIsSubscribed(!isSubscribed);
         }
     };
-
-
-    //allow user to register for an event
-    useEffect(() => {
-        const checkSubscriptionStatus = async () => {
-            if (auth.currentUser) {
-                const userRef = doc(getFirestore(), 'users', auth.currentUser.uid);
-                const userDoc = await getDoc(userRef);
-
-                if (userDoc.exists()) {
-                    const currentSubscriptions = userDoc.data()?.eventSubscriptions ?? [];
-                    const isUserSubscribed = currentSubscriptions.includes(id);
-                    setIsSubscribed(isUserSubscribed);
-                }
-            }
-        };
-        checkSubscriptionStatus();
-    }, [auth.currentUser, id]);
 
 
 // fetch subscribed users
@@ -227,25 +228,24 @@ const EventDetails = () => {
                             isSubscribed={isSubscribed}
                             handleSubscription={handleSubscription}
                         />
-                        <span>Register for this event</span>
+                        <span>Register your interests for this event</span>
                     </div>
                     <p>Description: {event.description}</p>
-                    <p>ID: {event.id}</p>
+                    <p>Date: {formatDate(event.date)}</p>
 
                     <p>Location: {event.gym.name}</p>
 
                     <h3>Event Location</h3>
                     <GymCard gym={event.gym} />
-                    {/*TODO: add the avatar for the gym*/}
 
-
-                    <h3>Event League</h3>
-                    {/*TODO: add the avatar for the league*/}
-                    <p>League name: {event.league.name}</p>
-                    <p>Description: {event.league.description}</p>
-                    <a href={`/leagues/${event.league.id}`}>View {event.league.name}</a>
-
-                    <h3>Subscribed Users</h3>
+                    {event.league ? (
+                        <>
+                            <h3>Event League</h3>
+                            <LeagueCard league={event.league} />
+                        </>
+                        ) :( <h3>This event is not part of any leagues</h3>)
+                    }
+                    <h3>See who's registered their interests:</h3>
                     <ul>
                         {subscribedUsers.map((user) => (
                             <li key={user.id}>
@@ -356,7 +356,7 @@ const EventDetails = () => {
                     </Dialog>
                     {/*//TODO: after the events date has passed show the results of the event - this needs to be a notification for the league and gym owner*/}
                     {/*//TODO: once events results have been added, they should be displayed below*/}
-                    <SubmitResultsForm eventId={event.id} />
+                    <SubmitResultsForm eventId={event.id} eventDate={event.date} />
                     <br />
                 </>
 

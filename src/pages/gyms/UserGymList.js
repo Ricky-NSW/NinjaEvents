@@ -21,7 +21,7 @@ const style = {
     p: 4,
 };
 
-function UsersGymList() {
+function UserGymList() {
     const { currentUser } = useDataLayer(); // Get currentUser from the data layer
 
     if (!currentUser) {
@@ -60,4 +60,4 @@ function UsersGymList() {
 
 
 
-export default UsersGymList;
+export default UserGymList;

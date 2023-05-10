@@ -26,6 +26,8 @@ import Grid from "@mui/material/Grid";
 import EditGymDetails from './EditGymDetails';
 import GymBannerImage from "./GymBannerImage";
 import GymBannerUpload from "./GymBannerUpload";
+import Box from '@mui/material/Box';
+import GalleryImageUpload from './GalleryImageUpload';
 
 //dialogue
 import Dialog from '@mui/material/Dialog';
@@ -155,21 +157,19 @@ const GymDetails = () => {
         <div>
             {gym ? (
                 <>
-                    <GymBannerUpload
-                        gymId={gym.id}
-                        onBannerUpload={(bannerUrl) => {
-                            console.log("Banner uploaded:", bannerUrl);
-                            updateGymBannerUrl(gym.id, bannerUrl);
-                        }}
-                    />
-                    <img src={gym.bannerUrl} alt="Gym Banner" />
-                    <div>
-                        <IsSubscribedSwitch
-                            isSubscribed={isSubscribed}
-                            handleSubscription={handlesubscribeToggle}
-                        />
-                        <span>Follow this Gym</span>
-                    </div>
+                    {gym.bannerUrl && (
+                        <Box sx={{ mx: -2, mb: 2 }}> {/* Adjust the value according to your needs */}
+                            <CardMedia
+                                component="img"
+                                alt={gym.name}
+                                height="auto"
+                                image={gym.bannerUrl}
+                                title={gym.name}
+                                sx={{ width: '100%' }}
+                            />
+                        </Box>
+                    )}
+
                     {/*<Button variant="contained" onClick={sendNotification}>Send Test Notification</Button>*/}
                     <Grid
                         container
@@ -178,17 +178,29 @@ const GymDetails = () => {
                         alignItems="center"
                         spacing={2}
                     >
-                        <Grid item xs={12} sm={6}>
+                        <Grid item xs={10} sm={6}>
                             <Typography variant={"h1"}>{gym.name}</Typography>
                         </Grid>
-                        <Grid item xs={12} sm={6}>
+                        <Grid item xs={2} sm={6}>
                             {gym.avatarUrl ? (
                                 <Avatar alt={gym.name} src={gym.avatarUrl} />
-                            ) : null }
+                            ) : null}
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                <IsSubscribedSwitch
+                                    isSubscribed={isSubscribed}
+                                    handleSubscription={handlesubscribeToggle}
+                                />
+                                <span>Follow this Gym</span>
+                            </div>
+                        </Grid>
+                        <Grid item xs={12}>
+                            <p>{gym.location}</p>
+                            <p>Location: {gym.address}</p>
+
                         </Grid>
                     </Grid>
-                    <p>{gym.location}</p>
-                    <p>Location: {gym.address}</p>
                     {/*<Typography variant={"p"}>{gym.description}</Typography>*/}
                     <div dangerouslySetInnerHTML={{ __html: gym.description }} />
 
@@ -202,6 +214,15 @@ const GymDetails = () => {
                             {/*//This component is used to control the modal which contains the gym editing form*/}
                             {/*<EditGymDetails gym={gym} onUpdate={handleGymUpdate} />*/}
                             <EditGymDetails onUpdate={handleGymUpdate} />
+                            <GymBannerUpload
+                                gymId={gym.id}
+                                onBannerUpload={(bannerUrl) => {
+                                    console.log("Banner uploaded:", bannerUrl);
+                                    updateGymBannerUrl(gym.id, bannerUrl);
+                                }}
+                            />
+                            <GalleryImageUpload gymId={gym.id} />
+
 
                         </Grid>
                     </Grid>

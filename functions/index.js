@@ -128,15 +128,15 @@ exports.processEventResults = functions.region("australia-southeast1").firestore
     });
 
 // handles images for gyms leagues and users
-exports.resizeAvatar = firebaseFunctions.storage.object().onFinalize(async (object) => {
+exports.resizeAvatar = firebaseFunctions.region("australia-southeast1").storage.object().onFinalize(async (object) => {
   const filePath = object.name;
   const fileName = path.basename(filePath);
   const tempLocalFile = path.join(os.tmpdir(), fileName);
   const tempLocalDir = path.dirname(tempLocalFile);
   const bucket = admin.storage().bucket(object.bucket);
 
-  if (!filePath.startsWith("users/uploads/") && !filePath.startsWith("gyms/uploads/")) {
-    console.log("Not an avatar image. Exiting...");
+  if (!filePath.startsWith("users/uploads/") && !filePath.startsWith("gyms/uploads/") && !filePath.startsWith("gyms/uploads/gallery/")) {
+    console.log("Not an avatar or gallery image. Exiting...");
     return null;
   }
 
@@ -149,19 +149,36 @@ exports.resizeAvatar = firebaseFunctions.storage.object().onFinalize(async (obje
 
   await fs.promises.mkdir(tempLocalDir, {recursive: true});
   await bucket.file(filePath).download({destination: tempLocalFile});
-  console.log("Avatar image downloaded locally to", tempLocalFile);
+  console.log("Image downloaded locally to", tempLocalFile);
 
-  const resizedFileName = `${fileName.split(".")[0]}_200x200.${fileName.split(".")[1]}`;
-  const tempResizedLocalFile = path.join(os.tmpdir(), resizedFileName);
-  await sharp(tempLocalFile).resize(200, 200).toFile(tempResizedLocalFile);
-  console.log("Resized avatar image created at", tempResizedLocalFile);
-  // TODO: remove POOP from URL and test where the image is appearing in storage and in prop
-  const uploadResizedFilePath = `${uploadType}/uploads/${object.metadata.uid}/poop/${resizedFileName}`;
-  await bucket.upload(tempResizedLocalFile, {destination: uploadResizedFilePath});
+  if (filePath.startsWith("gyms/uploads/gallery/")) {
+    // Resize and compress gallery images
+    const resizedFileName = `${fileName.split(".")[0]}_1024x1024.${fileName.split(".")[1]}`;
+    const tempResizedLocalFile = path.join(os.tmpdir(), resizedFileName);
+    await sharp(tempLocalFile).resize(1024, 1024, {fit: "inside"}).toFile(tempResizedLocalFile);
+    console.log("Resized gallery image created at", tempResizedLocalFile);
 
-  fs.unlinkSync(tempLocalFile);
-  fs.unlinkSync(tempResizedLocalFile);
-  console.log("Resized avatar image uploaded to", uploadResizedFilePath);
+    const uploadResizedFilePath = `${uploadType}/uploads/gallery/${object.metadata.uid}/${resizedFileName}`;
+    await bucket.upload(tempResizedLocalFile, {destination: uploadResizedFilePath});
+
+    fs.unlinkSync(tempLocalFile);
+    fs.unlinkSync(tempResizedLocalFile);
+    console.log("Resized gallery image uploaded to", uploadResizedFilePath);
+  } else {
+    // Resize avatars
+    const resizedFileName = `${fileName.split(".")[0]}_200x200.${fileName.split(".")[1]}`;
+    const tempResizedLocalFile = path.join(os.tmpdir(), resizedFileName);
+    await sharp(tempLocalFile).resize(200, 200).toFile(tempResizedLocalFile);
+    console.log("Resized avatar image created at", tempResizedLocalFile);
+
+    const uploadResizedFilePath = `${uploadType}/uploads/${object.metadata.uid}/${resizedFileName}`;
+    await bucket.upload(tempResizedLocalFile, {destination: uploadResizedFilePath});
+
+    fs.unlinkSync(tempLocalFile);
+    fs.unlinkSync(tempResizedLocalFile);
+    console.log("Resized avatar image uploaded to", uploadResizedFilePath);
+  }
 
   return null;
 });
+

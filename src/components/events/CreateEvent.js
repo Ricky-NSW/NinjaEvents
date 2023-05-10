@@ -1,23 +1,13 @@
-//TODO: set the age of the event
 
-//event needs these fields
-// import * as timers from "timers";
-//
-// name
-// gym (location)
-// league (optional)
-// date
-// time
-
-// TODO: add a createdDate prop
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 
+
 //Firebase
-import firebase, { db, auth, storage } from '../../FirebaseSetup';
-import { collection, addDoc, doc, updateDoc, getDocs,query, where } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { getDoc } from 'firebase/firestore';
+import firebase, { db, auth } from '../../FirebaseSetup';
+import { collection, addDoc, doc, updateDoc, getDocs, getDoc } from 'firebase/firestore';
+import { useDataLayer } from '../data/DataLayer';
+
 
 //autocomplete
 import Autocomplete from '@mui/material/Autocomplete';
@@ -25,13 +15,10 @@ import WysiwygEditorComponent from '../layout/tools/WysiwygEditorComponent';
 
 // MUI
 import { Box, Button, TextField } from '@mui/material';
-import IconButton from '@mui/material/IconButton';
-import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import Alert from '@mui/material/Alert';
 import { MenuItem } from '@mui/material';
 
 // MUI date
-// import { DateTimePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { DatePicker, TimePicker, DateTimePicker } from '@mui/lab';
@@ -40,6 +27,19 @@ import htmlToDraft from "html-to-draftjs";
 import Typography from "@mui/material/Typography";
 
 const CreateEvent = () => {
+    const {
+        currentUser,
+        gyms,
+        leagues,
+        events,
+        updateUserData,
+        updateUserDetailsInDB,
+        getGymById,
+        getLeagueById,
+        getEventById,
+        addEvent,
+        updateEvent,
+    } = useDataLayer();
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [price, setPrice] = useState('');
@@ -51,16 +51,8 @@ const CreateEvent = () => {
     const [showAlert, setShowAlert] = useState(false);
     const [userType, setUserType] = useState(null);
     const [dateTime, setDateTime] = useState(new Date());
-    const [leagues, setLeagues] = useState([]);
     const [selectedLeague, setSelectedLeague] = useState(null);
     const [selectedGym, setSelectedGym] = useState({});
-
-    // Fetch leagues from Firebase
-    const fetchLeagues = async () => {
-        const leaguesSnapshot = await getDocs(collection(db, 'leagues'));
-        const leaguesData = leaguesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setLeagues(leaguesData);
-    };
 
     const [editorState, setEditorState] = useState(() => {
         const contentBlock = htmlToDraft(''); // set your default HTML content here
@@ -68,13 +60,10 @@ const CreateEvent = () => {
         return EditorState.createWithContent(contentState);
     });
 
-    useEffect(() => {
-        fetchLeagues();
-    }, []);
-
     const handleSubmit = async (e) => {
+        //TODO: on submit redirect to the event page
         e.preventDefault();
-        if (!auth.currentUser) {
+        if (!gyms) {
             setError('You need to be logged in to create an event');
             return;
         }
@@ -91,7 +80,7 @@ const CreateEvent = () => {
         try {
             const uid = auth.currentUser.uid;
 
-            const docRef = await addDoc(collection(db, 'events'), {
+            const newEvent = {
                 date: dateTime.toISOString(),
                 title,
                 description,
@@ -99,18 +88,19 @@ const CreateEvent = () => {
                 age,
                 gym: {
                     id: selectedGym.id,
-                    ...selectedGym
+                    ...selectedGym,
                 },
                 createdBy: uid,
                 league: selectedLeague ? { id: selectedLeague.id, ...selectedLeague } : null,
                 name: title,
-                creationDate: new Date(),
-            });
+            };
 
-            console.log('Document written with ID: ', docRef.id);
-            await updateDoc(doc(db, 'events', docRef.id), {
-                id: docRef.id,
-            });
+            const eventId = await addEvent(newEvent); // Use addEvent function from useDataLayer
+
+            console.log('Document written with ID: ', eventId);
+
+            await updateEvent(eventId, { id: eventId }); // Use updateEvent function from useDataLayer
+
 
             // Get all users
             const usersSnapshot = await getDocs(collection(db, 'users'));
@@ -205,24 +195,6 @@ const CreateEvent = () => {
         return () => clearTimeout(timer); // Clear the timer on component unmount or when showAlert changes
     }, [showAlert]);
 
-    const [gyms, setGyms] = useState([]);
-    // ... other functions
-
-    const fetchGyms = async () => {
-        if (auth.currentUser) {
-            const uid = auth.currentUser.uid;
-            const gymsSnapshot = await getDocs(query(collection(db, 'gyms'), where('createdBy', '==', uid)));
-            const gymsData = gymsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            setGyms(gymsData);
-        }
-    };
-
-    // Fetch gyms when the user logs in
-    useEffect(() => {
-        if (auth.currentUser) {
-            fetchGyms();
-        }
-    }, [auth.currentUser]);
 
     // If there is only one gym, set it as the default address
     useEffect(() => {
@@ -274,7 +246,7 @@ const CreateEvent = () => {
                 {/*    fullWidth*/}
                 {/*/>*/}
 <Typography
-    variant="p"
+    variant="body1"
     component="p"
     style={{ marginBottom: "10px" }}
 >Event Description</Typography>
@@ -318,7 +290,7 @@ const CreateEvent = () => {
                     <TextField
                         select
                         label="Select Gym"
-                        value={selectedGym}
+                        value={selectedGym.id} // Change this line
                         onChange={(e) => {
                             const gym = gyms.find((g) => g.id === e.target.value);
                             setSelectedGym(gym);

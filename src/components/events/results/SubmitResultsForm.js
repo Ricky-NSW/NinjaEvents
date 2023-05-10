@@ -3,15 +3,18 @@ import { doc, addDoc, getDocs, collection, getFirestore } from 'firebase/firesto
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
-import FormControl from '@mui/material/FormControl';
-import FormHelperText from '@mui/material/FormHelperText';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
 
-const SubmitEventResults = ({ eventId }) => {
+const SubmitEventResults = ({ eventId, eventDate }) => {
     const [numPlaces, setNumPlaces] = useState(0);
     const [users, setUsers] = useState([]);
     const [results, setResults] = useState([]);
     const [placeFields, setPlaceFields] = useState([]);
     const [name, setName] = useState('');
+    const [open, setOpen] = useState(false);
+    const [showForm, setShowForm] = useState(false);
 
     const handleManualEnter = (index, event) => {
         const newResults = [...results];
@@ -41,7 +44,9 @@ const SubmitEventResults = ({ eventId }) => {
         setResults(newResults);
     };
 
-
+    const handleModalToggle = () => {
+        setOpen(!open);
+    };
 
 
     const resetForm = () => {
@@ -114,6 +119,18 @@ const SubmitEventResults = ({ eventId }) => {
         setPlaceFields(fields);
     }, [numPlaces, users, results]);
 
+    useEffect(() => {
+        const currentDate = new Date();
+        const eventDateObj = new Date(eventDate);
+
+        if (eventDateObj < currentDate) {
+            setShowForm(true);
+        } else {
+            setShowForm(false);
+        }
+    }, [eventDate]);
+
+
     const handleSubmit = async () => {
         // Save the form results to the event document
         const db = getFirestore();
@@ -146,29 +163,37 @@ const SubmitEventResults = ({ eventId }) => {
     };
 
 
-    return (
+    return showForm ? (
         <div>
-            <h3>Submit Event Results</h3>
-            <TextField
-            type="text"
-            size="small"
-            sx={{ m: 1, width: '25ch' }}
-            label="Title of Results (eg. Pre-teens)"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            />
-            <TextField
-                type="number"
-                size="small"
-                sx={{ m: 1, width: '25ch' }}
-                label="Number of Competitors?"
-                value={numPlaces}
-                onChange={(e) => setNumPlaces(Math.max(0, parseInt(e.target.value)))}
-            />
-            {placeFields}
-            <Button variant="contained" onClick={handleSubmit}>Submit Results</Button>
+            <Button variant="contained" onClick={handleModalToggle}>
+                Enter Results
+            </Button>
+            <Dialog open={open} onClose={handleModalToggle} fullWidth maxWidth="sm">
+                <DialogTitle>Submit Event Results</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        type="text"
+                        size="small"
+                        sx={{ m: 1, width: '25ch' }}
+                        label="Title of Results (eg. Pre-teens)"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                    />
+                    <TextField
+                        type="number"
+                        size="small"
+                        sx={{ m: 1, width: '25ch' }}
+                        label="Number of Competitors?"
+                        value={numPlaces}
+                        onChange={(e) => setNumPlaces(Math.max(0, parseInt(e.target.value)))}
+                    />
+                    {placeFields}
+                    <Button variant="contained" onClick={handleSubmit}>Submit Results</Button>
+                </DialogContent>
+            </Dialog>
         </div>
-    );
+    ) : null;
+
 };
 
 export default SubmitEventResults;

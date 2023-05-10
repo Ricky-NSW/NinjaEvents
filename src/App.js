@@ -21,11 +21,11 @@ import Contact from "./pages/Contact";
 // Events
 import EventsPage from "./pages/events/EventsPage";
 import AddEventPage from "./pages/events/AddEventPage";
-
+import UserEventList from "./pages/events/UserEventList";
 // Gyms
 import AddGymPage from "./pages/gyms/AddGymPage";
 import GymsPage from "./pages/gyms/GymsPage";
-import UsersGymList from "./pages/gyms/UsersGymList";
+import UserGymList from "./pages/gyms/UserGymList";
 import GymDetails from "./components/gyms/GymDetails";
 
 // Leagues
@@ -62,9 +62,11 @@ export default function App() {
                     <Route path="events" element={<EventsPage />} />
                     <Route path="addevent" element={<AddEventPage />} />
                     <Route exact path="/events/:id" element={<EventDetails />} />
+                    <Route path="/events/manage-events" element={<UserEventList />} />
+
                     {/*---------Gym Pages*/}
                     <Route path="gyms" element={<GymsPage />} />
-                    <Route path="/gyms/manage-gyms" element={<UsersGymList />} />
+                    <Route path="/gyms/manage-gyms" element={<UserGymList />} />
                     <Route path="create-gym" element={<AddGymPage />} />
                     <Route exact path="/gyms/:id" element={<GymDetails />} />
                     {/* -------League Pages*/}

@@ -130,6 +130,8 @@ export default function NavDrawer() {
                     {userDetails.managedGyms.length !== 0 && (
                         <MenuItem component={Link} to="/addevent"><MenuItemIcon><EmojiEventsIcon /></MenuItemIcon>Add an Event</MenuItem>
                     )}
+                        <MenuItem component={Link} to="/events/manage-events"><MenuItemIcon><EmojiEventsIcon /></MenuItemIcon>Manage events at your Gym</MenuItem>
+
                         {/*// if userDetails.managedGym is equal to or less than 0 then show the add gym menu item*/}
                         {/*// if userDetails.managedGym is equal 1 then show the menu item linking to their gym*/}
                         {userDetails.managedGyms.length === 1 && (

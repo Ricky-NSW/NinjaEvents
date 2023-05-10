@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
 import { db } from '../../FirebaseSetup';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { getFirestore, doc, onSnapshot, updateDoc, collection, query, } from 'firebase/firestore';
+import { getFirestore, doc, onSnapshot, updateDoc, collection, query, addDoc } from 'firebase/firestore';
 
 // Creating a data layer context
 export const DataLayerContext = createContext();
@@ -16,6 +16,7 @@ const DataLayer = ({ children }) => {
     const [leagues, setLeagues] = useState([]);
     const [events, setEvents] = useState([]);
     const [currentUser, setCurrentUser] = useState(null);
+    const memoizedCurrentUser = useMemo(() => currentUser, [currentUser]);
 
     const fetchGyms = () => {
         const gymsRef = collection(db, 'gyms');
@@ -75,6 +76,26 @@ const DataLayer = ({ children }) => {
         const event = events.find((e) => e.id === eventId);
         return event;
     };
+
+    const addEvent = async (eventData) => {
+        const eventRef = collection(db, 'events');
+        const docRef = await addDoc(eventRef, eventData);
+        return docRef.id;
+    };
+
+    const updateEvent = async (eventId, eventData) => {
+        const eventDocRef = doc(db, 'events', eventId);
+
+        try {
+            await updateDoc(eventDocRef, eventData);
+            console.log("Event updated successfully");
+        } catch (error) {
+            console.error("Error updating event: ", error);
+            throw error;
+        }
+    };
+
+
 
 
     const updateUserData = async (userId, updatedData) => {
@@ -141,7 +162,7 @@ const DataLayer = ({ children }) => {
     }, []);
 
     const value = {
-        currentUser,
+        currentUser: memoizedCurrentUser,
         gyms,
         leagues,
         events,
@@ -150,6 +171,8 @@ const DataLayer = ({ children }) => {
         getGymById,
         getLeagueById,
         getEventById,
+        addEvent,
+        updateEvent,
     };
 
 
