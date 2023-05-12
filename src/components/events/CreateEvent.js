@@ -1,30 +1,38 @@
-
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-
+import { stateToHTML } from 'draft-js-export-html';
 
 //Firebase
 import firebase, { db, auth } from '../../FirebaseSetup';
 import { collection, addDoc, doc, updateDoc, getDocs, getDoc } from 'firebase/firestore';
 import { useDataLayer } from '../data/DataLayer';
 
-
 //autocomplete
 import Autocomplete from '@mui/material/Autocomplete';
-import WysiwygEditorComponent from '../layout/tools/WysiwygEditorComponent';
 
 // MUI
-import { Box, Button, TextField } from '@mui/material';
+import { Box, Button, TextField, Typography, MenuItem } from '@mui/material';
 import Alert from '@mui/material/Alert';
-import { MenuItem } from '@mui/material';
 
 // MUI date
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers';
-import { DatePicker, TimePicker, DateTimePicker } from '@mui/lab';
-import { Editor, EditorState, ContentState, convertToRaw } from "draft-js";
-import htmlToDraft from "html-to-draftjs";
-import Typography from "@mui/material/Typography";
+import { DateTimePicker } from '@mui/x-date-pickers';
+
+//wysiwyg
+// import { EditorState, ContentState } from 'draft-js';
+import WysiwygEditorComponent from '../layout/tools/WysiwygEditorComponent';
+import { EditorState, ContentState } from 'draft-js';
+import htmlToDraft from 'html-to-draftjs';
+import draftToHtml from 'draftjs-to-html';
+import { convertToRaw } from 'draft-js';
+
+
+// import { stateToHTML } from 'draft-js-export-html';
+// import htmlToDraft from 'html-to-draftjs';
+
+// const htmlString = '<p>Hello World!</p>';
+// const contentState = htmlToDraft(htmlString);
 
 const CreateEvent = () => {
     const {
@@ -52,13 +60,25 @@ const CreateEvent = () => {
     const [userType, setUserType] = useState(null);
     const [dateTime, setDateTime] = useState(new Date());
     const [selectedLeague, setSelectedLeague] = useState(null);
-    const [selectedGym, setSelectedGym] = useState({});
+    const [selectedGym, setSelectedGym] = useState(null);
+    const [updatedEvent, setUpdatedEvent] = useState(null);
 
-    const [editorState, setEditorState] = useState(() => {
-        const contentBlock = htmlToDraft(''); // set your default HTML content here
-        const contentState = contentBlock ? ContentState.createFromBlockArray(contentBlock.contentBlocks) : ContentState.createFromText('');
-        return EditorState.createWithContent(contentState);
-    });
+
+    const [editorState, setEditorState] = useState(
+        EditorState.createWithContent(
+            ContentState.createFromBlockArray(
+                htmlToDraft('').contentBlocks
+            )
+        )
+    );
+
+    const handleEditorChange = (state) => {
+        setEditorState(state);
+        const contentHTML = draftToHtml(convertToRaw(state.getCurrentContent()));
+        setUpdatedEvent({ ...updatedEvent, description: contentHTML });
+    };
+
+
 
     const handleSubmit = async (e) => {
         //TODO: on submit redirect to the event page
@@ -83,21 +103,19 @@ const CreateEvent = () => {
             const newEvent = {
                 date: dateTime.toISOString(),
                 title,
-                description,
+                description: updatedEvent.description, // Use updatedEvent.description instead of description
                 price,
                 age,
-                gym: {
-                    id: selectedGym.id,
-                    ...selectedGym,
-                },
+                gym: selectedGym.id,
                 createdBy: uid,
                 league: selectedLeague ? { id: selectedLeague.id, ...selectedLeague } : null,
                 name: title,
             };
 
+
             const eventId = await addEvent(newEvent); // Use addEvent function from useDataLayer
 
-            console.log('Document written with ID: ', eventId);
+            console.log('Document written with: ', newEvent);
 
             await updateEvent(eventId, { id: eventId }); // Use updateEvent function from useDataLayer
 
@@ -123,9 +141,6 @@ const CreateEvent = () => {
         }
     };
 
-    const handleEditorChange = (state) => {
-        setEditorState(state);
-    };
 
     const handlePlacesChanged = () => {
         if (searchBox) {
@@ -245,11 +260,11 @@ const CreateEvent = () => {
                 {/*    required*/}
                 {/*    fullWidth*/}
                 {/*/>*/}
-<Typography
-    variant="body1"
-    component="p"
-    style={{ marginBottom: "10px" }}
->Event Description</Typography>
+                <Typography
+                    variant="body1"
+                    component="p"
+                    style={{ marginBottom: "10px" }}
+                >Event Description</Typography>
                 <WysiwygEditorComponent
                     editorState={editorState}
                     onEditorStateChange={handleEditorChange}
@@ -290,7 +305,7 @@ const CreateEvent = () => {
                     <TextField
                         select
                         label="Select Gym"
-                        value={selectedGym.id} // Change this line
+                        value={selectedGym?.id || ""}
                         onChange={(e) => {
                             const gym = gyms.find((g) => g.id === e.target.value);
                             setSelectedGym(gym);

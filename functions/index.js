@@ -5,13 +5,13 @@ const functions = require("firebase-functions");
 const {get} = require("lodash");
 const admin = require("firebase-admin");
 
-const firebaseFunctions = require("firebase-functions");
 const sharp = require("sharp");
 const path = require("path");
 const os = require("os");
 const fs = require("fs");
 
 admin.initializeApp();
+
 
 // notify users when a new event is created
 exports.createNotificationOnEventCreate = functions.region("australia-southeast1").firestore
@@ -128,7 +128,8 @@ exports.processEventResults = functions.region("australia-southeast1").firestore
     });
 
 // handles images for gyms leagues and users
-exports.resizeAvatar = firebaseFunctions.region("australia-southeast1").storage.object().onFinalize(async (object) => {
+exports.resizeAvatar = functions.region("australia-southeast1").storage.object().onFinalize(async (object) => {
+
   const filePath = object.name;
   const fileName = path.basename(filePath);
   const tempLocalFile = path.join(os.tmpdir(), fileName);
@@ -180,5 +181,32 @@ exports.resizeAvatar = firebaseFunctions.region("australia-southeast1").storage.
   }
 
   return null;
+});
+
+exports.scheduledFunction = functions.pubsub.schedule("0 20 * * *").timeZone("Australia/Sydney").onRun(async (context) => {
+  // Your code to check Firestore documents and trigger actions based on the date
+
+  const firestore = admin.firestore();
+  const now = new Date();
+
+  // Query events with a date field that match the current date
+  const querySnapshot = await firestore.collection("events")
+      .where("date", "<=", now)
+      .get();
+
+  // Start a new batch
+  const batch = admin.firestore().batch();
+
+  querySnapshot.forEach((doc) => {
+    const eventData = doc.data();
+    // Update the event document with the status field set to 'expired'
+    const eventRef = firestore.collection("events").doc(doc.id);
+    batch.update(eventRef, {status: "expired"});
+  });
+
+  // Commit the batch
+  await batch.commit();
+
+  console.log("Updated events with expired dates");
 });
 

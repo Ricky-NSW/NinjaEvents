@@ -5,187 +5,48 @@
 // TODO: allow the gym manager to add a register for this event button which linkns away to the official page
 //TODO can we careate a calendar file from the event
 import React, { useEffect, useState } from 'react';
-import {Link, useParams} from 'react-router-dom';
-import {getFirestore, doc, getDoc, updateDoc, getDocs, query, collection, where} from 'firebase/firestore';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material';
+import { Link, useParams } from 'react-router-dom';
+import { Button } from '@mui/material';
+import { useDataLayer } from '../data/DataLayer';
 import Autocomplete from "@mui/material/Autocomplete";
-import {auth, db} from "../../FirebaseSetup";
 import { Switch } from '@mui/material';
 import IsSubscribedSwitch from "../user/isSubscribedSwitch";
 import SubmitResultsForm from "./results/SubmitResultsForm";
 import GymCard from "../gyms/GymCard";
-import {formatDate} from '../data/formatDate';
 import LeagueCard from "../leagues/LeagueCard";
+import {formatDate} from '../data/formatDate';
+import EditEventDetails from './EditEventDetails';
+
+import {getFirestore, doc, getDoc, updateDoc, getDocs, query, collection, where} from 'firebase/firestore';
+import {auth} from "../../FirebaseSetup";
+
 const EventDetails = () => {
     const { id } = useParams();
+    const { events, gyms, leagues, currentUser, getEventById, getGymById, getLeagueById } = useDataLayer();
     const [event, setEvent] = useState(null);
     const [open, setOpen] = useState(false); // state for dialog open/closed
-    const [updatedEvent, setUpdatedEvent] = useState({}); // state for updated event data
-    const [address, setAddress] = useState({ name: "", address: "", lat: null, lng: null });
     const [searchBox, setSearchBox] = useState(null);
-    const [gyms, setGyms] = useState([]);
     const [error, setError] = useState("");
-    const [leagues, setLeagues] = useState([]);
     const [isSubscribed, setIsSubscribed] = useState(false);
     const [subscribedUsers, setSubscribedUsers] = useState([]);
+    const [editEventOpen, setEditEventOpen] = useState(false); // state for edit event dialog open/closed
+    const [selectedEvent, setSelectedEvent] = useState(null); // state for selected event to edit
+    const [gym, setGym] = useState(null); // Add a state for the gym data
+    const [league, setLeague] = useState(null); // Add a state for the league data
 
     useEffect(() => {
-        const eventRef = doc(getFirestore(), 'events', id);
-        const getEvent = async () => {
-            const eventDoc = await getDoc(eventRef);
-            if (eventDoc.exists()) {
-                setEvent(eventDoc.data());
-            }
-        };
-        getEvent();
-    }, [id]);
-
-    //get the league information, so we can check if the user is a league admin
-    //because league admins can edit events if the league is assigned to the event
-    useEffect(() => {
-        const leaguesRef = collection(getFirestore(), 'leagues');
-        const getLeagues = async () => {
-            const leaguesSnapshot = await getDocs(leaguesRef);
-            const leaguesData = leaguesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            setLeagues(leaguesData);
-        };
-        getLeagues();
-    }, []);
-
-    const handleOpen = () => {
-        // set the updated event data to the current event data
-        setUpdatedEvent(event);
-        setOpen(true);
-    };
-
-    const handleClose = () => {
-        setOpen(false);
-    };
-
-    const handleInputChange = (event) => {
-        // update the updated event data when the user changes an input field
-        const { name, value } = event.target;
-        if (name === "gymName") {
-            setUpdatedEvent((prev) => ({ ...prev, gym: { ...prev.gym, name: value } }));
-        } else {
-            setUpdatedEvent((prev) => ({ ...prev, [name]: value }));
+        const event = getEventById(id);
+        setEvent(event);
+        if (event && event.gym && event.league) { // Add a conditional check for event.gym and event.league
+            const gymData = getGymById(event.gym.id); // Fetch the gym data using the gym ID from the event data
+            const leagueData = getLeagueById(event.league.id); // Fetch the league data using the league ID from the event data
+            setGym(gymData); // Update the gym state with the fetched gym data
+            setLeague(leagueData); // Update the league state with the fetched league data
         }
-    };
+    }, [id, getEventById, getGymById, getLeagueById]);
 
-    const handleSaveChanges = async () => {
-        const eventRef = doc(getFirestore(), 'events', id);
-        const eventDoc = await getDoc(eventRef);
-        const eventData = eventDoc.data();
 
-        // Check if the user is the creator of the event
-        if (auth.currentUser.uid === eventData.createdBy) {
-            // Save the updated event data to Firestore
-            // Save the updated event data to Firestore with the updated gym data
-            await updateDoc(eventRef, {
-                ...updatedEvent,
-                gym: {
-                    name: address.name,
-                    address: address.address,
-                    latitude: address.lat,
-                    longitude: address.lng,
-                },
-            });
-            setEvent({
-                ...updatedEvent,
-                gym: {
-                    name: address.name,
-                    address: address.address,
-                    latitude: address.lat,
-                    longitude: address.lng,
-                },
-            });
-
-            setOpen(false);
-        } else {
-            // Check if the user is an admin of the league assigned to the event
-            const leagueRef = doc(getFirestore(), 'leagues', eventData.league.id);
-            const leagueDoc = await getDoc(leagueRef);
-            const leagueData = leagueDoc.data();
-            if (leagueData.admins.includes(auth.currentUser.uid)) {
-                // Save the updated event data to Firestore
-                await updateDoc(eventRef, updatedEvent);
-                setEvent(updatedEvent);
-                setOpen(false);
-            } else {
-                // Display an error message and prevent the user from saving the changes
-                setError("You do not have permission to edit this event.");
-            }
-        }
-    };
-
-    const handlePlacesChanged = () => {
-        if (searchBox) {
-            const place = searchBox.getPlaces()[0];
-            if (place) {
-                setAddress({
-                    address: place.formatted_address,
-                    lat: place.geometry.location.lat(),
-                    lng: place.geometry.location.lng(),
-                });
-            }
-        }
-    };
-
-    const handleAddressChange = (e) => {
-        const value = e.target.value;
-
-        if (!value) {
-            setError("Please enter a gym address");
-            setAddress({ name: "", address: "", lat: null, lng: null });
-            return;
-        }
-
-        setAddress(value);
-        setError("");
-    };
-
-//This component fetches information from the 'gyms' collection in Firebase Firestore. Specifically, the fetchGyms function fetches gym documents created by the currently logged-in user:
-    const fetchGyms = async () => {
-        if (auth.currentUser) {
-            const uid = auth.currentUser.uid;
-            const gymsSnapshot = await getDocs(query(collection(db, 'gyms'), where('createdBy', '==', uid)));
-            const gymsData = gymsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            setGyms(gymsData);
-        }
-    };
-
-    // Fetch gyms when the user logs in
-    useEffect(() => {
-        if (auth.currentUser) {
-            fetchGyms();
-        }
-    }, [auth.currentUser]);
-
-    // If there is only one gym, set it as the default address
-    useEffect(() => {
-        if (gyms.length === 1) {
-            setAddress(gyms[0]);
-        }
-    }, [gyms]);
-
-    //The useEffect hook is used to check the subscription status when the component is loaded.
-    useEffect(() => {
-        const checkSubscriptionStatus = async () => {
-            if (auth.currentUser) {
-                const userRef = doc(getFirestore(), 'users', auth.currentUser.uid);
-                const userDoc = await getDoc(userRef);
-
-                if (userDoc.exists()) {
-                    const currentSubscriptions = userDoc.data()?.eventSubscriptions ?? [];
-                    const isUserSubscribed = currentSubscriptions.includes(id);
-                    setIsSubscribed(isUserSubscribed);
-                }
-            }
-        };
-        checkSubscriptionStatus();
-    }, [auth.currentUser, id]);
-
-    //The handleSubscription function is used to allow the user to subscribe to or unsubscribe from an event.
+    //allow user to register (subscribe) to the event
     const handleSubscription = async () => {
         const userRef = doc(getFirestore(), 'users', auth.currentUser.uid);
         const userDoc = await getDoc(userRef);
@@ -205,6 +66,24 @@ const EventDetails = () => {
     };
 
 
+    //allow user to register for an event
+    useEffect(() => {
+        const checkSubscriptionStatus = async () => {
+            if (auth.currentUser) {
+                const userRef = doc(getFirestore(), 'users', auth.currentUser.uid);
+                const userDoc = await getDoc(userRef);
+
+                if (userDoc.exists()) {
+                    const currentSubscriptions = userDoc.data()?.eventSubscriptions ?? [];
+                    const isUserSubscribed = currentSubscriptions.includes(id);
+                    setIsSubscribed(isUserSubscribed);
+                }
+            }
+        };
+        checkSubscriptionStatus();
+    }, [auth.currentUser, id]);
+
+
 // fetch subscribed users
     const fetchSubscribedUsers = async () => {
         const usersSnapshot = await getDocs(query(collection(getFirestore(), 'users'), where('eventSubscriptions', 'array-contains', id)));
@@ -217,6 +96,18 @@ const EventDetails = () => {
     }, [id]);
 
 
+    const handleOpen = (event) => {
+        setSelectedEvent(event);
+        setEditEventOpen(true);
+    };
+
+    const handleEditEventClose = () => {
+        setSelectedEvent(null);
+        setEditEventOpen(false);
+    };
+
+    {event && <div>{console.log("event league", event.league.id)}</div>}
+
     return (
         <>
         <div>
@@ -228,24 +119,22 @@ const EventDetails = () => {
                             isSubscribed={isSubscribed}
                             handleSubscription={handleSubscription}
                         />
-                        <span>Register your interests for this event</span>
+                        <span>Register for this event</span>
                     </div>
                     <p>Description: {event.description}</p>
                     <p>Date: {formatDate(event.date)}</p>
 
-                    <p>Location: {event.gym.name}</p>
+                    {/*<p>Location: {gym.name}</p>*/}
 
+                    <p>Location: {gym && gym.name}</p> {/* Replace the static gym name with the fetched gym data */}
                     <h3>Event Location</h3>
-                    <GymCard gym={event.gym} />
+                    {gym && <GymCard gym={gym} />} {/* Render the GymCard component only if gym data is available */}
 
-                    {event.league ? (
-                        <>
-                            <h3>Event League</h3>
-                            <LeagueCard league={event.league} />
-                        </>
-                        ) :( <h3>This event is not part of any leagues</h3>)
-                    }
-                    <h3>See who's registered their interests:</h3>
+
+                    <h3>Event League</h3>
+                    {/*league card goes here*/}
+                    {league && <LeagueCard league={league} />} {/* Render the GymCard component only if league data is available */}
+                    <h3>Subscribed Users</h3>
                     <ul>
                         {subscribedUsers.map((user) => (
                             <li key={user.id}>
@@ -255,108 +144,33 @@ const EventDetails = () => {
                     </ul>
 
                     <hr />
-                    <Button variant="contained" onClick={handleOpen}>Edit</Button>
+                    <EditEventDetails
+                        open={editEventOpen}
+                        handleClose={handleEditEventClose}
+                        event={event}
+                        gym={gym}
+                        leagues={leagues}
+                    />
 
-                    {/*This is the dialogue that allows the Gym owner or the league admin to edit the events*/}
-                    <Dialog open={open} onClose={handleClose}>
-                        <DialogTitle>Edit Event Details</DialogTitle>
-                        <DialogContent>
-                            <TextField
-                                name="title"
-                                label="Title"
-                                value={updatedEvent.title || ''}
-                                onChange={handleInputChange}
-                            />
-                            <TextField
-                                name="gymName"
-                                label="Event Location"
-                                value={updatedEvent.gym ? updatedEvent.gym.name : ''}
-                                onChange={handleInputChange}
-                            />
-                            <TextField
-                                name="description"
-                                label="Description"
-                                value={updatedEvent.description || ''}
-                                onChange={handleInputChange}
-                            />
-                            <TextField
-                                name="price"
-                                label="Price"
-                                value={updatedEvent.price || ''}
-                                onChange={handleInputChange}
-                            />
-                            <TextField
-                                name="age"
-                                label="Age"
-                                value={updatedEvent.age || ''}
-                                onChange={handleInputChange}
-                            />
-                            {/*Assign a gym*/}
-                            <Autocomplete
-                                options={gyms}
-                                getOptionLabel={(option) => option.name}
-                                value={address}
-                                onChange={(event, newValue) =>
-                                    setAddress(
-                                        newValue
-                                            ? {
-                                                name: newValue.name,
-                                                address: newValue.address,
-                                                lat: newValue.latitude,
-                                                lng: newValue.longitude,
-                                            }
-                                            : { name: "", address: "", lat: null, lng: null }
-                                    )
-                                }
-                                fullWidth
-                                data-lpignore="true"
-                                renderInput={(params) => (
-                                    <TextField
-                                        {...params}
-                                        label="Gym"
-                                        variant="outlined"
-                                        value={address.name} // Use the gym's name from the address state
-                                        onChange={handleAddressChange}
-                                        margin="normal"
-                                        required
-                                        fullWidth
-                                    />
-                                )}
-                            />
-
-                            {/*//Assign a league*/}
-                            <Autocomplete
-                                options={leagues}
-                                getOptionLabel={(option) => option.name}
-                                value={updatedEvent.league || null}
-                                onChange={(event, newValue) =>
-                                    setUpdatedEvent((prev) => ({
-                                        ...prev,
-                                        league: newValue ? newValue : null
-                                    }))
-                                }
-                                fullWidth
-                                data-lpignore="true"
-                                renderInput={(params) => (
-                                    <TextField
-                                        {...params}
-                                        label="League"
-                                        variant="outlined"
-                                        value={updatedEvent.league ? updatedEvent.league.name : 'null'}
-                                        margin="normal"
-                                        fullWidth
-                                    />
-                                )}
-                            />
-                        </DialogContent>
-                        <DialogActions>
-                            <Button onClick={handleClose}>Cancel</Button>
-                            <Button onClick={handleSaveChanges}>Save Changes</Button>
-                        </DialogActions>
-                    </Dialog>
                     {/*//TODO: after the events date has passed show the results of the event - this needs to be a notification for the league and gym owner*/}
                     {/*//TODO: once events results have been added, they should be displayed below*/}
                     <SubmitResultsForm eventId={event.id} eventDate={event.date} />
+                    {event.results ? (
+                        <>
+                        <h3>Event Results</h3>
+                        <ul>
+                            {event.results.map((result) => (
+                                <li key={result.id}>
+                                    <Link to={`/users/${result.id}`}>{result.ninjaName || result.displayName || result.email}</Link>
+                                </li>
+                            ))}
+                        </ul>
+                        </>
+                    ) : (
+                        <p>No results yet</p>
+                    )}
+                    <hr />
+
                     <br />
                 </>
 

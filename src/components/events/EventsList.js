@@ -1,13 +1,12 @@
 //TODO: make it so that you need to be logged in to click and see more event details, hide the 'learn more' button - also add something to the event details page so that not logged in users cant see the page
 //TODO: sort events by date - most recent first
-
 import React, { useState, useEffect } from 'react';
 import {Link} from "react-router-dom";
 
 //firebase
 import { db, auth } from '../../FirebaseSetup';
 import { collection, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
-import { useDataLayer } from '../data/DataLayer';
+import { useDataLayer } from '../data/DataLayer'; // import useDataLayer hook
 
 //MUI
 import Card from "@mui/material/Card";
@@ -56,22 +55,25 @@ const EventsContainer = styled(Container)`
 
 // TODO: make it so that only gym owners can create events
 
-const EventsList = ({events, noFilter} ) => {
-
+const EventsList = ({ events = [], noFilter }) => {  // set a default value of an empty array to events
+    const dataLayer = useDataLayer();  // use the hook here
+    const { getGymById, currentUser } = dataLayer; // destructure getGymById and currentUser from dataLayer
     const [search, setSearch] = useState(''); // Add this state
-    const [filteredEvents, setFilteredEvents] = useState(events); // Add this state
-    const { currentUser } = useDataLayer();
+    const [filteredEvents, setFilteredEvents] = useState([]); // initialize with an empty array
     const userType = currentUser ? currentUser.userType : null;
 
     useEffect(() => {
-        setFilteredEvents(
-            events
-                .filter((event) =>
-                    event.title.toLowerCase().includes(search.toLowerCase())
-                )
-                .sort((a, b) => new Date(b.date) - new Date(a.date)) // Add this line for sorting
-        );
+        if (events.length > 0) { // check if events is not empty
+            setFilteredEvents(
+                events
+                    .filter((event) =>
+                        event.title.toLowerCase().includes(search.toLowerCase())
+                    )
+                    .sort((a, b) => new Date(b.date) - new Date(a.date))
+            );
+        }
     }, [search, events]);
+
 
 
     const handleSearch = (e) => {
@@ -79,13 +81,14 @@ const EventsList = ({events, noFilter} ) => {
     };
 
     const handleDelete = async (id) => {
-        const docRef = doc(db, 'events', id);
-        await deleteDoc(docRef);
+        // const docRef = doc(db, 'events', id);
+        // await deleteDoc(docRef);
     };
 
-    console.log("Events in EventsList:", {events})
 
-    return (
+        // const gym = getGymById(event.gym?.id);
+
+        return (
         <>
             {/*//Search*/}
             {noFilter ? null :
@@ -109,7 +112,7 @@ const EventsList = ({events, noFilter} ) => {
             <Container maxWidth={false} disableGutters>
                 <Box>
                     <Grid container spacing={2} justifyContent="center">
-                        {filteredEvents.map((event) => (
+                        {filteredEvents && filteredEvents.map((event) => (
                             <Grid item xs={12} sm={6} md={4} lg={3} key={event.id}>
                                 <Card sx={{ maxWidth: 768 }}>
                                     <CardHeader
@@ -140,8 +143,9 @@ const EventsList = ({events, noFilter} ) => {
                                     }
                                     <CardContent>
                                         <Typography gutterBottom variant="h5" component="div">
-                                            <Link component={Link} to={`/events/` + (event.id)} size="small">{event.title}</Link>
+                                            <Link to={`/events/${event.id}`} size="small">{event.title}</Link>
                                         </Typography>
+
                                         <Typography variant="body2" color="text.secondary">
                                             {event.description}
 
@@ -150,10 +154,10 @@ const EventsList = ({events, noFilter} ) => {
                                             {/*    : description;}*/}
                                         </Typography>
                                         <Typography>
-                                            <span>Gym: {event.gym.name}</span>
+                                            <span>Gym: {getGymById(event.gym?.id)?.name || 'No gym found'}</span>
                                         </Typography>
                                         <Typography>
-                                            <span>League: {event.league.name}</span>
+                                            {/*<span>League: {event.league.name}</span>*/}
                                         </Typography>
                                         <Typography>
                                             <span>Price: {event.price}</span>
@@ -185,15 +189,9 @@ const EventsList = ({events, noFilter} ) => {
                     </Grid>
                 </Box>
             </Container>
-
-
-        <EventsContainer>
-            <Stack spacing={2}>
-
-            </Stack>
-        </EventsContainer>
             </>
-    );
-};
+        );
+    };
+
 
 export default EventsList;

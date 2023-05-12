@@ -1,13 +1,12 @@
-import React, { useRef, useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React from 'react';
+import { useDataLayer } from '../../components/data/DataLayer';  // Import the hook
 
 //Firebase
-import { db } from '../../FirebaseSetup';
+// import { db } from '../../FirebaseSetup'; // No longer needed
 
 //MUI
 import EventsList from "../../components/events/EventsList";
 import GoogleMapArray from '../../components/api/GoogleMapArray';
-
 
 const style = {
     position: 'absolute',
@@ -20,28 +19,26 @@ const style = {
     boxShadow: 24,
     p: 4,
 };
+
 function EventsPage() {
+    const { events } = useDataLayer();  // Get events from the DataLayer
 
-    const [events, setEvents] = useState([]);
-    const mapRef = useRef(null);
-    const libraries = ["places"];
+    // useEffect(() => {
+    //     const eventsRef = db.collection('events');
+    //     const unsubscribe = eventsRef.onSnapshot((snapshot) => {
+    //         const eventsArray = snapshot.docs.map((doc) => ({
+    //             id: doc.id,
+    //             ...doc.data(),
+    //         }));
+    //         setEvents(eventsArray);
+    //     });
+    //     // Remove the event listener when the component unmounts
+    //     return () => {
+    //         unsubscribe();
+    //     };
+    // }, []);  // No longer needed to fetch events from Firestore directly
 
-    useEffect(() => {
-        const eventsRef = db.collection('events');
-        const unsubscribe = eventsRef.onSnapshot((snapshot) => {
-            const eventsArray = snapshot.docs.map((doc) => ({
-                id: doc.id,
-                ...doc.data(),
-            }));
-            setEvents(eventsArray);
-        });
-        // Remove the event listener when the component unmounts
-        return () => {
-            unsubscribe();
-        };
-    }, []);
-
-    console.log("Events in EventsPage:", {events});
+    console.log("Events in EventsPage:", { events });
 
     return (
         <div>

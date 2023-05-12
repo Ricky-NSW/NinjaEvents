@@ -9,7 +9,7 @@ import {
 } from '@mui/material';
 import { getFirestore, updateDoc, doc, getDoc } from 'firebase/firestore';
 import { useParams } from 'react-router-dom';
-
+import GymBannerUpload from './GymBannerUpload';
 //wysiwyg https://www.npmjs.com/package/react-mui-draft-wysiwyg
 import WysiwygEditorComponent from '../layout/tools/WysiwygEditorComponent';
 
@@ -21,7 +21,6 @@ import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
 import { convertToHTML, convertFromHTML } from 'draft-convert';
 import htmlToDraft from 'html-to-draftjs';
 import GymAvatarUpload from './GymAvatarUpload'; // Adjust the path as needed
-import GymBannerUpload from "./GymBannerUpload";
 
 // Define the HTML string you want to convert to a Draft.js ContentState
 const htmlString = '<p>Hello World!</p>';
@@ -111,7 +110,7 @@ const EditGymDetails = ({ onUpdate }) => {
 
 
     if (!gym) {
-        return <div>Loading...</div>;
+        return <div>Loading Gym Information...</div>;
     }
 
     return (
