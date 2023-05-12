@@ -1,6 +1,6 @@
 // TODO: show current standings for leagues user is following
 import { useState, useEffect, useContext } from 'react';
-import EventCard from '../components/events/eventCard';
+import EventCard from '../components/events/EventCard';
 import { List } from '@mui/material';
 import AuthContext from '../contexts/AuthContext';
 import { useDataLayer } from '../components/data/DataLayer';

@@ -52,7 +52,7 @@ function GymsPage() {
 
     return (
         <div>
-            <h2>scraper</h2>
+            {/*<h2>scraper</h2>*/}
             {/*<GymScraper />*/}
 
             <h1>Gyms</h1>
