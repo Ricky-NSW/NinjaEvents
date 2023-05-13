@@ -38,7 +38,7 @@ function EventsPage() {
     //     };
     // }, []);  // No longer needed to fetch events from Firestore directly
 
-    console.log("Events in EventsPage:", { events });
+    // console.log("Events in EventsPage:", { events });
 
     return (
         <div>

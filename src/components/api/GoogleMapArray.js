@@ -15,6 +15,7 @@ function GoogleMapArray({ markers, onMapLoad, nestedGym}) {
     ), [markers, nestedGym]);
 
 
+    console.log("Map Options:", mapOptions); // Check the mapOptions object in the console
 
     const fitBounds = () => {
         if (!mapRef.current || markerPositions.length === 0) return;
@@ -24,16 +25,19 @@ function GoogleMapArray({ markers, onMapLoad, nestedGym}) {
             bounds.extend({ lat: position.lat, lng: position.lng });
         });
 
+        console.log("Bounds:", bounds); // Check the bounds object in the console
+
         if (mapRef.current) {
             mapRef.current.fitBounds(bounds);
         }
     };
 
 
+
 //Please note that React might warn you about including mapRef.current in the dependency array, as it's generally not recommended to include mutable values in dependency arrays. However, in this case, we want to call fitBounds whenever the GoogleMap instance (i.e., mapRef.current) is available, so it's necessary to include it.
     useEffect(() => {
         if (mapRef.current) {
-            fitBounds();
+            setTimeout(fitBounds, 200);
         }
     }, [markers, mapRef.current, markerPositions]);
 
@@ -60,8 +64,11 @@ function GoogleMapArray({ markers, onMapLoad, nestedGym}) {
     const handleMapLoad = useCallback((map) => {
         mapRef.current = map;
         onMapLoad && onMapLoad(map);
-        fitBounds();  // Call fitBounds here
+        fitBounds(); // Call fitBounds here
+
+        console.log("Map Reference:", mapRef.current); // Log the mapRef.current value
     }, [onMapLoad, fitBounds]);
+
 
     return (
         <>

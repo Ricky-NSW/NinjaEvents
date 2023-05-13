@@ -1,5 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useDataLayer } from '../data/DataLayer';
+import { doc, getDoc } from "firebase/firestore";
 
 import styled from 'styled-components';
 import { auth } from '../../FirebaseSetup';
@@ -31,24 +34,32 @@ const EventsContainer = styled(Container)`
   }
 `
 
+
 const formatDate = (date) => {
     const options = { day: 'numeric', month: 'long', year: 'numeric' };
     return new Date(date).toLocaleDateString(undefined, options);
 };
 
-const EventCard = ({ event, handleDelete, getGymById, userType }) => {
-    console.log('avatar for event list', getGymById(event.gym)?.avatarUrl)
+const EventCard = ({ event, handleDelete, userType }) => {
+    const { gyms, leagues } = useDataLayer();
+
+    // Find the gym with the same id as event.gym.id
+    const gym = gyms.find(gym => event.gym?.id === gym.id);
+
+    // Find the league with the same id as event.league.id
+    const league = leagues.find(league => event.league?.id === league.id);
+
 
     return (
         <Grid item xs={12} sm={6} md={4} lg={3} key={event.id}>
             <Card sx={{ maxWidth: 768 }}>
                 <CardHeader
                     avatar={
-                        getGymById(event.gym)?.avatarUrl ? (
+                        gym && gym?.avatarUrl ? (
                             <Grid item xs={2} sm={6}>
                                 <Avatar
-                                    alt={getGymById(event.gym)?.name}
-                                    src={getGymById(event.gym)?.avatarUrl}
+                                    alt={gym?.name}
+                                    src={gym.avatarUrl}
                                 />
                             </Grid>
                         ) : null
@@ -72,8 +83,13 @@ const EventCard = ({ event, handleDelete, getGymById, userType }) => {
                         <Link to={`/events/${event.id}`} size="small">{event.title}</Link>
                     </Typography>
                     <Typography>
-                        <span>Gym: {getGymById(event.gym)?.name || 'No gym found'}</span>
+                        <span>Gym: {gym?.name || 'No gym found'}</span>
                     </Typography>
+                    {league?.name && (
+                        <Typography>
+                            <span>League: {league?.name || 'No gym found'}</span>
+                        </Typography>
+                    )}
                     <Typography>
                         {/*<span>League: {event.league.name}</span>*/}
                     </Typography>

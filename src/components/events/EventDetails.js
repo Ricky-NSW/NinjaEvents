@@ -37,13 +37,18 @@ const EventDetails = () => {
     useEffect(() => {
         const event = getEventById(id);
         setEvent(event);
-        if (event && event.gym && event.league) { // Add a conditional check for event.gym and event.league
-            const gymData = getGymById(event.gym.id); // Fetch the gym data using the gym ID from the event data
-            const leagueData = getLeagueById(event.league.id); // Fetch the league data using the league ID from the event data
-            setGym(gymData); // Update the gym state with the fetched gym data
-            setLeague(leagueData); // Update the league state with the fetched league data
+        if (event && event.gym && event.league) {
+            if (event.gym.id) {
+                const gymData = getGymById(event.gym.id);
+                setGym(gymData);
+            } else {
+                setGym(null);
+            }
+            const leagueData = getLeagueById(event.league.id);
+            setLeague(leagueData);
         }
     }, [id, getEventById, getGymById, getLeagueById]);
+
 
 
     //allow user to register (subscribe) to the event
@@ -68,20 +73,25 @@ const EventDetails = () => {
 
     //allow user to register for an event
     useEffect(() => {
-        const checkSubscriptionStatus = async () => {
-            if (auth.currentUser) {
-                const userRef = doc(getFirestore(), 'users', auth.currentUser.uid);
-                const userDoc = await getDoc(userRef);
-
-                if (userDoc.exists()) {
-                    const currentSubscriptions = userDoc.data()?.eventSubscriptions ?? [];
-                    const isUserSubscribed = currentSubscriptions.includes(id);
-                    setIsSubscribed(isUserSubscribed);
-                }
+        const event = getEventById(id);
+        setEvent(event);
+        if (event) {
+            if (event.gym && event.gym.id) {
+                const gymData = getGymById(event.gym.id);
+                setGym(gymData);
+            } else {
+                setGym(null);
             }
-        };
-        checkSubscriptionStatus();
-    }, [auth.currentUser, id]);
+            if (event.league && event.league.id) {
+                const leagueData = getLeagueById(event.league.id);
+                setLeague(leagueData);
+            } else {
+                setLeague(null);
+            }
+        }
+    }, [id, getEventById, getGymById, getLeagueById]);
+
+
 
 
 // fetch subscribed users
@@ -106,7 +116,7 @@ const EventDetails = () => {
         setEditEventOpen(false);
     };
 
-    {event && <div>{console.log("event league", event.league.id)}</div>}
+    // {event && <div>{console.log("event league", event.league.id)}</div>}
 
     return (
         <>
@@ -121,27 +131,42 @@ const EventDetails = () => {
                         />
                         <span>Register for this event</span>
                     </div>
-                    <p>Description: {event.description}</p>
+                    <p>Description: <span dangerouslySetInnerHTML={{ __html: event.description }}></span></p>
                     <p>Date: {formatDate(event.date)}</p>
 
                     {/*<p>Location: {gym.name}</p>*/}
 
-                    <p>Location: {gym && gym.name}</p> {/* Replace the static gym name with the fetched gym data */}
-                    <h3>Event Location</h3>
-                    {gym && <GymCard gym={gym} />} {/* Render the GymCard component only if gym data is available */}
 
+                    {gym ? (
+                        <>
+                            <h3>Event Location</h3>
+                            <GymCard gym={gym} />
+                        </>
+                        )   : (
+                        <p>No Location has been set for this event, please contact the event organiser for details</p>
+                    )}
 
-                    <h3>Event League</h3>
-                    {/*league card goes here*/}
-                    {league && <LeagueCard league={league} />} {/* Render the GymCard component only if league data is available */}
-                    <h3>Subscribed Users</h3>
-                    <ul>
-                        {subscribedUsers.map((user) => (
-                            <li key={user.id}>
-                                <Link to={`/users/${user.id}`}>{user.ninjaName || user.displayName || user.email}</Link>
-                            </li>
-                        ))}
-                    </ul>
+                    {league ? (
+                            <>
+                                <h3>League</h3>
+                                <LeagueCard league={league} />
+                            </>
+                        )  : (
+                        <p><i>This event is not associated with any leagues.</i></p>
+                        )}
+
+                    {subscribedUsers.length > 0 && (
+                        <>
+                            <h3>Subscribed Users</h3>
+                            <ul>
+                                {subscribedUsers.map((user) => (
+                                    <li key={user.id}>
+                                        <Link to={`/users/${user.id}`}>{user.ninjaName || user.displayName || user.email}</Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        </>
+                    )}
 
                     <hr />
                     <EditEventDetails

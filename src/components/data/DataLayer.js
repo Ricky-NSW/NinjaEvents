@@ -33,6 +33,7 @@ const DataLayer = ({ children }) => {
         return unsubscribeGyms;
     };
 
+    //TODO: do i need this?
     const getGymById = (gymId) => {
         const gym = gyms.find((g) => g.id === gymId);
         return gym;
