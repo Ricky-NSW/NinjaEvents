@@ -60,6 +60,7 @@ const EventCard = ({ event, handleDelete, userType }) => {
                                 <Avatar
                                     alt={gym?.name}
                                     src={gym.avatarUrl}
+                                    //TODO: Add a primary color border
                                 />
                             </Grid>
                         ) : null

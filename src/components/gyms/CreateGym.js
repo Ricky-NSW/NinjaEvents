@@ -45,6 +45,7 @@ function CreateGym() {
     const [isApiLoaded, setIsApiLoaded] = useState(false);
     const [loadError, setLoadError] = useState(null);
     const navigate = useNavigate();
+    const [area, setArea] = useState('');
 
     // const [editorState, setEditorState] = useState(EditorState.createEmpty());
 
@@ -84,6 +85,12 @@ function CreateGym() {
 
         if (!address.lat || !address.lng) {
             setError('Please select a valid address from the search box');
+            return;
+        }
+
+        // Add a validation for Area
+        if (!area) {
+            setError('Area is required');
             return;
         }
 
@@ -207,6 +214,12 @@ function CreateGym() {
         setError('');
     };
 
+    // Handle function for Area input
+    const handleAreaChange = (e) => {
+        setArea(e.target.value);
+        setError('');
+    };
+
     const handleCloseAlert = () => {
         setShowAlert(false);
     };
@@ -240,6 +253,16 @@ function CreateGym() {
                         fullWidth
                     />
                 </StandaloneSearchBox>
+
+                <TextField
+                    label="Area (help people find your Gym)"
+                    value={area}
+                    variant="outlined"
+                    onChange={handleAreaChange}
+                    margin="normal"
+                    required
+                    fullWidth
+                />
 
                 <IconButton color="primary" aria-label="upload picture" component="label">
                     <input hidden accept="image/*" type="file" onChange={handleImageChange} />
