@@ -1,3 +1,4 @@
+// TODO: Change the filter to use the suburb and country fields from the gym
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useDataLayer } from '../data/DataLayer';

@@ -107,11 +107,15 @@ function CreateGym() {
                 name: gymName,
                 ownerUid: currentUser.uid,
                 address: address.address,
+                suburb: address.suburb,
+                state: address.state,
+                country: address.country,
                 latitude: address.lat,
                 longitude: address.lng,
                 description: contentHTML,
                 createdBy: uid // Include the user's UID as a field in the document
             });
+
 
 
 
@@ -168,14 +172,35 @@ function CreateGym() {
         if (searchBox) {
             const place = searchBox.getPlaces()[0];
             if (place) {
+                let suburb = '';
+                let state = '';
+                let country = '';
+                for (let i = 0; i < place.address_components.length; i++) {
+                    const component = place.address_components[i];
+                    switch (component.types[0]) {
+                        case 'locality':
+                            suburb = component.long_name;
+                            break;
+                        case 'administrative_area_level_1':
+                            state = component.long_name;
+                            break;
+                        case 'country':
+                            country = component.long_name;
+                            break;
+                    }
+                }
                 setAddress({
                     address: place.formatted_address,
+                    suburb,
+                    state,
+                    country,
                     lat: place.geometry.location.lat(),
                     lng: place.geometry.location.lng(),
                 });
             }
         }
     };
+
 
     useEffect(() => {
         const fetchUserType = async () => {

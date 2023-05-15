@@ -56,9 +56,7 @@ function UserEventList() {
 
                     <Stack direction="column" spacing={2}>
                         {filteredEvents.map((event) => (
-                            <Link key={event.id} to={`/events/${event.id}`}>
-                                <EventCard id={event.id} event={event} />
-                            </Link>
+                            <EventCard id={event.id} event={event} />
                         ))}
                     </Stack>
                 </div>

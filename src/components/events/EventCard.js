@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useDataLayer } from '../data/DataLayer';
 import { doc, getDoc } from "firebase/firestore";
+import { CardActionArea } from '@mui/material';
 
 import styled from 'styled-components';
 import { auth } from '../../FirebaseSetup';
@@ -51,6 +52,8 @@ const EventCard = ({ event, handleDelete, userType }) => {
 
 
     return (
+        // <Link to={`/gyms/${gym.id}`} size="small">{gym.name}>
+            <CardActionArea component={Link} to={`/events/${event.id}`}>
         <Grid item xs={12} sm={6} md={4} lg={3} key={event.id}>
             <Card sx={{ maxWidth: 768 }}>
                 <CardHeader
@@ -75,30 +78,28 @@ const EventCard = ({ event, handleDelete, userType }) => {
                             title="green iguana"
                             type="image"
                         />
-                    ) : (
-                        null
-                    )
+                    ) : null
                 }
                 <CardContent>
                     <Typography gutterBottom variant="h5" component="div">
                         <Link to={`/events/${event.id}`} size="small">{event.title}</Link>
                     </Typography>
                     <Typography>
-                        <span>Gym: {gym?.name || 'No gym found'}</span>
+                        Gym: <Link to={`/gyms/${gym.id}`} size="small">{gym.name}</Link>
                     </Typography>
                     {league?.name && (
                         <Typography>
-                            <span>League: {league?.name || 'No gym found'}</span>
+                            League: <Link to={`/leagues/${league?.id}`} size="small">{league.name}</Link>
                         </Typography>
                     )}
                     <Typography>
                         {/*<span>League: {event.league.name}</span>*/}
                     </Typography>
                     <Typography>
-                        <span>Price: {event.price}</span>
+                        Price: {event.price}
                     </Typography>
                     <Typography>
-                        <span>Age: {event.age}</span>
+                        Age: {event.age}
                         {/*{event.GeoPoint.latitude} {event.GeoPoint.longitude}*/}
                     </Typography>
                 </CardContent>
@@ -120,6 +121,7 @@ const EventCard = ({ event, handleDelete, userType }) => {
                 </CardActions>
             </Card>
         </Grid>
+            </CardActionArea>
     );
 };
 

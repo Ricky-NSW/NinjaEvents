@@ -1,3 +1,4 @@
+// TODO: redirect to the event on submit
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { stateToHTML } from 'draft-js-export-html';
@@ -155,19 +156,23 @@ const CreateEvent = () => {
 
 
     useEffect(() => {
+        let isMounted = true; // add a flag
         const fetchUserType = async () => {
             if (auth.currentUser) {
                 const userDocRef = doc(db, 'users', auth.currentUser.uid);
                 const userDoc = await getDoc(userDocRef);
 
-                if (userDoc.exists()) {
+                if (userDoc.exists() && isMounted) { // check if component is still mounted
                     setUserType(userDoc.data().userType);
                 }
             }
         };
-
         fetchUserType();
+        return () => {
+            isMounted = false; // cleanup sets flag to false on unmount
+        };
     }, []);
+
 
 
     const handleTitleChange = (e) => {
