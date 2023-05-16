@@ -1,3 +1,4 @@
+//TODO: remove h1 and h2 from text editor etc
 import React, { Component } from 'react';
 import { EditorState, ContentState, convertToRaw } from 'draft-js';
 import { Editor } from 'react-draft-wysiwyg';

@@ -6,6 +6,7 @@ import reportWebVitals from './reportWebVitals';
 import AuthProvider from './components/user/AuthProvider';
 import GoogleMapsApi from "../src/components/api/GoogleMapsApi";
 import DataLayer from "./components/data/DataLayer";
+import reducer, { initialState } from './components/data/reducer';
 
 //import theme
 import { ThemeProvider, createTheme } from '@mui/material/styles'; // Add createTheme import here
@@ -29,7 +30,7 @@ const Root = () => {
     return (
         <React.StrictMode>
             <AuthProvider>
-                <DataLayer>
+                <DataLayer initialState={initialState} Reducer={reducer}>
                     <ThemeContext.Provider value={{ darkMode, toggleDarkMode }}>
                         <ThemeProvider theme={theme}>
                             <CssBaseline />

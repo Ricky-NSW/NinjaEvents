@@ -6,10 +6,7 @@
 //TODO can we careate a calendar file from the event
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { Button } from '@mui/material';
 import { useDataLayer } from '../data/DataLayer';
-import Autocomplete from "@mui/material/Autocomplete";
-import { Switch } from '@mui/material';
 import IsSubscribedSwitch from "../user/isSubscribedSwitch";
 import SubmitResultsForm from "./results/SubmitResultsForm";
 import GymCard from "../gyms/GymCard";
@@ -20,7 +17,20 @@ import EditEventDetails from './EditEventDetails';
 import {getFirestore, doc, getDoc, updateDoc, getDocs, query, collection, where} from 'firebase/firestore';
 import {auth} from "../../FirebaseSetup";
 
-const EventDetails = () => {
+//mui
+import { Card, CardHeader, Avatar, IconButton, CardMedia, CardContent, Typography, CardActions, Button } from '@mui/material';
+
+import DeleteIcon from '@mui/icons-material/Delete';
+import styled from "styled-components";
+
+
+const EventDelete = styled(Button)`
+  margin: 0 0 0 1rem;
+  padding: 0;
+  min-width: 16px;
+`
+
+const EventDetails = ( userType, handleDelete, ) => {
     const { id } = useParams();
     const { events, gyms, leagues, currentUser, getEventById, getGymById, getLeagueById } = useDataLayer();
     const [event, setEvent] = useState(null);
@@ -176,6 +186,19 @@ const EventDetails = () => {
                         gym={gym}
                         leagues={leagues}
                     />
+
+
+                    {auth.currentUser && (auth.currentUser.uid === event.createdBy || userType === "Admin") ? (
+                        <EventDelete
+                            onClick={() => handleDelete(event.id)}
+                            size="small"
+                            color="error"
+                            variant="outlined"
+                        >
+                            <DeleteIcon />
+                        </EventDelete>
+                    ) : null}
+
 
                     {/*//TODO: after the events date has passed show the results of the event - this needs to be a notification for the league and gym owner*/}
                     {/*//TODO: once events results have been added, they should be displayed below*/}

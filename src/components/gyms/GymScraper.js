@@ -23,35 +23,49 @@ const GymScraper = () => {
     };
 
     const callback = (results, status) => {
-        const locationData = [];
         if (status === window.google.maps.places.PlacesServiceStatus.OK) {
-            results.forEach((place) => {
-                const service = new window.google.maps.places.PlacesService(
-                    document.createElement('div')
-                );
-                service.getDetails({ placeId: place.place_id }, (details, status) => {
-                    if (
-                        status === window.google.maps.places.PlacesServiceStatus.OK &&
-                        details.website
-                    ) {
-                        locationData.push({
-                            name: details.name,
-                            address: details.formatted_address,
-                            // id: place.place_id,
-                            latitude: place. geometry.location.lat(),
-                            longitude: place.geometry.location.lng(),
-                            country: details.address_components.find(component => component.types.includes('country')).long_name,
-                            state: details.address_components.find(component => component.types.includes('administrative_area_level_1')).long_name,
-                            website: details.website,
-                        });
-                    }
-                    setGyms(locationData);
+            const promises = results.map((place) => {
+                return new Promise((resolve, reject) => {
+                    const service = new window.google.maps.places.PlacesService(
+                        document.createElement('div')
+                    );
+                    service.getDetails({ placeId: place.place_id }, (details, status) => {
+                        if (
+                            status === window.google.maps.places.PlacesServiceStatus.OK &&
+                            details.website
+                        ) {
+                            const countryComponent = details.address_components.find(component => component.types.includes('country'));
+                            const stateComponent = details.address_components.find(component => component.types.includes('administrative_area_level_1'));
+                            const locationData = {
+                                name: details.name,
+                                address: details.formatted_address,
+                                latitude: place.geometry.location.lat(),
+                                longitude: place.geometry.location.lng(),
+                                country: countryComponent ? countryComponent.long_name : '',
+                                state: stateComponent ? stateComponent.long_name : '',
+                                website: details.website,
+                                ownerUid: 'b3WAv23SnxcPsyGE5TOKsGhilIY2',
+                            };
+                            resolve(locationData);
+                        } else {
+                            reject('An error occurred while fetching the data');
+                        }
+                    });
                 });
             });
+
+            Promise.all(promises)
+                .then((data) => {
+                    setGyms(data);
+                })
+                .catch((error) => {
+                    console.error(error);
+                });
         } else {
             console.error('An error occurred while fetching the data');
         }
     };
+
 
     const handleSaveToFirestore = () => {
         gyms.forEach((gym) => {

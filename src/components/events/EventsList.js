@@ -1,4 +1,3 @@
-// TODO: Change the filter to use the suburb and country fields from the gym
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useDataLayer } from '../data/DataLayer';
@@ -14,7 +13,8 @@ const EventsList = ({ events = [], filterDisabled }) => {
     const [gymSearch, setGymSearch] = useState('');
     const [selectedGym, setSelectedGym] = useState(null);
     const [ageSearch, setAgeSearch] = useState('');
-    const [suburbSearch, setSuburbSearch] = useState('');
+    const [stateSearch, setStateSearch] = useState('');
+    const [countrySearch, setCountrySearch] = useState('');
     const [filteredEvents, setFilteredEvents] = useState([]);
 
     useEffect(() => {
@@ -30,28 +30,28 @@ const EventsList = ({ events = [], filterDisabled }) => {
                             ? eventGym && eventGym.name.toLowerCase().includes(selectedGym.name.toLowerCase())
                             : true;
 
-
-
                         // Filter by event age
                         const ageMatch = ageSearch
                             ? event.age.toString() === ageSearch
                             : true;
 
-                        // Filter by suburb
-                        const suburbMatch = suburbSearch
-                            ? eventGym && eventGym.address.split(',')[1]?.trim().toLowerCase() === suburbSearch.toLowerCase()
+                        // Filter by state
+                        const stateMatch = stateSearch
+                            ? eventGym && eventGym.state.toLowerCase() === stateSearch.toLowerCase()
+                            : true;
+
+                        // Filter by country
+                        const countryMatch = countrySearch
+                            ? eventGym && eventGym.country.toLowerCase() === countrySearch.toLowerCase()
                             : true;
 
                         // Return true if all conditions are met
-                        return gymMatch && ageMatch && suburbMatch;
+                        return gymMatch && ageMatch && stateMatch && countryMatch;
                     })
                     .sort((a, b) => new Date(b.date) - new Date(a.date))
             );
         }
-    }, [selectedGym, ageSearch, suburbSearch, events, gyms]);
-
-
-
+    }, [selectedGym, ageSearch, stateSearch, countrySearch, events, gyms]);
 
     // Get gyms that are assigned to an event
     const eventGyms = useMemo(() => {
@@ -71,31 +71,29 @@ const EventsList = ({ events = [], filterDisabled }) => {
         return uniqueGyms;
     }, [events, gyms]);
 
-
-
-
     // Get ages from events
     const eventAges = useMemo(() => Array.from(new Set(events.map(event => event.age.toString()))), [events]);
-    // Get suburbs from gyms
-    // sort alphabetically
-    const eventSuburbs = useMemo(() => Array.from(new Set(gyms.map(gym => gym.address.split(',')[1]?.trim()))).sort(), [gyms]);
-    // const eventSuburbs = useMemo(() => Array.from(new Set(gyms.map(gym => gym.address.split(',')[1]?.trim()))), [gyms]);
+
+    // Get states from gyms
+    const eventStates = useMemo(() => Array.from(new Set(gyms.map(gym => gym.state))).sort(), [gyms]);
+
+    // Get countries from gyms
+    const eventCountries = useMemo(() => Array.from(new Set(gyms.map(gym => gym.country))).sort(), [gyms]);
 
     return (
         <>
             {!filterDisabled && (
                 <>
                     <Autocomplete
-                        options={eventGyms}
-                        getOptionLabel={(option) => option.name}
-                        getOptionSelected={(option, value) => option.key === value.key}
-                        value={selectedGym}
-                        onChange={(event, newValue) => setSelectedGym(newValue)}
+                        options={eventStates}
+                        getOptionLabel={(option) => option}
+                        value={stateSearch}
+                        onChange={(event, newValue) => setStateSearch(newValue || '')}
                         fullWidth
                         renderInput={(params) => (
                             <TextField
                                 {...params}
-                                label="Search gyms"
+                                label="Search state"
                                 fullWidth
                                 margin="normal"
                                 variant="outlined"
@@ -104,15 +102,15 @@ const EventsList = ({ events = [], filterDisabled }) => {
                     />
 
                     <Autocomplete
-                        options={eventSuburbs}
+                        options={eventCountries}
                         getOptionLabel={(option) => option}
-                        value={suburbSearch}
-                        onChange={(event, newValue) => setSuburbSearch(newValue || '')}
+                        value={countrySearch}
+                        onChange={(event, newValue) => setCountrySearch(newValue || '')}
                         fullWidth
                         renderInput={(params) => (
                             <TextField
                                 {...params}
-                                label="Search suburb"
+                                label="Search country"
                                 fullWidth
                                 margin="normal"
                                 variant="outlined"

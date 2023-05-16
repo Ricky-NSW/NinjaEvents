@@ -4,131 +4,100 @@
 // TODO: check through all events, look for events with the gym array. if an event has this gym's id in the gym.id document then show that event
 import React, { useEffect, useState } from 'react';
 import { getFirestore, doc, updateDoc, getDoc, collection, query, where, onSnapshot, arrayUnion, arrayRemove, } from 'firebase/firestore';
-import CardMedia from "@mui/material/CardMedia";
 import GoogleMapSingle from "../api/GoogleMapSingle";
+import { useDataLayer } from '../data/DataLayer';
+
 import GoogleMapsApi from "../api/GoogleMapsApi";
 import {auth, db} from "../../FirebaseSetup";
+import { useDataLayerValue } from '../data/DataLayer'; // or wherever your DataLayer.js file is located
+
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import Switch from '@mui/material/Switch';
 import { useParams, Link } from 'react-router-dom';
 import Card from "@mui/material/Card";
 import CardHeader from "@mui/material/CardHeader";
-import Avatar from "@mui/material/Avatar";
 import {red} from "@mui/material/colors";
 import IconButton from "@mui/material/IconButton";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import CardContent from "@mui/material/CardContent";
-import Typography from "@mui/material/Typography";
 import CardActions from "@mui/material/CardActions";
-import Button from "@mui/material/Button";
-import Grid from "@mui/material/Grid";
-import EditGymDetails from './EditGymDetails';
 import GymBannerImage from "./GymBannerImage";
-import GymBannerUpload from "./GymBannerUpload";
-import Box from '@mui/material/Box';
-import GalleryImageUpload from './GalleryImageUpload';
-
-//dialogue
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
 
 //notifications
 import { requestNotificationPermission } from '../messaging/fcm';
 import IsSubscribedSwitch from "../user/isSubscribedSwitch";
+import EventCard from "../events/EventCard";
 
+import { Box, Grid, Typography, Avatar, Button, Dialog, DialogTitle, DialogContent, CardMedia } from '@material-ui/core';
+import EditGymDetails from './EditGymDetails';
+import GymBannerUpload from './GymBannerUpload';
+import GalleryImageUpload from './GalleryImageUpload';
 
-// GymDetails component
 const GymDetails = () => {
-    const { id } = useParams();
-    const [gym, setGym] = useState(null);
-    const [isSubscribed, setIsSubscribed] = useState(false);
-    const [events, setEvents] = useState([]);
-    const [mapDialogOpen, setMapDialogOpen] = useState(false);
-    // const [editDialogOpen, setEditDialogOpen] = useState(false);
+    // Using custom hook to access the data layer
+    const { events, currentUser, getGymById, gyms, updateGymBannerUrl } = useDataLayer();
 
-    // Fetch gym data from Firestore using gym ID
+    // Getting gym ID from the URL params
+    const { id } = useParams();
+    // Local state to hold current gym details
+    const [isSubscribed, setIsSubscribed] = useState(false);
+    const [mapDialogOpen, setMapDialogOpen] = useState(false);
+
+    // Local state to hold current gym details
+    const [gym, setGym] = useState(null);
+
     useEffect(() => {
         const fetchGym = async () => {
-            const gymRef = doc(getFirestore(), 'gyms', id);
-            const gymDoc = await getDoc(gymRef);
-            if (gymDoc.exists()) {
-                setGym({ id, ...gymDoc.data() });
+            console.log(id);
+
+            // Getting gym details by ID
+            const gymDetails = await getGymById(id);
+            setGym(gymDetails);
+
+            // Checking if the user is subscribed to the gym
+            if (currentUser && gymDetails && gymDetails.subscribers.includes(currentUser.id)) {
+                setIsSubscribed(true);
             }
         };
 
         fetchGym();
-    }, [id]);
-
-    // Fetch events associated with the gym from Firestore
-    useEffect(() => {
-        const fetchEvents = async () => {
-            const db = getFirestore();
-            const eventsRef = collection(db, 'events');
-            const q = query(eventsRef, where('gym.id', '==', id));
-
-            const unsubscribe = onSnapshot(q, (querySnapshot) => {
-                const eventsData = [];
-                querySnapshot.forEach((doc) => {
-                    eventsData.push({ id: doc.id, ...doc.data() });
-                });
-                setEvents(eventsData);
-            });
-
-            return () => unsubscribe();
-        };
-
-        fetchEvents();
-    }, [id]);
+    }, [gyms, id, currentUser, getGymById]);
 
 
-    // Check if the user is subscribed to this gym
-    useEffect(() => {
-        const checkSubscribedGym = async () => {
-            if (auth.currentUser) {
-                const userRef = doc(getFirestore(), "users", auth.currentUser.uid);
-                const userDoc = await getDoc(userRef);
 
-                if (userDoc.exists()) {
-                    const subscribedGyms = userDoc.data().subscribedGyms || [];
-                    setIsSubscribed(subscribedGyms.some(gym => gym.id === id));
-                }
-            }
-        };
-
-
-        checkSubscribedGym();
-    }, [id, auth.currentUser]);
-
-    // Handle subscribed/unsubscribed gym toggle
-    const handlesubscribeToggle = async () => {
+    const handleSubscribeToggle = async () => {
+        // Toggle subscription status
         setIsSubscribed(!isSubscribed);
-        const userRef = doc(getFirestore(), "users", auth.currentUser.uid);
-        const gymRef = doc(getFirestore(), "gyms", id);
-        const gymDoc = await getDoc(gymRef);
-        const gymName = gymDoc.data().name;
 
-        if (!isSubscribed) {
-            await updateDoc(userRef, {
-                subscribedGyms: arrayUnion({ id, name: gymName }),
+        // Updating 'subscribedGyms' in the user document
+        const userDoc = doc(db, 'users', currentUser.uid); // 'users' should be replaced with your user collection name
+        if(!isSubscribed){
+            await updateDoc(userDoc, {
+                subscribedGyms: arrayUnion(id)
             });
         } else {
-            await updateDoc(userRef, {
-                subscribedGyms: arrayRemove({ id, name: gymName }),
+            await updateDoc(userDoc, {
+                subscribedGyms: arrayRemove(id)
             });
         }
     };
 
-    const handleGymUpdate = async () => {
-        // Fetch the updated gym data and update the state
-        const gymRef = doc(getFirestore(), 'gyms', id);
-        const gymSnap = await getDoc(gymRef);
-        setGym(gymSnap.data());
+
+    // Function to check if a user is subscribed to a gym.
+    const isUserSubscribedToGym = (gymId) => {
+        if (!currentUser) return false; // If no user is logged in, return false.
+        // Check if the gym's subscribers array includes the current user's id.
+        const gym = gyms.find((g) => g.id === gymId);
+        return gym.subscribers.includes(currentUser.uid);
     };
 
+    const handleGymUpdate = (updatedGym) => {
+        // Update gym state with the updated gym details
+        setGym(updatedGym);
+        // TODO: Implement method to update gym details in the database
+    };
 
-    // Functions to open and close the map dialog
     const openMapDialog = () => {
         setMapDialogOpen(true);
     };
@@ -137,21 +106,7 @@ const GymDetails = () => {
         setMapDialogOpen(false);
     };
 
-    const updateGymBannerUrl = async (gymId, bannerUrl) => {
-        const db = getFirestore();
-        const gymDocRef = doc(db, 'gyms', gymId);
-
-        try {
-            await updateDoc(gymDocRef, { bannerUrl });
-            console.log('Gym banner URL updated successfully');
-
-            // Fetch the updated gym data and update the state
-            const gymSnap = await getDoc(gymDocRef);
-            setGym({ id: gymId, ...gymSnap.data() });
-        } catch (error) {
-            console.error('Error updating gym banner URL:', error);
-        }
-    };
+    console.log('evvent deails gym', gym)
 
     return (
         <div>
@@ -190,23 +145,20 @@ const GymDetails = () => {
                             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                                 <IsSubscribedSwitch
                                     isSubscribed={isSubscribed}
-                                    handleSubscription={handlesubscribeToggle}
+                                    handleSubscription={handleSubscribeToggle}
                                 />
                                 <span>Follow this Gym</span>
                             </div>
                         </Grid>
                         <Grid item xs={12}>
-                            <p>{gym.location}</p>
-                            <p>Location: {gym.address}</p>
+                            <Typography>{gym.location}</Typography>
+                            <Typography>Location: {gym.address}</Typography>
 
                         </Grid>
                     </Grid>
                     {/*<Typography variant={"p"}>{gym.description}</Typography>*/}
                     <div dangerouslySetInnerHTML={{ __html: gym.description }} />
-
-
-
-                    <Grid >
+                    <Grid>
                         <Grid item xs={12} sm={6}>
                             <Button variant="contained" onClick={openMapDialog}>Show Map</Button>
                         </Grid>
@@ -222,12 +174,8 @@ const GymDetails = () => {
                                 }}
                             />
                             <GalleryImageUpload gymId={gym.id} />
-
-
                         </Grid>
                     </Grid>
-
-
                     <Dialog
                         open={mapDialogOpen}
                         onClose={closeMapDialog}
@@ -245,79 +193,24 @@ const GymDetails = () => {
 
                 </>
             ) : (
-                <p>Loading gym details...</p>
+                <Typography>Loading gym details...</Typography>
             )}
 
             {/* Display events associated with the gym */}
 
             {/*//TODO: wrap this in a ternary so that it only shows if there are events*/}
             {events.length > 0 ? (
-                events.map((event) => (
-                    <>
-                        {events.map((event) => (
-                            <Grid item xs={12} sm={6} md={4} lg={3} key={event.id} sx={{ marginBottom: 2 }}>
-                                <Card sx={{ maxWidth: 768 }}>
-                                    {/* Event card header */}
-                                    {/* Event card header */}
-                                    <CardHeader
-                                        action={
-                                            <IconButton aria-label="settings">
-                                                <MoreVertIcon />
-                                            </IconButton>
-                                        }
-                                        title={event.address}
-                                        subheader={event.date}
-                                    />
-
-
-                                    {
-                                        event.imageUrl ? (
-                                            <CardMedia
-                                                sx={{ height: 140 }}
-                                                image={event.imageUrl}
-                                                title="green iguana"
-                                                type="image"
-                                            />
-                                        ) : (
-                                            null
-                                        )
-                                    }
-                                    {/* Event details */}
-                                    {/*TODO: make this card a component and pass the data as props*/}
-                                    <CardContent>
-                                        <Typography gutterBottom variant="h5" component="div">
-                                            <Link component={Link} to={`/events/` + (event.id)} size="small">{event.title}</Link>
-                                        </Typography>
-                                        <Typography variant="body2" color="text.secondary">
-                                            {event.description}
-
-                                            {/*{description.length > maxLength*/}
-                                            {/*    ? description.substring(0, maxLength) + '...'*/}
-                                            {/*    : description;}*/}
-                                        </Typography>
-                                        <Typography>
-                                            <span>Gym: {event.gym.name}</span>
-                                        </Typography>
-                                        <Typography>
-                                            <span>Price: {event.price}</span>
-                                        </Typography>
-                                        <Typography>
-                                            <span>Age: {event.age}</span>
-                                            {/*{event.GeoPoint.latitude} {event.GeoPoint.longitude}*/}
-                                        </Typography>
-                                    </CardContent>
-                                    <CardActions>
-                                        <Button size="small">Share</Button>
-                                        <Button component={Link} to={`/events/` + (event.id)} size="small">Learn More</Button>
-                                    </CardActions>
-                                </Card>
-                            </Grid>
-                        ))}
-                    </>
+                events.filter(event => event.gym.id === id).map((event) => (
+                    <EventCard
+                        key={event.id}
+                        event={event}
+                        hideGym={true}
+                    />
                 ))
             ) : (
-                <p>No events found for this gym.</p>
+                <Typography>No upcoming events at this gym.</Typography>
             )}
+
 
 
 

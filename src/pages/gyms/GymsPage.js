@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import GymsScraper from '../../components/gyms/GymScraper';
+import GymScraper from '../../components/gyms/GymScraper';
 
 //Firebase
 import { db } from '../../FirebaseSetup';
@@ -9,7 +9,6 @@ import { db } from '../../FirebaseSetup';
 import GymsList from "../../components/gyms/GymsList";
 import GoogleMapArray from '../../components/api/GoogleMapArray';
 import GoogleMapsApi from "../../components/api/GoogleMapsApi";
-import GymScraper from "../../components/gyms/GymScraper";
 import {useDataLayer} from "../../components/data/DataLayer";
 
 
@@ -52,8 +51,8 @@ function GymsPage() {
 
     return (
         <div>
-            {/*<h2>scraper</h2>*/}
-            {/*<GymScraper />*/}
+            <h2>scraper</h2>
+            <GymScraper />
 
             <h1>Gyms</h1>
             <GymsList gyms={gyms} />
