@@ -36,7 +36,7 @@ const GoogleMapSingle = ({ marker, onMapLoad, loadError }) => {
                 <>
                     <p>{latitude}</p>
                     <p>{longitude}</p>
-                    <p>{reference}</p>
+                    {/*<p>{reference}</p>*/}
                     <GoogleMap
                         ref={mapRef}
                         options={{
@@ -50,10 +50,12 @@ const GoogleMapSingle = ({ marker, onMapLoad, loadError }) => {
                             <Marker
                                 key={reference}
                                 position={{
-                                    lat: latitude,
-                                    lng: longitude,
+                                    lat: 37.7749, // Example coordinates for San Francisco
+                                    lng: -122.4194,
                                 }}
-                                zIndex={99} // Add zIndex property
+                                onLoad={() => console.log('Marker loaded!')}
+
+                                zIndex={99}
                             />
 
                     </GoogleMap>

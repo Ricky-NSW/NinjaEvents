@@ -1,15 +1,21 @@
 //GymDetails.js
+
+//what does this do?
+// dispatch({
+//     type: 'SET_GYM',
+//     gym: gymDetails,
+// });
 //TODO: add a MUI love heart icon that acts as a <Switch /> on this Gym page, when the user clicks the <Switch /> it adds the gym id to an array on the 'user' called 'subscribedGyms'. If they disable the <Switch /> it removes it from the array
 // TODO: SHow all the events that are taking place at this gym
 // TODO: check through all events, look for events with the gym array. if an event has this gym's id in the gym.id document then show that event
 import React, { useEffect, useState } from 'react';
 import { getFirestore, doc, updateDoc, getDoc, collection, query, where, onSnapshot, arrayUnion, arrayRemove, } from 'firebase/firestore';
 import GoogleMapSingle from "../api/GoogleMapSingle";
-import { useDataLayer } from '../data/DataLayer';
+// import { useDataLayer } from '../data/DataLayer';
 
 import GoogleMapsApi from "../api/GoogleMapsApi";
 import {auth, db} from "../../FirebaseSetup";
-import { useDataLayerValue } from '../data/DataLayer'; // or wherever your DataLayer.js file is located
+import { useDataLayer } from '../data/DataLayer';
 
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import FavoriteIcon from '@mui/icons-material/Favorite';
@@ -35,66 +41,60 @@ import GymBannerUpload from './GymBannerUpload';
 import GalleryImageUpload from './GalleryImageUpload';
 
 const GymDetails = () => {
-    // Using custom hook to access the data layer
-    const { events, currentUser, getGymById, gyms, updateGymBannerUrl } = useDataLayer();
+    const { events, currentUser, getGymBySlug, gyms, updateGymBannerUrl, isLoading } = useDataLayer();
 
-    // Getting gym ID from the URL params
-    const { id } = useParams();
-    // Local state to hold current gym details
+    // Getting gym slug from the URL params
+    const { slug } = useParams();
+
     const [isSubscribed, setIsSubscribed] = useState(false);
     const [mapDialogOpen, setMapDialogOpen] = useState(false);
 
-    // Local state to hold current gym details
     const [gym, setGym] = useState(null);
 
     useEffect(() => {
-        const fetchGym = async () => {
-            console.log(id);
+        if (!isLoading) {
+            const fetchGym = async () => {
+                try {
+                    console.log('Fetching gym:', slug);
+                    setGym(null);  // set gym to null before fetching
+                    const gymDetails = await getGymBySlug(slug);
+                    console.log('Fetched gym details:', gymDetails);
+                    console.log('All gyms:', gyms); // Log all the gyms from the data layer
+                    setGym(gymDetails);
+                    if (currentUser && gymDetails && gymDetails.subscribers.includes(currentUser.id)) {
+                        setIsSubscribed(true);
+                    }
+                } catch (error) {
+                    console.error('Error fetching gym:', error);
+                }
+            };
 
-            // Getting gym details by ID
-            const gymDetails = await getGymById(id);
-            setGym(gymDetails);
-
-            // Checking if the user is subscribed to the gym
-            if (currentUser && gymDetails && gymDetails.subscribers.includes(currentUser.id)) {
-                setIsSubscribed(true);
-            }
-        };
-
-        fetchGym();
-    }, [gyms, id, currentUser, getGymById]);
+            fetchGym();
+        }
+    }, [slug, currentUser, getGymBySlug, gyms, isLoading]);
 
 
 
     const handleSubscribeToggle = async () => {
-        // Toggle subscription status
         setIsSubscribed(!isSubscribed);
 
-        // Updating 'subscribedGyms' in the user document
-        const userDoc = doc(db, 'users', currentUser.uid); // 'users' should be replaced with your user collection name
+        const userDoc = doc(db, 'users', currentUser.uid);
         if(!isSubscribed){
             await updateDoc(userDoc, {
-                subscribedGyms: arrayUnion(id)
+                subscribedGyms: arrayUnion(slug) // Change id to slug
             });
         } else {
             await updateDoc(userDoc, {
-                subscribedGyms: arrayRemove(id)
+                subscribedGyms: arrayRemove(slug) // Change id to slug
             });
         }
-    };
-
-
-    // Function to check if a user is subscribed to a gym.
-    const isUserSubscribedToGym = (gymId) => {
-        if (!currentUser) return false; // If no user is logged in, return false.
-        // Check if the gym's subscribers array includes the current user's id.
-        const gym = gyms.find((g) => g.id === gymId);
-        return gym.subscribers.includes(currentUser.uid);
     };
 
     const handleGymUpdate = (updatedGym) => {
         // Update gym state with the updated gym details
         setGym(updatedGym);
+        console.log('Updated gym:', updatedGym);
+
         // TODO: Implement method to update gym details in the database
     };
 
@@ -106,11 +106,14 @@ const GymDetails = () => {
         setMapDialogOpen(false);
     };
 
-    console.log('evvent deails gym', gym)
+    console.log('Event details gym:', gyms);
+
 
     return (
         <div>
-            {gym ? (
+            {isLoading ? (
+                <Typography>Loading gym details...</Typography>
+            ) : gym ? (
                 <>
                     {gym.bannerUrl && (
                         <Box sx={{ mx: -2, mb: 2 }}> {/* Adjust the value according to your needs */}
@@ -151,21 +154,24 @@ const GymDetails = () => {
                             </div>
                         </Grid>
                         <Grid item xs={12}>
-                            <Typography>{gym.location}</Typography>
-                            <Typography>Location: {gym.address}</Typography>
+                            <p>{gym.location}</p>
+                            <p>Location: {gym.address}</p>
 
                         </Grid>
                     </Grid>
                     {/*<Typography variant={"p"}>{gym.description}</Typography>*/}
                     <div dangerouslySetInnerHTML={{ __html: gym.description }} />
-                    <Grid>
+
+                    <GoogleMapSingle marker={gym} />
+
+                    <Grid >
                         <Grid item xs={12} sm={6}>
                             <Button variant="contained" onClick={openMapDialog}>Show Map</Button>
                         </Grid>
                         <Grid item xs={12} sm={6}>
                             {/*//This component is used to control the modal which contains the gym editing form*/}
                             {/*<EditGymDetails gym={gym} onUpdate={handleGymUpdate} />*/}
-                            <EditGymDetails onUpdate={handleGymUpdate} />
+                            <EditGymDetails id={gym.id} onUpdate={handleGymUpdate} />
                             <GymBannerUpload
                                 gymId={gym.id}
                                 onBannerUpload={(bannerUrl) => {
@@ -176,44 +182,33 @@ const GymDetails = () => {
                             <GalleryImageUpload gymId={gym.id} />
                         </Grid>
                     </Grid>
-                    <Dialog
-                        open={mapDialogOpen}
-                        onClose={closeMapDialog}
-                        aria-labelledby="map-dialog-title"
-                    >
-                        <DialogTitle id="map-dialog-title">Gym Location</DialogTitle>
-                        {/*TODO: Set the width of the dialigue to fill more space*/}
-                        <DialogContent
-                            fullWidth
-                            maxWidth="xs"
-                        >
-                            <GoogleMapSingle marker={gym} />
-                        </DialogContent>
-                    </Dialog>
 
+                    {/*//This is the modal which contains the map*/}
+                    {/*<Dialog*/}
+                    {/*    open={mapDialogOpen}*/}
+                    {/*    onClose={closeMapDialog}*/}
+                    {/*    aria-labelledby="map-dialog-title"*/}
+                    {/*>*/}
+                    {/*    <DialogTitle id="map-dialog-title">Gym Location</DialogTitle>*/}
+                    {/*    /!*TODO: Set the width of the dialigue to fill more space*!/*/}
+                    {/*    <DialogContent*/}
+                    {/*        fullWidth*/}
+                    {/*        maxWidth="xs"*/}
+                    {/*    >*/}
+                    {/*        <GoogleMapSingle marker={gym} />*/}
+                    {/*    </DialogContent>*/}
+                    {/*</Dialog>*/}
                 </>
             ) : (
-                <Typography>Loading gym details...</Typography>
+                <Typography>Could not find gym with slug: {slug}</Typography>
             )}
-
-            {/* Display events associated with the gym */}
-
-            {/*//TODO: wrap this in a ternary so that it only shows if there are events*/}
-            {events.length > 0 ? (
-                events.filter(event => event.gym.id === id).map((event) => (
-                    <EventCard
-                        key={event.id}
-                        event={event}
-                        hideGym={true}
-                    />
-                ))
-            ) : (
-                <Typography>No upcoming events at this gym.</Typography>
-            )}
-
-
-
-
+            <Grid container spacing={2}>
+                {events.map((event) => (
+                    <Grid item xs={12} sm={6} md={4} key={event.id}>
+                        <EventCard event={event} />
+                    </Grid>
+                ))}
+            </Grid>
         </div>
     );
 };

@@ -68,7 +68,7 @@ export default function App() {
                     <Route path="gyms" element={<GymsPage />} />
                     <Route path="/gyms/manage-gyms" element={<UserGymList />} />
                     <Route path="create-gym" element={<AddGymPage />} />
-                    <Route exact path="/gyms/:id" element={<GymDetails />} />
+                    <Route exact path="/gyms/:slug" element={<GymDetails />} />
                     {/* -------League Pages*/}
                     <Route path="leagues" element={<LeaguesPage />} />
                     <Route path="add-league" element={<AddLeaguePage />} />

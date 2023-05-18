@@ -15,6 +15,15 @@ class WysiwygEditorComponent extends React.Component {
                     wrapperClassName="demo-wrapper"
                     editorClassName="demo-editor"
                     onEditorStateChange={onEditorStateChange}
+                    toolbar={{
+                        blockType: {
+                            inDropdown: true,
+                            options: ['Normal', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'Blockquote'],
+                        },
+                        fontFamily: {
+                            options: ['Arial', 'Georgia', 'Impact', 'Tahoma', 'Times New Roman', 'Verdana'],
+                        },
+                    }}
                 />
                 <textarea
                     disabled

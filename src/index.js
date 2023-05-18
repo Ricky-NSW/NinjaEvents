@@ -1,3 +1,4 @@
+//index.js
 import React, { useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
@@ -5,7 +6,7 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import AuthProvider from './components/user/AuthProvider';
 import GoogleMapsApi from "../src/components/api/GoogleMapsApi";
-import DataLayer from "./components/data/DataLayer";
+import { DataLayer } from "./components/data/DataLayer";
 import reducer, { initialState } from './components/data/reducer';
 
 //import theme

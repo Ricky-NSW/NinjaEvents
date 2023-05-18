@@ -23,44 +23,39 @@ const GymScraper = () => {
     };
 
     const callback = (results, status) => {
+        const locationData = [];
         if (status === window.google.maps.places.PlacesServiceStatus.OK) {
-            const promises = results.map((place) => {
-                return new Promise((resolve, reject) => {
-                    const service = new window.google.maps.places.PlacesService(
-                        document.createElement('div')
-                    );
-                    service.getDetails({ placeId: place.place_id }, (details, status) => {
-                        if (
-                            status === window.google.maps.places.PlacesServiceStatus.OK &&
-                            details.website
-                        ) {
-                            const countryComponent = details.address_components.find(component => component.types.includes('country'));
-                            const stateComponent = details.address_components.find(component => component.types.includes('administrative_area_level_1'));
-                            const locationData = {
-                                name: details.name,
-                                address: details.formatted_address,
-                                latitude: place.geometry.location.lat(),
-                                longitude: place.geometry.location.lng(),
-                                country: countryComponent ? countryComponent.long_name : '',
-                                state: stateComponent ? stateComponent.long_name : '',
-                                website: details.website,
-                                ownerUid: 'b3WAv23SnxcPsyGE5TOKsGhilIY2',
-                            };
-                            resolve(locationData);
-                        } else {
-                            reject('An error occurred while fetching the data');
+            results.forEach((place) => {
+                const service = new window.google.maps.places.PlacesService(
+                    document.createElement('div')
+                );
+                service.getDetails({ placeId: place.place_id }, (details, status) => {
+                    if (
+                        status === window.google.maps.places.PlacesServiceStatus.OK &&
+                        details.website
+                    ) {
+                        const cleanedGymName = details.name.replace(/[^\w\s]/gi, '').replace(/\s+/g, '_').toLowerCase();
+                        const gym = {
+                            name: details.name,
+                            slug: cleanedGymName,
+                            address: details.formatted_address,
+                            latitude: place.geometry.location.lat(),
+                            longitude: place.geometry.location.lng(),
+                            country: details.address_components.find(component => component.types.includes('country')).long_name,
+                            state: details.address_components.find(component => component.types.includes('administrative_area_level_1')).long_name,
+                            website: details.website,
+                            ownerUid: 'b3WAv23SnxcPsyGE5TOKsGhilIY2',
+                        };
+                        // Get the photo URL if there is at least one photo.
+                        if (details.photos && details.photos.length > 0) {
+                            const bannerUrl = details.photos[0].getUrl({maxWidth: 1000, maxHeight: 1000});
+                            gym.bannerUrl = bannerUrl;
                         }
-                    });
+                        locationData.push(gym);
+                    }
+                    setGyms(locationData);
                 });
             });
-
-            Promise.all(promises)
-                .then((data) => {
-                    setGyms(data);
-                })
-                .catch((error) => {
-                    console.error(error);
-                });
         } else {
             console.error('An error occurred while fetching the data');
         }
@@ -80,7 +75,6 @@ const GymScraper = () => {
         });
     };
 
-
     return (
         <>
             <input
@@ -96,7 +90,9 @@ const GymScraper = () => {
                 onChange={(e) => setLng(e.target.value)}
             />
             <button onClick={handleSearch}>Search Gyms</button>
-            {gyms.length > 0 && (
+            <button onClick={handleSaveToFirestore}>Save to Firestore</button>
+
+            {gyms && gyms.length > 0 ? (
                 <>
                     <h2>Gyms Found:</h2>
                     <ul>
@@ -112,11 +108,10 @@ const GymScraper = () => {
                             </li>
                         ))}
                     </ul>
-                    <button onClick={handleSaveToFirestore}>
-                        Save to Firestore
-                    </button>
-                </>
-            )}
+                    </>
+                ) : null}
+
+
             <GoogleMapsApi
                 apiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY}
                 libraries={['places']}

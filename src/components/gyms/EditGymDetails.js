@@ -27,8 +27,8 @@ const htmlString = '<p>Hello World!</p>';
 // Convert the HTML string to a Draft.js ContentState
 const contentState = htmlToDraft(htmlString);
 
-const EditGymDetails = ({ onUpdate }) => {
-    const { id } = useParams();
+const EditGymDetails = ({ onUpdate, id }) => {
+    // const { id } = useParams();
     const [open, setOpen] = useState(false);
     const [gym, setGym] = useState(null);
     const [updatedGym, setUpdatedGym] = useState(null);
@@ -84,15 +84,20 @@ const EditGymDetails = ({ onUpdate }) => {
         console.log('Content HTML:', contentHTML);
 
         if (gym && updatedGym) {
+            const updateData = {
+                name: updatedGym.name,
+                description: contentHTML,
+            };
+
+            // Only include avatarUrl in the update if it's not undefined
+            if (avatarUrl || gym.avatarUrl) {
+                updateData.avatarUrl = avatarUrl || gym.avatarUrl;
+            }
+
             try {
                 // Save the updated gym data to Firestore
                 const gymRef = doc(getFirestore(), 'gyms', gym.id);
-                await updateDoc(gymRef, {
-                    name: updatedGym.name,
-                    description: contentHTML,
-                    avatarUrl: avatarUrl || gym.avatarUrl, // Add this line
-                    // createdBy: uid, // Include the user's UID as a field in the document
-                });
+                await updateDoc(gymRef, updateData);
 
                 // Call the onUpdate callback to update the parent component's state
                 onUpdate();
@@ -101,6 +106,7 @@ const EditGymDetails = ({ onUpdate }) => {
                 console.error('Error updating gym:', error);
             }
         }
+
     };
 
     const handleAvatarUpload = (newAvatarUrl) => {

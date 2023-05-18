@@ -6,7 +6,7 @@ import Avatar from "@mui/material/Avatar";
 const GymCard = ({ gym }) => (
     <>
         <a
-            href={`../gyms/${gym.id}`}
+            href={`../gyms/${gym.slug}`}
             target="_self"
             rel="noopener noreferrer"
             style={{ textDecoration: 'none', display: 'block', marginBottom: '16px' }}

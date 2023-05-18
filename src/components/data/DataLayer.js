@@ -10,6 +10,7 @@ import reducer, { initialState } from './reducer';
 // Creating a data layer context
 // This will allow child components to subscribe to data changes without prop drilling.
 export const DataLayerContext = createContext();
+export const useDataLayerValue = () => useContext(DataLayerContext);
 
 // Custom hook to easily use the data layer context
 // This will be used by components to access the data layer.
@@ -18,7 +19,7 @@ export const useDataLayer = () => {
 };
 
 // DataLayer component that provides state and actions to all child components.
-const DataLayer = ({ children }) => {
+export function DataLayer({ children }) { // Change from default export to named export
     // Initializing necessary state variables.
     const [gyms, setGyms] = useState([]);
     const [leagues, setLeagues] = useState([]);
@@ -31,6 +32,14 @@ const DataLayer = ({ children }) => {
     const [state, dispatch] = useReducer(reducer, initialState)
 
     // Fetch gyms from Firestore and set them in state.
+    useEffect(() => {
+        const unsubscribeGyms = fetchGyms();
+
+        return () => {
+            unsubscribeGyms();
+        };
+    }, []);
+
     const fetchGyms = () => {
         // Indicate that data fetching has started.
         setIsLoading(true);
@@ -41,9 +50,12 @@ const DataLayer = ({ children }) => {
         const unsubscribeGyms = onSnapshot(gymsQuery, (querySnapshot) => {
             // Convert querySnapshot to array of gyms.
             const gymsData = [];
+            //This line gets all the data from the document and adds it to the gymsData array.
+            // NOTE: The ID of the document isn't considered part of the data; it's metadata about the document. hence why we are getting it seperately
             querySnapshot.forEach((doc) => {
                 gymsData.push({ ...doc.data(), id: doc.id });
             });
+
             // Set gymsData in state and indicate that data fetching has ended.
             setGyms(gymsData);
             setIsLoading(false);
@@ -53,46 +65,50 @@ const DataLayer = ({ children }) => {
         return unsubscribeGyms;
     };
 
-    // Function to fetch a gym by ID.
-    const getGymById = (gymId) => {
-        // Use Array.find() to find the gym with the given ID.
-        const gym = gyms.find((g) => g.id === gymId);
-        return gym;
+    // Function to fetch a gym by slug.
+    const getGymBySlug = (gymSlug) => {
+        // Use Array.find() to find the gym with the given slug.
+        const gym = gyms.find((g) => g.slug === gymSlug);
+        return gym || { error: 'Gym not found' };
     };
 
-    // Similar functions for fetching leagues, events, updating users and events etc...
-    const fetchLeagues = () => {
-        const leaguesRef = collection(db, 'leagues');
-        const leaguesQuery = query(leaguesRef);
-        const unsubscribeLeagues = onSnapshot(leaguesQuery, (querySnapshot) => {
-            const leaguesData = [];
-            querySnapshot.forEach((doc) => {
-                leaguesData.push({ ...doc.data(), id: doc.id });
-            });
-            setLeagues(leaguesData);
-            // console.log("Fetched leagues in datalayer:", leaguesData); // Add this line
-        });
 
-        return unsubscribeLeagues;
+        // Similar functions for fetching leagues, events, updating users and events etc...
+
+    const isUserSubscribedToGym = (gymSlug) => {
+        if (!currentUser) {
+            return false;
+        }
+
+        const subscribedGyms = currentUser.subscribedGyms || [];
+        return subscribedGyms.some(g => g.slug === gymSlug);
+    };
+
+    const updateUserData = async (userId, updatedData) => {
+        if (currentUser && currentUser.id === userId) {
+            setCurrentUser({ ...currentUser, ...updatedData });
+        }
+    };
+
+    const updateUserDetailsInDB = async (userId, userDetails) => {
+        // console.log("updateUserDetailsInDB called with:", userId, userDetails); // Add this line
+
+        const userDocRef = doc(db, 'users', userId);
+
+        // console.log("userDocRef:", userDocRef); // Add this line
+
+        try {
+            await updateDoc(userDocRef, userDetails);
+            console.log("User details updated successfully"); // Add this line
+        } catch (error) {
+            console.error("Error updating user details: ", error);
+            throw error;
+        }
     };
 
     const getLeagueById = (leagueId) => {
         const league = leagues.find((l) => l.id === leagueId);
         return league;
-    };
-
-    const fetchEvents = () => {
-        const eventsRef = collection(db, 'events');
-        const eventsQuery = query(eventsRef);
-        const unsubscribeEvents = onSnapshot(eventsQuery, (querySnapshot) => {
-            const eventsData = [];
-            querySnapshot.forEach((doc) => {
-                eventsData.push({ ...doc.data(), id: doc.id });
-            });
-            setEvents(eventsData);
-        });
-
-        return unsubscribeEvents;
     };
 
     const getEventById = (eventId) => {
@@ -118,84 +134,6 @@ const DataLayer = ({ children }) => {
         }
     };
 
-
-
-
-    const updateUserData = async (userId, updatedData) => {
-        if (currentUser && currentUser.id === userId) {
-            setCurrentUser({ ...currentUser, ...updatedData });
-        }
-    };
-
-    const updateUserDetailsInDB = async (userId, userDetails) => {
-        // console.log("updateUserDetailsInDB called with:", userId, userDetails); // Add this line
-
-        const userDocRef = doc(db, 'users', userId);
-
-        // console.log("userDocRef:", userDocRef); // Add this line
-
-        try {
-            await updateDoc(userDocRef, userDetails);
-            console.log("User details updated successfully"); // Add this line
-        } catch (error) {
-            console.error("Error updating user details: ", error);
-            throw error;
-        }
-    };
-
-    const isUserSubscribedToGym = (gymId) => {
-        if (!currentUser) {
-            return false;
-        }
-
-        const subscribedGyms = currentUser.subscribedGyms || [];
-        return subscribedGyms.some(g => g.id === gymId);
-    };
-
-
-    // This useEffect hook runs once on component mount and sets up Firestore subscriptions.
-    useEffect(() => {
-        const auth = getAuth();
-        const db = getFirestore();
-        // Fetch initial data and set up Firestore subscriptions.
-        const unsubscribeGyms = fetchGyms();
-        const unsubscribeLeagues = fetchLeagues();
-        const unsubscribeEvents = fetchEvents();
-
-        // Set up authentication state observer.
-        const unsubscribeAuth = onAuthStateChanged(auth, (loggedInUser) => {
-            if (loggedInUser) {
-                // User is logged in.
-                const userDocRef = doc(db, 'users', loggedInUser.uid);
-// Set up Firestore subscription for the logged in user.
-                const unsubscribeUserDoc = onSnapshot(userDocRef, (docSnapshot) => {
-                    if (docSnapshot.exists()) {
-                        // If the user document exists in Firestore, update currentUser state.
-                        setCurrentUser({ ...docSnapshot.data(), id: loggedInUser.uid });
-                    } else {
-                        console.error('User not found in Firestore');
-                    }
-                });
-
-                // Clean up Firestore subscription when user logs out.
-                return () => {
-                    unsubscribeUserDoc();
-                };
-            } else {
-                // User is logged out, reset currentUser state.
-                setCurrentUser(null);
-            }
-        });
-
-        // Clean up all Firestore subscriptions when component unmounts.
-        return () => {
-            unsubscribeAuth();
-            unsubscribeGyms();
-            unsubscribeLeagues();
-            unsubscribeEvents();
-        };
-    }, []);
-
     // Preparing the value to be provided to child components.
     const value = {
         state,
@@ -208,14 +146,14 @@ const DataLayer = ({ children }) => {
         events,
         updateUserData,
         updateUserDetailsInDB,
-        getGymById,
+        getGymBySlug,  // changed to getGymBySlug
         getLeagueById,
         getEventById,
         addEvent,
         updateEvent,
     };
 
-    // Using the context provider to pass the value to child components.
+// Using the context provider to pass the value to child components.
     return (
         <DataLayerContext.Provider value={value}>
             {children}
@@ -223,6 +161,3 @@ const DataLayer = ({ children }) => {
     );
 };
 
-// Exporting the DataLayer component and a custom hook for accessing the data layer.
-export default DataLayer;
-export const useDataLayerValue = () => useContext(DataLayerContext);

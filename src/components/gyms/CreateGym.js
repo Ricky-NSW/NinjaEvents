@@ -88,14 +88,11 @@ function CreateGym() {
             return;
         }
 
-        // Add a validation for Area
-        if (!area) {
-            setError('Area is required');
-            return;
-        }
-
+        const cleanedGymName = gymName.replace(/[^\w\s]/gi, '').replace(/\s+/g, '_').toLowerCase();
         const contentHTML = stateToHTML(editorState.getCurrentContent());
         // console.log('Content HTML:', contentHTML);
+
+
 
         try {
             //Once you've confirmed that the user is signed in, you can get their UID by accessing the uid property of the auth.currentUser object:
@@ -105,6 +102,7 @@ function CreateGym() {
 
             const docRef = await addDoc(collection(db, 'gyms'), {
                 name: gymName,
+                slug: cleanedGymName,
                 ownerUid: currentUser.uid,
                 address: address.address,
                 suburb: address.suburb,
@@ -113,7 +111,7 @@ function CreateGym() {
                 latitude: address.lat,
                 longitude: address.lng,
                 description: contentHTML,
-                createdBy: uid // Include the user's UID as a field in the document
+                createdBy: uid
             });
 
 
@@ -278,16 +276,6 @@ function CreateGym() {
                         fullWidth
                     />
                 </StandaloneSearchBox>
-
-                <TextField
-                    label="Area (help people find your Gym)"
-                    value={area}
-                    variant="outlined"
-                    onChange={handleAreaChange}
-                    margin="normal"
-                    required
-                    fullWidth
-                />
 
                 <IconButton color="primary" aria-label="upload picture" component="label">
                     <input hidden accept="image/*" type="file" onChange={handleImageChange} />
