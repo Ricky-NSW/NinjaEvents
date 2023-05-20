@@ -2,13 +2,13 @@ import { Card, CardContent, Typography } from "@mui/material";
 import React from "react";
 import Grid from "@mui/material/Grid";
 import Avatar from "@mui/material/Avatar";
+import { Link } from 'react-router-dom';
 
 const GymCard = ({ gym }) => (
     <>
-        <a
-            href={`../gyms/${gym.slug}`}
+        <Link
+            to={`/gyms/${gym.slug}`}
             target="_self"
-            rel="noopener noreferrer"
             style={{ textDecoration: 'none', display: 'block', marginBottom: '16px' }}
         >
             <Card key={gym.id} style={{ marginBottom: '16px' }}>
@@ -31,7 +31,7 @@ const GymCard = ({ gym }) => (
                     {/*<Typography variant="body1">Longitude: {gym.longitude}</Typography>*/}
                 </CardContent>
             </Card>
-        </a>
+        </Link>
     </>
 );
 

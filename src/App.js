@@ -11,7 +11,7 @@ import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 
-import { HashRouter, Routes, Route } from "react-router-dom";
+import { HashRouter as Router, Routes, Route } from "react-router-dom";
 import Layout from "./components/layout/Layout";
 import Home from "./pages/Home";
 import Register from "./pages/Register";
@@ -46,7 +46,7 @@ import SimpleTimer from "./components/timers/SimpleTimer";
 
 export default function App() {
     return (
-        <HashRouter>
+        <Router>
             <CssBaseline />
             <Routes>
                 <Route path="/" element={<Layout />}>
@@ -74,7 +74,7 @@ export default function App() {
                     <Route path="add-league" element={<AddLeaguePage />} />
                     <Route exact path="/leagues/:id" element={<LeagueDetails />} />
                     {/*Timers Pages*/}
-                    <Route path="timers/" element={<SimpleTimerPage />} />
+                    <Route path="/timers/" element={<SimpleTimerPage />} />
                     {/*<Route exact path="/timers/:id" element={<SimpleTimer />} />*/}
                     {/*//element below  is correct (changing it to compeont will break it*/}
                     <Route path="/users/:userId/timers/:timerId" element={<SimpleTimer />} />
@@ -84,7 +84,7 @@ export default function App() {
 
                 </Route>
             </Routes>
-        </HashRouter>
+        </Router>
     );
 }
 

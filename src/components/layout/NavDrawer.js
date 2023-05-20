@@ -121,6 +121,8 @@ export default function NavDrawer() {
                 <MenuItem component={Link} to="/events"><MenuItemIcon><EmojiEventsIcon /></MenuItemIcon>Event Finder</MenuItem>
                 <MenuItem component={Link} to="/gyms"><MenuItemIcon><AddLocationIcon /></MenuItemIcon>Gym Finder</MenuItem>
                 <MenuItem component={Link} to="/leagues"><MenuItemIcon><AddLocationIcon /></MenuItemIcon>Leagues</MenuItem>
+                <MenuItem component={Link} to="/timers/"><MenuItemIcon><AddLocationIcon /></MenuItemIcon>Add Time</MenuItem>
+                <MenuItem component={Link} to="/users/:userId/timers/:timerId"><MenuItemIcon><AddLocationIcon /></MenuItemIcon>Your Timers</MenuItem>
 
                 <Divider/>
 
