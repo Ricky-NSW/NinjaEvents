@@ -2,7 +2,7 @@
   "name": "ninja-events",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://github.com/Ricky-NSW/NinjaEvents",
+  "homepage": "https://ricky-nsw.github.io/NinjaEvents/",
   "dependencies": {
     "@fontsource/roboto": "^4.5.8",
     "@material-ui/core": "^4.12.4",
