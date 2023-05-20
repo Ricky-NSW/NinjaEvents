@@ -85,6 +85,8 @@ const Home = () => {
             <p>&nbsp;</p>
             {/*//TODO: move all the search logic into the search component*/}
             <SearchBar onSearch={handleSearch} />
+            <h1>Ninja Community aaa</h1>
+            <h4>or something like that</h4>
             {searchResults.length > 0 && (
                 <div>
                     <h2>Search results:</h2>
