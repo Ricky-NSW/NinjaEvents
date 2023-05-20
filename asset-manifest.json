@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/Ricky-NSW/NinjaEvents/static/css/main.501833c1.css",
-    "main.js": "/Ricky-NSW/NinjaEvents/static/js/main.6a8262af.js",
+    "main.js": "/Ricky-NSW/NinjaEvents/static/js/main.4bdb8190.js",
     "static/js/496.752aeef4.chunk.js": "/Ricky-NSW/NinjaEvents/static/js/496.752aeef4.chunk.js",
     "static/media/login-background.jpg": "/Ricky-NSW/NinjaEvents/static/media/login-background.714aac206fda9230d9b8.jpg",
     "static/media/roboto-all-500-normal.woff": "/Ricky-NSW/NinjaEvents/static/media/roboto-all-500-normal.0ab669b7a0d19b178f57.woff",
@@ -38,11 +38,11 @@
     "static/media/roboto-greek-ext-700-normal.woff2": "/Ricky-NSW/NinjaEvents/static/media/roboto-greek-ext-700-normal.bd9854c751441ccc1a70.woff2",
     "index.html": "/Ricky-NSW/NinjaEvents/index.html",
     "main.501833c1.css.map": "/Ricky-NSW/NinjaEvents/static/css/main.501833c1.css.map",
-    "main.6a8262af.js.map": "/Ricky-NSW/NinjaEvents/static/js/main.6a8262af.js.map",
+    "main.4bdb8190.js.map": "/Ricky-NSW/NinjaEvents/static/js/main.4bdb8190.js.map",
     "496.752aeef4.chunk.js.map": "/Ricky-NSW/NinjaEvents/static/js/496.752aeef4.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.501833c1.css",
-    "static/js/main.6a8262af.js"
+    "static/js/main.4bdb8190.js"
   ]
 }
