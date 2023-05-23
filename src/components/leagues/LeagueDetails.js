@@ -1,18 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import {Link, useParams} from 'react-router-dom';
-import {
-    getFirestore,
-    doc,
-    getDoc,
-    updateDoc,
-    arrayUnion,
-    arrayRemove,
-    getDocs,
-    query,
-    collection, where, onSnapshot
-} from 'firebase/firestore';
+import { Link, useParams } from 'react-router-dom';
 import CardMedia from "@mui/material/CardMedia";
-import { auth } from "../../FirebaseSetup";
 import Switch from "@mui/material/Switch";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import FavoriteIcon from "@mui/icons-material/Favorite";
@@ -29,6 +17,7 @@ import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
 import CardActions from "@mui/material/CardActions";
 import Button from "@mui/material/Button";
+import { useDataLayer } from '../data/DataLayer';
 
 const LeagueDetails = () => {
     const { id } = useParams();
@@ -37,75 +26,44 @@ const LeagueDetails = () => {
     const [events, setEvents] = useState([]);
     const [mapDialogOpen, setMapDialogOpen] = useState(false);
 
-    // Fetch league data from Firebase Firestore
+    const {
+        getLeagueById,
+        fetchLeagues,
+        currentUser,
+        updateUserData,
+        fetchEventsForLeague,
+        checkUserSubscriptionToLeague,
+        updateUserSubscriptionToLeague
+    } = useDataLayer();
+
+    // Fetch league data from DataLayer
     useEffect(() => {
-        // The issue was here, you missed the 'id' in the doc function
-        const leagueRef = doc(getFirestore(), 'leagues', id);
-        const getLeague = async () => {
-            const leagueDoc = await getDoc(leagueRef);
-            if (leagueDoc.exists()) {
-                setLeague(leagueDoc.data());
-            }
-        };
+        fetchLeagues();
+    }, [fetchLeagues]);
 
-        getLeague();
-    }, [id]);
-
-    // Fetch events associated with the league from Firestore
     useEffect(() => {
-        const fetchEvents = async () => {
-            const db = getFirestore();
-            const eventsRef = collection(db, 'events');
-            const q = query(eventsRef, where('league.id', '==', id));
+        const fetchedLeague = getLeagueById(id);
+        if (fetchedLeague) {
+            setLeague(fetchedLeague);
+        }
+    }, [id, getLeagueById]);
 
-            const unsubscribe = onSnapshot(q, (querySnapshot) => {
-                const eventsData = [];
-                querySnapshot.forEach((doc) => {
-                    eventsData.push({ id: doc.id, ...doc.data() });
-                });
-                setEvents(eventsData);
-            });
-
-            return () => unsubscribe();
-        };
-
-        fetchEvents();
-    }, [id]);
+    // Fetch events associated with the league from DataLayer
+    useEffect(() => {
+        const eventsData = fetchEventsForLeague(id);
+        setEvents(eventsData);
+    }, [id, fetchEventsForLeague]);
 
     // Check if the user is subscribed to this league
     useEffect(() => {
-        const checkSubscribedLeague = async () => {
-            if (auth.currentUser) {
-                const userRef = doc(getFirestore(), "users", auth.currentUser.uid);
-                const userDoc = await getDoc(userRef);
-
-                if (userDoc.exists()) {
-                    const subscribedLeagues = userDoc.data().subscribedLeagues || [];
-                    setIsSubscribed(subscribedLeagues.some(league => league.id === id));
-                }
-            }
-        };
-
-        checkSubscribedLeague();
-    }, [id, auth.currentUser]);
+        const isSubscribed = checkUserSubscriptionToLeague(id);
+        setIsSubscribed(isSubscribed);
+    }, [id, checkUserSubscriptionToLeague]);
 
     // Handle subscribed/unsubscribed league toggle
-    const handlesubscribeToggle = async () => {
+    const handleSubscribeToggle = async () => {
         setIsSubscribed(!isSubscribed);
-        const userRef = doc(getFirestore(), "users", auth.currentUser.uid);
-        const leagueRef = doc(getFirestore(), "leagues", id);
-        const leagueDoc = await getDoc(leagueRef);
-        const leagueName = leagueDoc.data().name;
-
-        if (!isSubscribed) {
-            await updateDoc(userRef, {
-                subscribedLeagues: arrayUnion({ id, name: leagueName }),
-            });
-        } else {
-            await updateDoc(userRef, {
-                subscribedLeagues: arrayRemove({ id, name: leagueName }),
-            });
-        }
+        await updateUserSubscriptionToLeague(id);
     };
 
     // Functions to open and close the map dialog
@@ -126,7 +84,7 @@ const LeagueDetails = () => {
                     <div>
                         <IsSubscribedSwitch
                             isSubscribed={isSubscribed}
-                            handleSubscription={handlesubscribeToggle}
+                            handleSubscription={handleSubscribeToggle}
                         />
                         <span>Follow this league</span>
                     </div>

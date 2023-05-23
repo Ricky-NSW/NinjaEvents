@@ -10,9 +10,11 @@ import LeaguesList from "../../components/leagues/LeaguesList";
 function LeaguesPage() {
     const { leagues } = useDataLayer();
 
+console.log('leagues on leagues page:', leagues)
+
     return (
         <div>
-            <h1>Events</h1>
+            <h1>leagues</h1>
             <LeaguesList leagues={leagues} />
         </div>
     );

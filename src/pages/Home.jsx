@@ -39,18 +39,21 @@ const Home = () => {
 
     useEffect(() => {
         // Filter the events based on the user's subscribed gyms and leagues
-        const filteredEventsArray = events.filter((event) => {
-            if (
-                (subscribedGymsIDs.length > 0 && event.gym && subscribedGymsIDs.includes(event.gym.id)) ||
-                (subscribedLeaguesIDs.length > 0 && event.league && subscribedLeaguesIDs.includes(event.league.id))
-            ) {
-                return true;
-            }
-            return false;
-        });
-        // Update the state with the filtered events
-        setFilteredEvents(filteredEventsArray);
+        if (events) {
+            const filteredEventsArray = events.filter((event) => {
+                if (
+                    (subscribedGymsIDs.length > 0 && event.gym && event.gym.id && subscribedGymsIDs.includes(event.gym.id)) ||
+                    (subscribedLeaguesIDs.length > 0 && event.league && event.league.id && subscribedLeaguesIDs.includes(event.league.id))
+                ) {
+                    return true;
+                }
+                return false;
+            });
+            // Update the state with the filtered events
+            setFilteredEvents(filteredEventsArray);
+        }
     }, [events, subscribedGymsIDs, subscribedLeaguesIDs]);
+
 
     const handleSearch = async (searchText) => {
         console.log('Search text:', searchText);

@@ -31,9 +31,11 @@ function truncateDescription(description, maxLength) {
 }
 
 const LeaguesList = ({ leagues }) => {
+    // console.log('Leagues on league component:', leagues)
+
     return (
         <LeaguesContainer>
-            {leagues.map((league) => (
+            {leagues && leagues.length && leagues.map((league) => (
                 <Card key={league.id} sx={{ maxWidth: 768 }}>
                     <CardContent>
                         <Typography gutterBottom variant="h5" component="div">

@@ -9,13 +9,19 @@ import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 
 const EventsList = ({ events = [], filterDisabled }) => {
-    const { gyms, currentUser } = useDataLayer();
+    const { gyms, currentUser, loading } = useDataLayer();
     const [gymSearch, setGymSearch] = useState('');
     const [selectedGym, setSelectedGym] = useState(null);
     const [ageSearch, setAgeSearch] = useState('');
     const [stateSearch, setStateSearch] = useState('');
     const [countrySearch, setCountrySearch] = useState('');
     const [filteredEvents, setFilteredEvents] = useState([]);
+
+    console.log('gymn on eventlist component', gyms)
+
+    const dataLayer = useDataLayer();
+    console.log('dataLayer', dataLayer);
+
 
     useEffect(() => {
         if (events.length > 0) {
@@ -56,6 +62,7 @@ const EventsList = ({ events = [], filterDisabled }) => {
     // Get gyms that are assigned to an event
     const eventGyms = useMemo(() => {
         const uniqueGymSet = new Set();
+        if (!gyms) return []; // Return empty array if gyms is not loaded yet
 
         const uniqueGyms = events
             .map((event) => {
@@ -75,10 +82,24 @@ const EventsList = ({ events = [], filterDisabled }) => {
     const eventAges = useMemo(() => Array.from(new Set(events.map(event => event.age.toString()))), [events]);
 
     // Get states from gyms
-    const eventStates = useMemo(() => Array.from(new Set(gyms.map(gym => gym.state))).sort(), [gyms]);
+    const eventStates = useMemo(() => {
+        if (gyms) {
+            return Array.from(new Set(gyms.map(gym => gym.state))).sort();
+        }
+        return [];
+    }, [gyms]);
 
-    // Get countries from gyms
-    const eventCountries = useMemo(() => Array.from(new Set(gyms.map(gym => gym.country))).sort(), [gyms]);
+    const eventCountries = useMemo(() => {
+        if (gyms) {
+            return Array.from(new Set(gyms.map(gym => gym.country))).sort();
+        }
+        return [];
+    }, [gyms]);
+
+    if (loading) {
+        return <div>Loading...</div>; // or some other placeholder content
+    }
+
 
     return (
         <>

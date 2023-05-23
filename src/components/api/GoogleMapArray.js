@@ -5,7 +5,7 @@ import { GoogleMap, Marker, MarkerClusterer } from "@react-google-maps/api";
 import {mapOptions} from "./mapOptions";
 import { useNavigate } from 'react-router-dom';
 
-function GoogleMapArray({ markers, onMapLoad, nestedGym}) {
+function GoogleMapArray({ markers = [], onMapLoad, nestedGym }) {
     const mapRef = useRef(null);
 
     const markerPositions = useMemo(() => markers.map((marker) =>

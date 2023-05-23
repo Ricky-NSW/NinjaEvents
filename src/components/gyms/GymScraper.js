@@ -30,6 +30,8 @@ const GymScraper = () => {
                     document.createElement('div')
                 );
                 service.getDetails({ placeId: place.place_id }, (details, status) => {
+                    console.log(details);  // Add this line
+
                     if (
                         status === window.google.maps.places.PlacesServiceStatus.OK &&
                         details.website
@@ -57,7 +59,7 @@ const GymScraper = () => {
                 });
             });
         } else {
-            console.error('An error occurred while fetching the data');
+            console.error('An error occurred while fetching the data. Status:', status);
         }
     };
 
@@ -105,6 +107,9 @@ const GymScraper = () => {
                                 {gym.country} - {gym.state}
                                 <br />
                                 {gym.website}
+                                {gym.bannerUrl && (
+                                    <img src={gym.bannerUrl} alt={gym.name} />
+                                )}
                             </li>
                         ))}
                     </ul>

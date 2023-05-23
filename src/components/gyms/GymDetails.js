@@ -55,15 +55,19 @@ const GymDetails = () => {
         if (!isLoading) {
             const fetchGym = async () => {
                 try {
-                    console.log('Fetching gym:', slug);
                     setGym(null);  // set gym to null before fetching
                     const gymDetails = await getGymBySlug(slug);
-                    console.log('Fetched gym details:', gymDetails);
-                    console.log('All gyms:', gyms); // Log all the gyms from the data layer
-                    setGym(gymDetails);
-                    if (currentUser && gymDetails && gymDetails.subscribers.includes(currentUser.id)) {
-                        setIsSubscribed(true);
+
+                    if(gymDetails) {
+                        setGym(gymDetails);
+                        if (currentUser && gymDetails.subscribers.includes(currentUser.id)) {
+                            setIsSubscribed(true);
+                        }
+                    } else {
+                        // handle the scenario when gymDetails is undefined or null
+                        console.error('Error fetching gym: gymDetails is', gymDetails);
                     }
+
                 } catch (error) {
                     console.error('Error fetching gym:', error);
                 }
@@ -72,6 +76,7 @@ const GymDetails = () => {
             fetchGym();
         }
     }, [slug, currentUser, getGymBySlug, gyms, isLoading]);
+
 
 
 
@@ -93,7 +98,7 @@ const GymDetails = () => {
     const handleGymUpdate = (updatedGym) => {
         // Update gym state with the updated gym details
         setGym(updatedGym);
-        console.log('Updated gym:', updatedGym);
+        // console.log('Updated gym:', updatedGym);
 
         // TODO: Implement method to update gym details in the database
     };
@@ -105,9 +110,6 @@ const GymDetails = () => {
     const closeMapDialog = () => {
         setMapDialogOpen(false);
     };
-
-    console.log('Event details gym:', gyms);
-
 
     return (
         <div>
@@ -166,16 +168,13 @@ const GymDetails = () => {
 
                     <Grid >
                         <Grid item xs={12} sm={6}>
-                            <Button variant="contained" onClick={openMapDialog}>Show Map</Button>
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
                             {/*//This component is used to control the modal which contains the gym editing form*/}
                             {/*<EditGymDetails gym={gym} onUpdate={handleGymUpdate} />*/}
                             <EditGymDetails id={gym.id} onUpdate={handleGymUpdate} />
                             <GymBannerUpload
                                 gymId={gym.id}
                                 onBannerUpload={(bannerUrl) => {
-                                    console.log("Banner uploaded:", bannerUrl);
+                                    // console.log("Banner uploaded:", bannerUrl);
                                     updateGymBannerUrl(gym.id, bannerUrl);
                                 }}
                             />
@@ -205,7 +204,7 @@ const GymDetails = () => {
             <Grid container spacing={2}>
                 {events.map((event) => (
                     <Grid item xs={12} sm={6} md={4} key={event.id}>
-                        <EventCard event={event} />
+                        <EventCard event={event} hideGym />
                     </Grid>
                 ))}
             </Grid>

@@ -28,7 +28,6 @@ const htmlString = '<p>Hello World!</p>';
 const contentState = htmlToDraft(htmlString);
 
 const EditGymDetails = ({ onUpdate, id }) => {
-    // const { id } = useParams();
     const [open, setOpen] = useState(false);
     const [gym, setGym] = useState(null);
     const [updatedGym, setUpdatedGym] = useState(null);
@@ -58,7 +57,7 @@ const EditGymDetails = ({ onUpdate, id }) => {
                 setGym(fetchedGym);
 
                 // Set editor state with the gym's description
-                const contentBlock = htmlToDraft(fetchedGym.description);
+                const contentBlock = htmlToDraft(fetchedGym.description || '');
                 const contentState = contentBlock
                     ? ContentState.createFromBlockArray(contentBlock.contentBlocks)
                     : ContentState.createFromText('');

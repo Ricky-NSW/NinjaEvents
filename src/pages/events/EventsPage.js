@@ -21,24 +21,13 @@ const style = {
 };
 
 function EventsPage() {
-    const { events } = useDataLayer();  // Get events from the DataLayer
+    const { events, isLoading } = useDataLayer();  // Get events and isLoading from the DataLayer
 
-    // useEffect(() => {
-    //     const eventsRef = db.collection('events');
-    //     const unsubscribe = eventsRef.onSnapshot((snapshot) => {
-    //         const eventsArray = snapshot.docs.map((doc) => ({
-    //             id: doc.id,
-    //             ...doc.data(),
-    //         }));
-    //         setEvents(eventsArray);
-    //     });
-    //     // Remove the event listener when the component unmounts
-    //     return () => {
-    //         unsubscribe();
-    //     };
-    // }, []);  // No longer needed to fetch events from Firestore directly
+    if (isLoading) {
+        return <div>Events are Loading...</div>; // Or your preferred loading UI
+    }
 
-    // console.log("Events in EventsPage:", { events });
+    // console.log('events page:', events)
 
     return (
         <div>
