@@ -3,13 +3,12 @@
 // Importing necessary hooks and services from react, firebase and local files.
 import React, { createContext, useContext, useReducer, useEffect, useState, useMemo } from 'react';
 import { db } from '../../FirebaseSetup';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { getFirestore, doc, onSnapshot, updateDoc, collection, query, addDoc } from 'firebase/firestore';
+import { getFirestore, doc, onSnapshot, updateDoc, collection, query, getDocs, addDoc } from 'firebase/firestore';
+
 import reducer, { initialState } from './reducer';
 
 // Creating a data layer context
 export const DataLayerContext = createContext();
-export const useDataLayerValue = () => useContext(DataLayerContext);
 
 // Custom hook to easily use the data layer context
 export const useDataLayer = () => {
@@ -29,57 +28,95 @@ export function DataLayer({ children }) {
     // Initializing state and dispatch from useReducer hook with initialState and reducer.
     const [state, dispatch] = useReducer(reducer, initialState)
 
-    // Fetch gyms from Firestore and set them in state.
+    // Fetch data from Firestore and set them in state.
     useEffect(() => {
         const unsubscribeGyms = fetchGyms();
+        const unsubscribeLeagues = fetchLeagues();
+        const unsubscribeEvents = fetchEvents();
 
         return () => {
             unsubscribeGyms();
+            unsubscribeLeagues();
+            unsubscribeEvents();
         };
     }, []);
 
     const fetchGyms = () => {
         setIsLoading(true);
-        const gymsRef = collection(db, 'gyms');
-        const gymsQuery = query(gymsRef);
-        const unsubscribeGyms = onSnapshot(gymsQuery, (querySnapshot) => {
-            const gymsData = [];
+        const ref = collection(db, 'gyms');
+        const q = query(ref);
+        const unsubscribe = onSnapshot(q, (querySnapshot) => {
+            const data = [];
             querySnapshot.forEach((doc) => {
-                gymsData.push({ ...doc.data(), id: doc.id });
+                data.push({ ...doc.data(), id: doc.id });
             });
-            setGyms(gymsData);
+            setGyms(data);
             setIsLoading(false);
         });
-        return unsubscribeGyms;
+
+        return unsubscribe;
     };
+
+    const fetchLeagues = () => {
+        setIsLoading(true);
+        const ref = collection(db, 'leagues');
+        const q = query(ref);
+        const unsubscribe = onSnapshot(q, (querySnapshot) => {
+            const data = [];
+            querySnapshot.forEach((doc) => {
+                data.push({ ...doc.data(), id: doc.id });
+            });
+            setLeagues(data);
+            setIsLoading(false);
+        });
+
+        return unsubscribe;
+    };
+
+    const fetchEvents = () => {
+        setIsLoading(true);
+        const ref = collection(db, 'events');
+        const q = query(ref);
+        const unsubscribe = onSnapshot(q, (querySnapshot) => {
+            const data = [];
+            querySnapshot.forEach((doc) => {
+                data.push({ ...doc.data(), id: doc.id });
+            });
+            setEvents(data);
+            setIsLoading(false);
+        });
+
+        return unsubscribe;
+    };
+
+
+    const fetchDataFromFirestore = async (collectionName) => {
+        const ref = collection(db, collectionName);
+        const q = query(ref);
+        const querySnapshot = await getDocs(q);
+        const data = [];
+        querySnapshot.forEach((doc) => {
+            data.push({ ...doc.data(), id: doc.id });
+        });
+        return data;
+    };
+
+    const updateGymBannerUrl = async (gymId, bannerUrl) => {
+        const gymDocRef = doc(db, 'gyms', gymId);
+
+        try {
+            await updateDoc(gymDocRef, { bannerUrl });
+            console.log("Gym banner URL updated successfully");
+        } catch (error) {
+            console.error("Error updating gym banner URL: ", error);
+            throw error;
+        }
+    };
+
 
     const getGymBySlug = (gymSlug) => {
         const gym = gyms.find((g) => g.slug === gymSlug);
         return gym || { error: 'Gym not found' };
-    };
-
-    // Fetch leagues from Firestore and set them in state.
-    useEffect(() => {
-        const unsubscribeLeagues = fetchLeagues();
-
-        return () => {
-            unsubscribeLeagues();
-        };
-    }, []);
-
-    const fetchLeagues = () => {
-        setIsLoading(true);
-        const leaguesRef = collection(db, 'leagues');
-        const leaguesQuery = query(leaguesRef);
-        const unsubscribeLeagues = onSnapshot(leaguesQuery, (querySnapshot) => {
-            const leaguesData = [];
-            querySnapshot.forEach((doc) => {
-                leaguesData.push({ ...doc.data(), id: doc.id });
-            });
-            setLeagues(leaguesData);
-            setIsLoading(false);
-        });
-        return unsubscribeLeagues;
     };
 
     const getLeagueBySlug = (leagueSlug) => {
@@ -90,32 +127,6 @@ export function DataLayer({ children }) {
     const getLeagueById = (leagueId) => {
         const league = leagues.find((l) => l.id === leagueId);
         return league;
-    };
-
-    // Fetch events from Firestore and set them in state.
-    useEffect(() => {
-        const unsubscribeEvents = fetchEvents();
-
-        return () => {
-            unsubscribeEvents();
-        };
-    }, []);
-
-    const fetchEvents = () => {
-        setIsLoading(true);
-        const eventsRef = collection(db, 'events');
-        const eventsQuery = query(eventsRef);
-        const unsubscribeEvents = onSnapshot(eventsQuery, (querySnapshot) => {
-            const eventsData = [];
-            querySnapshot.forEach((doc) => {
-                eventsData.push({ ...doc.data(), id: doc.id });
-            });
-            // console.log('datalayer eventsData line 113', eventsData); // Log the fetched data
-
-            setEvents(eventsData);
-            setIsLoading(false);
-        });
-        return unsubscribeEvents;
     };
 
     const fetchEventsForLeague = (leagueId) => {
@@ -204,6 +215,7 @@ export function DataLayer({ children }) {
         updateUserData,
         updateUserDetailsInDB,
         getGymBySlug,
+        updateGymBannerUrl,
         gyms,
         leagues,
         events,

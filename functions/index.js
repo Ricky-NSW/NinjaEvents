@@ -10,7 +10,18 @@ const path = require("path");
 const os = require("os");
 const fs = require("fs");
 
-admin.initializeApp();
+const request = require("request");
+const {v4: uuidv4} = require("uuid");
+
+// const uuidv4 = require("uuid/v4");
+const {Storage} = require("@google-cloud/storage");
+const storage = new Storage();
+
+const serviceAccount = require("./ninjaworld-c885a-firebase-adminsdk-sl3xn-1060c6ff0e.json");
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
 
 
 // notify users when a new event is created
@@ -129,7 +140,6 @@ exports.processEventResults = functions.region("australia-southeast1").firestore
 
 // handles images for gyms leagues and users
 exports.resizeAvatar = functions.region("australia-southeast1").storage.object().onFinalize(async (object) => {
-
   const filePath = object.name;
   const fileName = path.basename(filePath);
   const tempLocalFile = path.join(os.tmpdir(), fileName);
@@ -209,4 +219,55 @@ exports.scheduledFunction = functions.pubsub.schedule("0 20 * * *").timeZone("Au
 
   console.log("Updated events with expired dates");
 });
+
+
+// scrape banner image and move it into firebase storage
+exports.saveGymImageToStorage = functions.region("australia-southeast1").firestore
+    .document("gyms/{gymId}")
+    .onCreate(async (snap, context) => {
+      const gymData = snap.data();
+      const gymId = context.params.gymId;
+
+      if (gymData.scrapedImage && gymData.scrapedImage.startsWith("https://maps.googleapis.com/maps/api/place")) {
+        const imageFileName = `${uuidv4()}.jpg`; // Or any image format supported by the Google Place API
+        const tempImagePath = path.join(os.tmpdir(), imageFileName);
+        const bucketName = "ninjaworld-c885a.appspot.com"; // Replace this with your bucket name
+
+        // Download image from Google's Place API
+        await new Promise((resolve, reject) => {
+          request(gymData.scrapedImage)
+              .pipe(fs.createWriteStream(tempImagePath))
+              .on("error", reject)
+              .on("finish", resolve);
+        });
+
+        // Upload image to Firebase Storage
+        await storage.bucket(bucketName).upload(tempImagePath, {
+          destination: `gyms/${gymId}/banner/${imageFileName}`,
+        });
+
+        try {
+          // Get the download URL of the newly uploaded image
+          const file = storage.bucket(bucketName).file(`gyms/${gymId}/banner/${imageFileName}`);
+          const config = {
+            action: "read", // You may adjust the expiration date
+            expires: Date.now() + 1000 * 60 * 60 * 24 * 365 * 3, // 3 years in the future
+          };
+          const downloadUrl = await file.getSignedUrl(config);
+          console.log(`Generated download URL: ${downloadUrl[0]}`);
+
+          // Save the download URL to Firestore
+          await admin.firestore().collection("gyms").doc(gymId).update({
+            bannerUrl: downloadUrl[0],
+          });
+          console.log("Saved download URL to Firestore");
+        } catch (error) {
+          console.error("Failed to get download URL or update Firestore", error);
+        }
+
+        // Remove temporary image file
+        fs.unlinkSync(tempImagePath);
+      }
+    });
+
 

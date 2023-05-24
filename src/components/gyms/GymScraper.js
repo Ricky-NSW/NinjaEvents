@@ -50,8 +50,8 @@ const GymScraper = () => {
                         };
                         // Get the photo URL if there is at least one photo.
                         if (details.photos && details.photos.length > 0) {
-                            const bannerUrl = details.photos[0].getUrl({maxWidth: 1000, maxHeight: 1000});
-                            gym.bannerUrl = bannerUrl;
+                            const scrapedImage = details.photos[0].getUrl({maxWidth: 1000, maxHeight: 1000});
+                            gym.scrapedImage = scrapedImage;
                         }
                         locationData.push(gym);
                     }
@@ -107,8 +107,8 @@ const GymScraper = () => {
                                 {gym.country} - {gym.state}
                                 <br />
                                 {gym.website}
-                                {gym.bannerUrl && (
-                                    <img src={gym.bannerUrl} alt={gym.name} />
+                                {gym.scrapedImage && (
+                                    <img src={gym.scrapedImage} alt={gym.name} />
                                 )}
                             </li>
                         ))}

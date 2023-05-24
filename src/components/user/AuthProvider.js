@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { auth } from '../../FirebaseSetup';
 import AuthContext from '../../contexts/AuthContext';
 
@@ -15,7 +15,6 @@ const AuthProvider = ({ children }) => {
         // Clean up the listener on unmount
         return () => unsubscribe();
     }, []);
-
 
     if (loading) {
         return <div>Loading...</div>;

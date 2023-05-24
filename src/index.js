@@ -32,7 +32,7 @@ const Root = () => {
     return (
         <React.StrictMode>
             <AuthProvider>
-                <DataLayer initialState={initialState} Reducer={reducer}>
+                <DataLayer initialState={initialState} reducer={reducer}>
                     <ThemeContext.Provider value={{ darkMode, toggleDarkMode }}>
                         <ThemeProvider theme={theme}>
                             <CssBaseline />

@@ -106,3 +106,6 @@ dist
 # //env files
 .env.production
 .env.development
+
+#/// key generated fromfirebase console
+/functions/ninjaworld-c885a-firebase-adminsdk-sl3xn-1060c6ff0e.json

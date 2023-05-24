@@ -8,6 +8,13 @@ const GymBannerUpload = ({ gymId, onBannerUpload }) => {
 
     const handleFileChange = (event) => {
         const file = event.target.files[0];
+
+        // Add a check to ensure the file is an image
+        if (!file.type.startsWith('image/')) {
+            console.error("File type must be an image.");
+            return;
+        }
+
         setBannerFile(file);
     };
 
@@ -16,21 +23,24 @@ const GymBannerUpload = ({ gymId, onBannerUpload }) => {
             setIsLoading(true);
             const storage = getStorage();
 
-            // Add _200x200 to the banner filename before uploading
-            const resizedFileName = `${bannerFile.name.split(".")[0]}_200x200.${bannerFile.name.split(".")[1]}`;
+            // Add _banner to the banner filename before uploading
+            const resizedFileName = `${bannerFile.name.split(".")[0]}_banner.${bannerFile.name.split(".")[1]}`;
 
             // Use resizedFileName instead of bannerFile.name
             const bannerRef = ref(storage, `gyms/uploads/${gymId}/banner/${resizedFileName}`);
-            await uploadBytes(bannerRef, bannerFile);
-
-            const downloadUrl = await getDownloadURL(bannerRef);
-            onBannerUpload(downloadUrl);
-            setIsLoading(false);
+            try {
+                await uploadBytes(bannerRef, bannerFile);
+                const downloadUrl = await getDownloadURL(bannerRef);
+                onBannerUpload(downloadUrl);
+            } catch (error) {
+                console.error("Error uploading banner:", error);
+            } finally {
+                setIsLoading(false);
+            }
         } else {
             console.error("gymId or bannerFile is not set.");
         }
     };
-
 
     return (
         <>

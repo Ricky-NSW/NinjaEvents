@@ -18,7 +18,9 @@
     "firebase-functions": "^4.4.0",
     "install": "^0.13.0",
     "lodash": "^4.17.21",
-    "sharp": "^0.32.1"
+    "request": "^2.88.2",
+    "sharp": "^0.32.1",
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "eslint": "^8.15.0",

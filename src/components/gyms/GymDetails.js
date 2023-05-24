@@ -8,63 +8,61 @@
 //TODO: add a MUI love heart icon that acts as a <Switch /> on this Gym page, when the user clicks the <Switch /> it adds the gym id to an array on the 'user' called 'subscribedGyms'. If they disable the <Switch /> it removes it from the array
 // TODO: SHow all the events that are taking place at this gym
 // TODO: check through all events, look for events with the gym array. if an event has this gym's id in the gym.id document then show that event
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { getFirestore, doc, updateDoc, getDoc, collection, query, where, onSnapshot, arrayUnion, arrayRemove, } from 'firebase/firestore';
+import { useParams, Link } from 'react-router-dom';
+import { Box, Grid, Typography, Avatar, Button, Dialog, DialogTitle, DialogContent, CardMedia } from '@material-ui/core';
+
+// Import components
 import GoogleMapSingle from "../api/GoogleMapSingle";
-// import { useDataLayer } from '../data/DataLayer';
-
-import GoogleMapsApi from "../api/GoogleMapsApi";
-import {auth, db} from "../../FirebaseSetup";
 import { useDataLayer } from '../data/DataLayer';
+import AuthContext from '../../contexts/AuthContext';
+import GoogleMapsApi from "../api/GoogleMapsApi";
+import { auth, db } from "../../FirebaseSetup";
+import IsSubscribedSwitch from "../user/isSubscribedSwitch";
+import EventCard from "../events/EventCard";
+import EditGymDetails from './EditGymDetails';
+import GymBannerUpload from './GymBannerUpload';
+import GalleryImageUpload from './GalleryImageUpload';
 
+// Import UI elements
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import Switch from '@mui/material/Switch';
-import { useParams, Link } from 'react-router-dom';
 import Card from "@mui/material/Card";
 import CardHeader from "@mui/material/CardHeader";
-import {red} from "@mui/material/colors";
+import { red } from "@mui/material/colors";
 import IconButton from "@mui/material/IconButton";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import CardContent from "@mui/material/CardContent";
 import CardActions from "@mui/material/CardActions";
 import GymBannerImage from "./GymBannerImage";
 
-//notifications
+// Import notifications
 import { requestNotificationPermission } from '../messaging/fcm';
-import IsSubscribedSwitch from "../user/isSubscribedSwitch";
-import EventCard from "../events/EventCard";
-
-import { Box, Grid, Typography, Avatar, Button, Dialog, DialogTitle, DialogContent, CardMedia } from '@material-ui/core';
-import EditGymDetails from './EditGymDetails';
-import GymBannerUpload from './GymBannerUpload';
-import GalleryImageUpload from './GalleryImageUpload';
 
 const GymDetails = () => {
-    const { events, currentUser, getGymBySlug, gyms, updateGymBannerUrl, isLoading } = useDataLayer();
-
-    // Getting gym slug from the URL params
+    const { events, getGymBySlug, gyms, updateGymBannerUrl, isLoading } = useDataLayer();
+    const { currentUser, setCurrentUser } = useContext(AuthContext);
     const { slug } = useParams();
 
     const [isSubscribed, setIsSubscribed] = useState(false);
     const [mapDialogOpen, setMapDialogOpen] = useState(false);
-
     const [gym, setGym] = useState(null);
 
     useEffect(() => {
         if (!isLoading) {
             const fetchGym = async () => {
                 try {
-                    setGym(null);  // set gym to null before fetching
+                    setGym(null);
                     const gymDetails = await getGymBySlug(slug);
 
-                    if(gymDetails) {
+                    if (gymDetails) {
                         setGym(gymDetails);
                         if (currentUser && gymDetails.subscribers.includes(currentUser.id)) {
                             setIsSubscribed(true);
                         }
                     } else {
-                        // handle the scenario when gymDetails is undefined or null
                         console.error('Error fetching gym: gymDetails is', gymDetails);
                     }
 
@@ -72,19 +70,14 @@ const GymDetails = () => {
                     console.error('Error fetching gym:', error);
                 }
             };
-
             fetchGym();
         }
     }, [slug, currentUser, getGymBySlug, gyms, isLoading]);
 
-
-
-
     const handleSubscribeToggle = async () => {
         setIsSubscribed(!isSubscribed);
-
         const userDoc = doc(db, 'users', currentUser.uid);
-        if(!isSubscribed){
+        if (!isSubscribed) {
             await updateDoc(userDoc, {
                 subscribedGyms: arrayUnion(slug) // Change id to slug
             });
@@ -96,11 +89,7 @@ const GymDetails = () => {
     };
 
     const handleGymUpdate = (updatedGym) => {
-        // Update gym state with the updated gym details
         setGym(updatedGym);
-        // console.log('Updated gym:', updatedGym);
-
-        // TODO: Implement method to update gym details in the database
     };
 
     const openMapDialog = () => {
@@ -110,6 +99,8 @@ const GymDetails = () => {
     const closeMapDialog = () => {
         setMapDialogOpen(false);
     };
+
+    console.log('user data on gymDetails', currentUser.uid);
 
     return (
         <div>
@@ -166,6 +157,10 @@ const GymDetails = () => {
 
                     <GoogleMapSingle marker={gym} />
 
+                    {/*only users with an id whos id can be found in the gym.ownerUid array can edit the gym, else they can only view the gym*/}
+                    {/*check if there is a current user and if the current user id is in the gym.ownerUid array*/}
+                    {/*or if the user type = admin*/}
+                    {(currentUser && (gym.ownerUid.includes(currentUser.uid) || currentUser.type === 'Admin')) ? (
                     <Grid >
                         <Grid item xs={12} sm={6}>
                             {/*//This component is used to control the modal which contains the gym editing form*/}
@@ -181,6 +176,10 @@ const GymDetails = () => {
                             <GalleryImageUpload gymId={gym.id} />
                         </Grid>
                     </Grid>
+                    ) : (
+                        <Typography>Only the owner of this gym can edit it</Typography>
+                    )}
+
 
                     {/*//This is the modal which contains the map*/}
                     {/*<Dialog*/}
@@ -201,6 +200,7 @@ const GymDetails = () => {
             ) : (
                 <Typography>Could not find gym with slug: {slug}</Typography>
             )}
+            <Typography variant={"h2"}>Events</Typography>
             <Grid container spacing={2}>
                 {events.map((event) => (
                     <Grid item xs={12} sm={6} md={4} key={event.id}>
