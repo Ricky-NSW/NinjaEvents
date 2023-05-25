@@ -32,7 +32,7 @@ const EventDelete = styled(Button)`
 
 const EventDetails = ( userType, handleDelete, ) => {
     const { id } = useParams();
-    const { events, gyms, leagues, currentUser, getEventById, getGymById, getLeagueById } = useDataLayer();
+    const { events, gyms, leagues, currentUser, getEventById } = useDataLayer();
     const [event, setEvent] = useState(null);
     const [open, setOpen] = useState(false); // state for dialog open/closed
     const [searchBox, setSearchBox] = useState(null);
@@ -44,20 +44,44 @@ const EventDetails = ( userType, handleDelete, ) => {
     const [gym, setGym] = useState(null); // Add a state for the gym data
     const [league, setLeague] = useState(null); // Add a state for the league data
 
+    // Add the getGymById function here
+    const getGymById = (gymId) => {
+        const gym = gyms.find((g) => g.id === gymId);
+        return gym || { error: 'Gym not found' };
+    };
+
+    // Add the getLeagueById function here
+    const getLeagueById = (leagueId) => {
+        const league = leagues.find((l) => l.id === leagueId);
+        return league || { error: 'League not found' };
+    };
+
+
     useEffect(() => {
         const event = getEventById(id);
         setEvent(event);
         if (event && event.gym && event.league) {
-            if (event.gym.id) {
-                const gymData = getGymById(event.gym.id);
-                setGym(gymData);
-            } else {
-                setGym(null);
-            }
+            const gymData = getGymById(event.gym.id);
+            setGym(gymData);
             const leagueData = getLeagueById(event.league.id);
             setLeague(leagueData);
         }
-    }, [id, getEventById, getGymById, getLeagueById]);
+    }, [id, getEventById, gyms, leagues]);
+
+    // useEffect(() => {
+    //     const event = getEventById(id);
+    //     setEvent(event);
+    //     if (event && event.gym && event.league) {
+    //         if (event.gym.id) {
+    //             const gymData = getGymById(event.gym.id);
+    //             setGym(gymData);
+    //         } else {
+    //             setGym(null);
+    //         }
+    //         const leagueData = getLeagueById(event.league.id);
+    //         setLeague(leagueData);
+    //     }
+    // }, [id, getEventById, getGymById, getLeagueById]);
 
 
 
@@ -103,6 +127,7 @@ const EventDetails = ( userType, handleDelete, ) => {
 
 
 
+console.log('gym on eventDetails'. getGymById);
 
 // fetch subscribed users
     const fetchSubscribedUsers = async () => {

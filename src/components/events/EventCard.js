@@ -55,28 +55,28 @@ const EventCard = ({ event, handleDelete, userType, hideGym }) => {
     return (
         // If isLoading is true, display Skeleton component
         isLoading ? (
-                <Grid item xs={12} sm={6} md={4} lg={3}>
-                    <Card sx={{ maxWidth: 768 }}>
-                        <CardHeader
-                            avatar={<Skeleton variant="circular" width={40} height={40} />}
-                            title={<Skeleton variant="text" />}
-                            subheader={<Skeleton variant="text" />}
-                        />
-                        <Skeleton variant="rectangular" sx={{ height: 140 }} />
-                        <CardContent>
-                            <Typography gutterBottom variant="h5" component="div">
-                                <Skeleton variant="text" />
-                            </Typography>
-                            <Typography><Skeleton variant="text" /></Typography>
-                            <Typography><Skeleton variant="text" /></Typography>
-                            <Typography><Skeleton variant="text" /></Typography>
-                            <Typography><Skeleton variant="text" /></Typography>
-                        </CardContent>
-                        <CardActions>
-                            <Skeleton variant="text" width="50%" />
-                        </CardActions>
-                    </Card>
-                </Grid>
+            <Grid item xs={12} sm={12} md={12} lg={6} key={event.id}>
+                <Card>
+                    <CardHeader
+                        avatar={<Skeleton variant="circular" width={40} height={40} />}
+                        title={<Skeleton variant="text" />}
+                        subheader={<Skeleton variant="text" />}
+                    />
+                    <Skeleton variant="rectangular" sx={{ height: 140 }} />
+                    <CardContent>
+                        <Typography gutterBottom variant="h5" component="div">
+                            <Skeleton variant="text" />
+                        </Typography>
+                        <Typography><Skeleton variant="text" /></Typography>
+                        <Typography><Skeleton variant="text" /></Typography>
+                        <Typography><Skeleton variant="text" /></Typography>
+                        <Typography><Skeleton variant="text" /></Typography>
+                    </CardContent>
+                    <CardActions>
+                        <Skeleton variant="text" width="50%" />
+                    </CardActions>
+                </Card>
+            </Grid>
         ) : (
             // If isLoading is false, display your actual component
             <Grid item xs={12} sm={6} md={4} lg={3} key={event.id}>

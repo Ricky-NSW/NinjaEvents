@@ -17,7 +17,6 @@ import { Box, Grid, Typography, Avatar, Button, Dialog, DialogTitle, DialogConte
 import GoogleMapSingle from "../api/GoogleMapSingle";
 import { useDataLayer } from '../data/DataLayer';
 import AuthContext from '../../contexts/AuthContext';
-import GoogleMapsApi from "../api/GoogleMapsApi";
 import { auth, db } from "../../FirebaseSetup";
 import IsSubscribedSwitch from "../user/isSubscribedSwitch";
 import EventCard from "../events/EventCard";
@@ -72,6 +71,8 @@ const GymDetails = () => {
             };
             fetchGym();
         }
+        {gym && console.log('gymDetails GymID', gym.id);}
+
     }, [slug, currentUser, getGymBySlug, gyms, isLoading]);
 
     const handleSubscribeToggle = async () => {
@@ -100,7 +101,6 @@ const GymDetails = () => {
         setMapDialogOpen(false);
     };
 
-    console.log('user data on gymDetails', currentUser.uid);
 
     return (
         <div>
@@ -152,7 +152,7 @@ const GymDetails = () => {
 
                         </Grid>
                     </Grid>
-                    {/*<Typography variant={"p"}>{gym.description}</Typography>*/}
+                    {/*<Typography variant="body1>{gym.description}</Typography>*/}
                     <div dangerouslySetInnerHTML={{ __html: gym.description }} />
 
                     <GoogleMapSingle marker={gym} />
@@ -201,13 +201,19 @@ const GymDetails = () => {
                 <Typography>Could not find gym with slug: {slug}</Typography>
             )}
             <Typography variant={"h2"}>Events</Typography>
-            <Grid container spacing={2}>
-                {events.map((event) => (
-                    <Grid item xs={12} sm={6} md={4} key={event.id}>
-                        <EventCard event={event} hideGym />
+            {
+                gym && events.filter(event => event.gym !== null && event.gym.id === gym.id).length ? (
+                    <Grid container spacing={2} columns={{ xs: 4, md: 12 }}>
+                        {events.filter(event => event.gym !== null && event.gym.id === gym.id).map((event) => (
+                            <EventCard event={event} hideGym />
+                        ))}
                     </Grid>
-                ))}
-            </Grid>
+                ) : (
+                    <Typography variant="h3">There are no upcoming events at this gym</Typography>
+                )
+            }
+
+
         </div>
     );
 };

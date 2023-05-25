@@ -38,7 +38,7 @@ export const useGyms = (filters, triggerFetchMore) => {
             ...doc.data(),
         }));
 
-        console.log('Fetched gyms:', fetchedGyms);
+        // console.log('Fetched gyms:', fetchedGyms);
 
         if (triggerFetchMore) {
             setGyms((prevGyms) => [...prevGyms, ...fetchedGyms]);

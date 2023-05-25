@@ -46,7 +46,7 @@ const GymScraper = () => {
                             country: details.address_components.find(component => component.types.includes('country')).long_name,
                             state: details.address_components.find(component => component.types.includes('administrative_area_level_1')).long_name,
                             website: details.website,
-                            ownerUid: 'b3WAv23SnxcPsyGE5TOKsGhilIY2',
+                            ownerUid: 'CLCIef3bDwbI86X72smlXe7Cd4N2',
                         };
                         // Get the photo URL if there is at least one photo.
                         if (details.photos && details.photos.length > 0) {
