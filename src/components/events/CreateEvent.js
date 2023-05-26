@@ -93,7 +93,7 @@ const CreateEvent = () => {
             return;
         }
 
-        if (userType !== 'Gym Owner') {
+        if (userType !== 'Gym Owner' && userType !== 'Admin') {
             setError('Only Gym owners can create an event');
             return;
         }
@@ -109,7 +109,7 @@ const CreateEvent = () => {
                 age,
                 gym: selectedGym.id,
                 createdBy: uid,
-                league: selectedLeague ? { id: selectedLeague.id, ...selectedLeague } : null,
+                leagueId: selectedLeague ? selectedLeague.id : null,
                 name: title,
             };
 

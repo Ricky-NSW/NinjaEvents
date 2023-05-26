@@ -4,7 +4,8 @@
 //TODO: create a list of all the users who have subscribed for the event
 // TODO: allow the gym manager to add a register for this event button which linkns away to the official page
 //TODO can we careate a calendar file from the event
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from "react";
+import AuthContext from '../../contexts/AuthContext';
 import { Link, useParams } from 'react-router-dom';
 import { useDataLayer } from '../data/DataLayer';
 import IsSubscribedSwitch from "../user/isSubscribedSwitch";
@@ -32,7 +33,9 @@ const EventDelete = styled(Button)`
 
 const EventDetails = ( userType, handleDelete, ) => {
     const { id } = useParams();
-    const { events, gyms, leagues, currentUser, getEventById } = useDataLayer();
+    const { events, gyms, leagues, getEventById } = useDataLayer();
+    //TODO check authcontext implementation
+    const { currentUser } = useContext(AuthContext);
     const [event, setEvent] = useState(null);
     const [open, setOpen] = useState(false); // state for dialog open/closed
     const [searchBox, setSearchBox] = useState(null);

@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { auth } from '../../FirebaseSetup';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { db } from '../../FirebaseSetup'; // Replace with your actual import
 import AuthContext from '../../contexts/AuthContext';
 
 const AuthProvider = ({ children }) => {
@@ -8,7 +10,18 @@ const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((user) => {
-            setCurrentUser(user);
+            if (user) {
+                // User is signed in, get additional user data from Firestore
+                const docRef = doc(db, 'users', user.uid);
+                onSnapshot(docRef, (doc) => {
+                    if (doc.exists()) {
+                        setCurrentUser({ uid: doc.id, ...doc.data() });
+                    }
+                });
+            } else {
+                // User is signed out
+                setCurrentUser(null);
+            }
             setLoading(false);
         });
 

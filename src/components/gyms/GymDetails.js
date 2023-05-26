@@ -137,15 +137,18 @@ const GymDetails = () => {
                                 <Avatar alt={gym.name} src={gym.avatarUrl} />
                             ) : null}
                         </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                                <IsSubscribedSwitch
-                                    isSubscribed={isSubscribed}
-                                    handleSubscription={handleSubscribeToggle}
-                                />
-                                <span>Follow this Gym</span>
-                            </div>
-                        </Grid>
+                        {currentUser ? (
+                            <Grid item xs={12} sm={6}>
+                                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                    <IsSubscribedSwitch
+                                        isSubscribed={isSubscribed}
+                                        handleSubscription={handleSubscribeToggle}
+                                    />
+                                    <span>Follow this Gym</span>
+                                </div>
+                            </Grid>) : (<Typography variant={"body2"} >Login to follow this gym and be notified of upcoming events</Typography>)
+                        }
+
                         <Grid item xs={12}>
                             <p>{gym.location}</p>
                             <p>Location: {gym.address}</p>

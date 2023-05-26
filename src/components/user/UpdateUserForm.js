@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import {
     Button,
     Modal,
@@ -10,6 +10,7 @@ import {
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import { useDataLayer } from '../data/DataLayer';
+import AuthContext from '../../contexts/AuthContext';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import UserAvatarUpload from './UserAvatarUpload'; // Add this import
 
@@ -25,7 +26,9 @@ const useStyles = makeStyles((theme) => ({
 
 const UpdateUserForm = () => {
     const classes = useStyles();
-    const { currentUser, updateUserDetailsInDB } = useDataLayer();
+    const {  updateUserDetailsInDB } = useDataLayer();
+    //TODO check authcontext implementation
+    const { currentUser } = useContext(AuthContext);
     const [open, setOpen] = useState(false);
     const [updatedData, setUpdatedData] = useState({});
     const [avatarFile, setAvatarFile] = useState(null);

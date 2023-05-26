@@ -1,5 +1,6 @@
 // GymListPage.js
-import React from 'react';
+import React, { useContext } from "react";
+import AuthContext from '../../contexts/AuthContext';
 import { Link } from 'react-router-dom';
 import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
@@ -22,7 +23,9 @@ const style = {
 };
 
 function UserGymList() {
-    const { currentUser } = useDataLayer(); // Get currentUser from the data layer
+    //TODO check authcontext implementation
+    const { currentUser } = useContext(AuthContext);
+
 
     if (!currentUser) {
         return <div>Loading...</div>;

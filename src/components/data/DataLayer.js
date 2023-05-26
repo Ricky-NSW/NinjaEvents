@@ -1,5 +1,6 @@
 //DataLayer.js
 
+//I am using AuthProvider to handle authentication and user state
 // Importing necessary hooks and services from react, firebase and local files.
 import React, { createContext, useContext, useReducer, useEffect, useState, useMemo } from 'react';
 import { db } from '../../FirebaseSetup';
@@ -116,7 +117,12 @@ export function DataLayer({ children }) {
 
     const getGymBySlug = (gymSlug) => {
         const gym = gyms.find((g) => g.slug === gymSlug);
-        return gym || { error: 'Gym not found' };
+        return gym || { error: 'Gym slug not found' };
+    };
+
+    const getGymById = (gymId) => {
+        const gym = gyms.find((g) => g.slug === gymId);
+        return gym || { error: 'Gym id not found' };
     };
 
     const getLeagueBySlug = (leagueSlug) => {
@@ -129,10 +135,25 @@ export function DataLayer({ children }) {
         return league;
     };
 
+    // const fetchEventsForLeague = (leagueId) => {
+    //     console.log('League ID:', leagueId);
+    //     console.log('All Events:', events);
+    //     const leagueEvents = events.filter(event => {
+    //         console.log('Checking event:', event);
+    //         return event.leagueId === leagueId;
+    //     });
+    //     console.log('Fetched events for league:', leagueEvents);
+    //     return leagueEvents;
+    // };
+
+    //If I refactor league data in the event to only contain the league id, I might need to reconfigure this function.
     const fetchEventsForLeague = (leagueId) => {
-        const leagueEvents = events.filter(event => event.leagueId === leagueId);
+        const leagueEvents = events.filter(event => event.league && event.league.id === leagueId);
+        console.log('Fetched events for league:', leagueEvents);
         return leagueEvents;
     };
+
+
 
     const checkUserSubscriptionToLeague = (leagueId) => {
         if (!currentUser) {
@@ -142,8 +163,9 @@ export function DataLayer({ children }) {
         return subscribedLeagues.includes(leagueId);
     };
 
-    const updateUserSubscriptionToLeague = async (leagueId) => {
+    const updateUserSubscriptionToLeague = async (leagueId, currentUser) => {
         if (!currentUser) {
+            console.error("User is not logged in");
             throw new Error("User is not logged in");
         }
         const userDocRef = doc(db, 'users', currentUser.id);
@@ -215,6 +237,7 @@ export function DataLayer({ children }) {
         updateUserData,
         updateUserDetailsInDB,
         getGymBySlug,
+        getGymById,
         updateGymBannerUrl,
         gyms,
         leagues,

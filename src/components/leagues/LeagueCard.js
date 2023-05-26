@@ -5,7 +5,7 @@ import React from "react";
 const LeagueCard = ({ league }) => (
     <>
         <a
-            href={`leagues/${league.id}`}
+            href={`${league.id}`}
             target="_self"
             rel="noopener noreferrer"
             style={{ textDecoration: 'none', display: 'block', marginBottom: '16px' }}

@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useContext, useState, useEffect, useMemo } from 'react';
+import AuthContext from '../../contexts/AuthContext';
 import { Link } from 'react-router-dom';
 import { useDataLayer } from '../data/DataLayer';
 import EventCard from './EventCard';
@@ -9,7 +10,9 @@ import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 
 const EventsList = ({ events = [], filterDisabled }) => {
-    const { gyms, currentUser, loading } = useDataLayer();
+    const { gyms, loading } = useDataLayer();
+    //TODO check authcontext implementation
+    const { currentUser } = useContext(AuthContext);
     const [gymSearch, setGymSearch] = useState('');
     const [selectedGym, setSelectedGym] = useState(null);
     const [ageSearch, setAgeSearch] = useState('');

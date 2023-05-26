@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from "react";
+import AuthContext from '../../contexts/AuthContext';
 import { Link, useParams } from 'react-router-dom';
 import CardMedia from "@mui/material/CardMedia";
 import Switch from "@mui/material/Switch";
@@ -25,11 +26,11 @@ const LeagueDetails = () => {
     const [isSubscribed, setIsSubscribed] = useState(false);
     const [events, setEvents] = useState([]);
     const [mapDialogOpen, setMapDialogOpen] = useState(false);
+    const { currentUser } = useContext(AuthContext);
 
     const {
         getLeagueById,
         fetchLeagues,
-        currentUser,
         updateUserData,
         fetchEventsForLeague,
         checkUserSubscriptionToLeague,
@@ -37,9 +38,9 @@ const LeagueDetails = () => {
     } = useDataLayer();
 
     // Fetch league data from DataLayer
-    useEffect(() => {
-        fetchLeagues();
-    }, [fetchLeagues]);
+    // useEffect(() => {
+    //     fetchLeagues();
+    // }, [fetchLeagues]);
 
     useEffect(() => {
         const fetchedLeague = getLeagueById(id);
@@ -63,7 +64,7 @@ const LeagueDetails = () => {
     // Handle subscribed/unsubscribed league toggle
     const handleSubscribeToggle = async () => {
         setIsSubscribed(!isSubscribed);
-        await updateUserSubscriptionToLeague(id);
+        await updateUserSubscriptionToLeague(id, currentUser);
     };
 
     // Functions to open and close the map dialog
@@ -74,6 +75,8 @@ const LeagueDetails = () => {
     const closeMapDialog = () => {
         setMapDialogOpen(false);
     };
+
+    // console.log('league details user', currentUser)
 
 
     return (

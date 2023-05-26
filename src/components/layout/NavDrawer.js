@@ -127,16 +127,15 @@ export default function NavDrawer() {
                 <Divider/>
 
                 {/*if the user is a gym owner then show these menu items*/}
-                {userDetails && userDetails.userType === 'Gym Owner' && (
-                    <>
-                    {userDetails.managedGyms.length !== 0 && (
-                        <MenuItem component={Link} to="/addevent"><MenuItemIcon><EmojiEventsIcon /></MenuItemIcon>Add an Event</MenuItem>
+                {userDetails && (userDetails.userType === 'Admin' || userDetails.userType === 'Gym Owner') && (                    <>
+                        {userDetails && (userDetails.userType === 'Admin' || (userDetails.managedGyms && userDetails.managedGyms.length !== 0)) && (
+                            <MenuItem component={Link} to="/addevent"><MenuItemIcon><EmojiEventsIcon /></MenuItemIcon>Add an Event</MenuItem>
                     )}
                         <MenuItem component={Link} to="/events/manage-events"><MenuItemIcon><EmojiEventsIcon /></MenuItemIcon>Manage events at your Gym</MenuItem>
 
                         {/*// if userDetails.managedGym is equal to or less than 0 then show the add gym menu item*/}
                         {/*// if userDetails.managedGym is equal 1 then show the menu item linking to their gym*/}
-                        {userDetails.managedGyms.length === 1 && (
+                        {userDetails && (userDetails.userType === 'Admin' || (userDetails.managedGyms && userDetails.managedGyms.length === 1)) && (
                             <>
                                 <MenuItem component={Link} to="/create-gym"><MenuItemIcon><AddLocationIcon /></MenuItemIcon>Add another Gym</MenuItem>
 
@@ -146,7 +145,7 @@ export default function NavDrawer() {
                             </>
                         )}
                         {/*// if userDetails.managedGym is greater than 1 then show the menu item linking to their gyms*/}
-                        {userDetails.managedGyms.length >= 2 && (
+                        {userDetails && (userDetails.userType === 'Admin' || (userDetails.managedGyms && userDetails.managedGyms.length >= 2)) && (
                             <>
                                 <MenuItem component={Link} to="/create-gym"><MenuItemIcon><AddLocationIcon /></MenuItemIcon>Add another Gym</MenuItem>
 

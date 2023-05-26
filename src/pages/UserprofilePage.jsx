@@ -1,8 +1,10 @@
 // TODO: ADD a control to manage thae avatar image
 
 import React, { useContext, useEffect, useState } from "react";
-import UpdateUserForm from "../components/user/UpdateUserForm";
+import AuthContext from "../contexts/AuthContext";
 import { useDataLayer } from '../components/data/DataLayer';
+
+import UpdateUserForm from "../components/user/UpdateUserForm";
 import { doc, getDoc, getFirestore } from "firebase/firestore";
 import GymCard from '../components/gyms/GymCard';
 import LeagueCard from '../components/leagues/LeagueCard';
@@ -15,8 +17,12 @@ import Paper from '@mui/material/Paper';
 import Divider from '@mui/material/Divider';
 import Skeleton from '@mui/material/Skeleton';
 
+const UserprofilePage = () => {
 
-const Item = styled(Paper)(({ theme }) => ({
+    const { currentUser } = useContext(AuthContext);
+    const { getGymById, getLeagueById, leagues, gyms } = useDataLayer();
+
+    const Item = styled(Paper)(({ theme }) => ({
     // backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
     ...theme.typography.body2,
     padding: theme.spacing(1),
@@ -25,34 +31,10 @@ const Item = styled(Paper)(({ theme }) => ({
     boxShadow: 'none', // Add this line to remove the drop shadow
 }));
 
-const UserprofilePage = () => {
-    const {
-        currentUser,
-        gyms,
-        leagues,
-        getGymById,
-        getLeagueById,
-        // getEventById,
-    } = useDataLayer();
-
-    const {
-        ninjaName,
-        avatarUrl,
-        achievements,
-        country,
-        dob,
-        email,
-        firstName,
-        lastName,
-        phone,
-        trainingDuration,
-        subscribedLeagues,
-        subscribedGyms,
-        favouriteObstacle,
-    } = currentUser || {};
 
 
 
+console.log('manage user page', currentUser)
     if (!currentUser) {
         return (
             <Grid
@@ -99,94 +81,94 @@ const UserprofilePage = () => {
                         component="h1"
                         gutterBottom
                     >
-                        {ninjaName}
+                        {currentUser.ninjaName}
                     </Typography>
 
             </Grid>
             <Grid item xs={4}>
 
                     <Avatar
-                        alt={ninjaName}
-                        src={avatarUrl}
+                        alt={currentUser.ninjaName}
+                        src={currentUser.avatarUrl}
                         sx={{ width: 56, height: 56 }}
                     />
 
             </Grid>
             <Grid item xs={12}>
-                <UpdateUserForm />
+                {/*<UpdateUserForm />*/}
             </Grid>
             <Grid item xs={12}>
                 <Item>
                     <Typography variant="body1" component="p" gutterBottom>
-                        <span style={{ fontWeight: 'bold' }}>Achievements:</span> {achievements}
+                        <span style={{ fontWeight: 'bold' }}>Achievements:</span> {currentUser.achievements}
                     </Typography>
                     <Typography variant="body1" component="p" gutterBottom>
-                        <span style={{ fontWeight: 'bold' }}>Country:</span> {country}
+                        <span style={{ fontWeight: 'bold' }}>Country:</span> {currentUser.country}
                     </Typography>
                     <Typography variant="body1" component="p" gutterBottom>
-                        <span style={{ fontWeight: 'bold' }}>Ninja Name:</span> {ninjaName}
+                        <span style={{ fontWeight: 'bold' }}>Ninja Name:</span> {currentUser.ninjaName}
                     </Typography>
                     <Typography variant="body1" component="p" gutterBottom>
-                        <span style={{ fontWeight: 'bold' }}>Date of Birth:</span> {dob}
+                        <span style={{ fontWeight: 'bold' }}>Date of Birth:</span> {currentUser.dob}
                     </Typography>
                     <Typography variant="body1" component="p" gutterBottom>
-                        <span style={{ fontWeight: 'bold' }}>Email:</span> {email}
+                        <span style={{ fontWeight: 'bold' }}>Email:</span> {currentUser.email}
                     </Typography>
                     <Typography variant="body1" component="p" gutterBottom>
-                        <span style={{ fontWeight: 'bold' }}>First Name:</span> {firstName}
+                        <span style={{ fontWeight: 'bold' }}>First Name:</span> {currentUser.firstName}
                     </Typography>
                     <Typography variant="body1" component="p" gutterBottom>
-                        <span style={{ fontWeight: 'bold' }}>Last Name:</span> {lastName}
+                        <span style={{ fontWeight: 'bold' }}>Last Name:</span> {currentUser.lastName}
                     </Typography>
                     <Typography variant="body1" component="p" gutterBottom>
-                        <span style={{ fontWeight: 'bold' }}>Phone:</span> {phone}
+                        <span style={{ fontWeight: 'bold' }}>Phone:</span> {currentUser.phone}
                     </Typography>
                     <Typography variant="body1" component="p" gutterBottom>
-                        <span style={{ fontWeight: 'bold' }}>How long have you been training?</span> {trainingDuration}
+                        <span style={{ fontWeight: 'bold' }}>How long have you been training?</span> {currentUser.trainingDuration}
                     </Typography>
                     <Typography variant="body1" component="p" gutterBottom>
-                        <span style={{ fontWeight: 'bold' }}>What is your favourite obstacle</span> {favouriteObstacle}
+                        <span style={{ fontWeight: 'bold' }}>What is your favourite obstacle</span> {currentUser.favouriteObstacle}
                     </Typography>
 <br />
                     <Divider>Leagues You're Following</Divider>
                 <br />
                     {/*List of Leagues that the user has subscribed to*/}
-                    {/*{leagues && currentUser.subscribedLeagues && (*/}
-                    {/*    <>*/}
-                    {/*        {currentUser.subscribedLeagues.map((leagueId) => {*/}
-                    {/*            const league = getLeagueById(leagueId);*/}
-                    {/*            return league ? <LeagueCard key={league.id} league={league} /> : null;*/}
-                    {/*        })}*/}
-                    {/*    </>*/}
-                    {/*)}*/}
-
-                    {currentUser.subscribedLeagues && (
+                    {leagues && currentUser.subscribedLeagues && (
                         <>
-                            {currentUser.subscribedLeagues.map((league) => (
-                                <LeagueCard key={league.id} league={league} />
-                            ))}
+                            {currentUser.subscribedLeagues.map((leagueId) => {
+                                const league = getLeagueById(leagueId);
+                                return league ? <LeagueCard key={league.id} league={league} /> : null;
+                            })}
                         </>
                     )}
+
+                    {/*{currentUser.subscribedLeagues && (*/}
+                    {/*    <>*/}
+                    {/*        {currentUser.subscribedLeagues.map((league) => (*/}
+                    {/*            <LeagueCard key={league.id} league={league} />*/}
+                    {/*        ))}*/}
+                    {/*    </>*/}
+                    {/*)}*/}
                     <br />
                     <Divider>Gyms You're Following</Divider>
                     <br />
                     {/*List of Gyms that the user has subscribed to*/}
-                    {/*{gyms && currentUser.subscribedGyms && (*/}
-                    {/*    <>*/}
-                    {/*        {currentUser.subscribedGyms.map((gymId) => {*/}
-                    {/*            const gym = getGymById(gymId);*/}
-                    {/*            return gym ? <GymCard key={gym.id} gym={gym} /> : null;*/}
-                    {/*        })}*/}
-                    {/*    </>*/}
-                    {/*)}*/}
-
-                    {currentUser.subscribedGyms && (
+                    {gyms && currentUser.subscribedGyms && (
                         <>
-                            {currentUser.subscribedGyms.map((gym) => (
-                                <LeagueCard key={gym.id} league={gym} />
-                            ))}
+                            {currentUser.subscribedGyms.map((gymId) => {
+                                const gym = getGymById(gymId);
+                                return gym ? <GymCard key={gym.id} gym={gym} /> : null;
+                            })}
                         </>
                     )}
+
+                    {/*{currentUser.subscribedGyms && (*/}
+                    {/*    <>*/}
+                    {/*        {currentUser.subscribedGyms.map((gym) => (*/}
+                    {/*            <GymCard key={gym.id} league={gym} />*/}
+                    {/*        ))}*/}
+                    {/*    </>*/}
+                    {/*)}*/}
                 </Item>
             </Grid>
         </Grid>
