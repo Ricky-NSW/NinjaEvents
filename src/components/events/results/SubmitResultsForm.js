@@ -175,7 +175,7 @@ const SubmitEventResults = ({ eventId, eventDate }) => {
                         type="text"
                         size="small"
                         sx={{ m: 1, width: '25ch' }}
-                        label="Title of Results (eg. Pre-teens)"
+                        label="Title of Results (eg. Pre-teens OR Pro Males)"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                     />

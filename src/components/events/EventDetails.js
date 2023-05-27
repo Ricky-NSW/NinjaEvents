@@ -17,6 +17,7 @@ import EditEventDetails from './EditEventDetails';
 
 import {getFirestore, doc, getDoc, updateDoc, getDocs, query, collection, where} from 'firebase/firestore';
 import {auth} from "../../FirebaseSetup";
+import { TableContainer, Paper, Table, TableHead, TableRow, TableCell, TableBody } from '@mui/material';
 
 //mui
 import { Card, CardHeader, Avatar, IconButton, CardMedia, CardContent, Typography, CardActions, Button } from '@mui/material';
@@ -46,6 +47,7 @@ const EventDetails = ( userType, handleDelete, ) => {
     const [selectedEvent, setSelectedEvent] = useState(null); // state for selected event to edit
     const [gym, setGym] = useState(null); // Add a state for the gym data
     const [league, setLeague] = useState(null); // Add a state for the league data
+    const [results, setResults] = useState([]);
 
     // Add the getGymById function here
     const getGymById = (gymId) => {
@@ -70,6 +72,9 @@ const EventDetails = ( userType, handleDelete, ) => {
             setLeague(leagueData);
         }
     }, [id, getEventById, gyms, leagues]);
+
+
+
 
     // useEffect(() => {
     //     const event = getEventById(id);
@@ -128,9 +133,23 @@ const EventDetails = ( userType, handleDelete, ) => {
         }
     }, [id, getEventById, getGymById, getLeagueById]);
 
+    const fetchResults = async () => {
+        const eventResultsRef = collection(getFirestore(), 'events', id, 'results');
+        const resultsSnapshot = await getDocs(eventResultsRef);
+        const resultsData = resultsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setResults(resultsData);
+    };
+
+    useEffect(() => {
+        fetchResults();
+    }, [id]);
+
+    useEffect(() => {
+        displayResults();
+    }, [results]);
 
 
-console.log('gym on eventDetails'. getGymById);
+// console.log('gym on eventDetails'.getGymById);
 
 // fetch subscribed users
     const fetchSubscribedUsers = async () => {
@@ -154,8 +173,48 @@ console.log('gym on eventDetails'. getGymById);
         setEditEventOpen(false);
     };
 
-    // {event && <div>{console.log("event league", event.league.id)}</div>}
+    function displayResults() {
+        if (Object.keys(results).length > 0) {
+            return Object.entries(results).map(([divisionId, divisionData]) => {
+                const divisionName = divisionData.name;
 
+                const participants = divisionData.results;
+
+                return (
+                    <div key={divisionId}>
+                        <h3>Division: {divisionName}</h3>
+                        {participants.map((participant, index) => {
+                            const placeLabel = index === 0 ? "First" : index === 1 ? "Second" : index === 2 ? "Third" : `${index + 1}th`;
+                            return (
+                                <div key={participant.id || participant.displayName}>
+                                    {participant.displayName
+                                        ? <div>
+                                            <p>{placeLabel}: {participant.displayName}</p>
+                                        </div>
+                                        : <div>
+                                            <p>{placeLabel}: {participant.firstName} {participant.lastName}</p>
+                                        </div>
+                                    }
+                                </div>
+                            );
+                        })}
+                    </div>
+                );
+            });
+        }
+
+        return <p>No results yet</p>;
+    }
+
+
+
+
+
+
+
+
+    // {event && <div>{console.log("event league", event.league.id)}</div>}
+    console.log(results)
     return (
         <>
         <div>
@@ -195,7 +254,7 @@ console.log('gym on eventDetails'. getGymById);
 
                     {subscribedUsers.length > 0 && (
                         <>
-                            <h3>Subscribed Users</h3>
+                            <h3>Subscribed Ninjas</h3>
                             <ul>
                                 {subscribedUsers.map((user) => (
                                     <li key={user.id}>
@@ -231,23 +290,14 @@ console.log('gym on eventDetails'. getGymById);
                     {/*//TODO: after the events date has passed show the results of the event - this needs to be a notification for the league and gym owner*/}
                     {/*//TODO: once events results have been added, they should be displayed below*/}
                     <SubmitResultsForm eventId={event.id} eventDate={event.date} />
-                    {event.results ? (
+
+                    {Object.keys(results).length > 0 ? (
                         <>
-                        <h3>Event Results</h3>
-                        <ul>
-                            {event.results.map((result) => (
-                                <li key={result.id}>
-                                    <Link to={`/users/${result.id}`}>{result.ninjaName || result.displayName || result.email}</Link>
-                                </li>
-                            ))}
-                        </ul>
+                            {displayResults(results)}
                         </>
                     ) : (
                         <p>No results yet</p>
                     )}
-                    <hr />
-
-                    <br />
                 </>
 
             ) : (
