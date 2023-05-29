@@ -160,20 +160,23 @@ const EventsList = ({ events = [], filterDisabled }) => {
                     />
                 </>
             )}
-            <Container maxWidth={false} disableGutters>
-                <Box>
-                    <Grid container spacing={2} justifyContent="center">
-                        {filteredEvents.map((event) => (
-                            <EventCard
-                                key={event.id}
-                                event={event}
-                                gyms={gyms}
-                                userType={currentUser?.userType}
-                            />
-                        ))}
-                    </Grid>
-                </Box>
-            </Container>
+            <Box
+                sx={{
+                    display: 'grid',
+                    columnGap: 3,
+                    rowGap: 3,
+                    gridTemplateColumns: 'repeat(2, 1fr)',
+                }}
+            >
+                {filteredEvents.map((event) => (
+                    <EventCard
+                        key={event.id}
+                        event={event}
+                        gyms={gyms}
+                        userType={currentUser?.userType}
+                    />
+                ))}
+            </Box>
         </>
     );
 };

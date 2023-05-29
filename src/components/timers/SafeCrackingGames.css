@@ -1,0 +1,56 @@
+.safe-cracking-game {
+    width: 250px;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid black;
+    border-radius: 10px;
+    background-color: #eee;
+}
+
+.display {
+    height: 70px;
+    margin-bottom: 20px;
+    padding: 10px;
+    border: 2px solid black;
+    border-radius: 5px;
+    background-color: red;
+    text-align: right;
+    color: red;
+    font-family: 'Courier New', Courier, monospace; /* this looks like an old calculator font */
+}
+
+.button-panel {
+    display: grid;
+    gap: 10px;
+    border: 2px solid black;
+    padding: 20px;
+    border-radius: 5px;
+}
+
+.button-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.button-panel button {
+    height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 2px solid black;
+    border-radius: 5px;
+    font-size: 20px;
+    background-color: white;
+}
+
+.display{
+    line-height: 20px;
+    text-transform: uppercase;
+}
+
+.display p{
+    margin: 0;
+    font-size: 24px;
+    color: #fff;
+}

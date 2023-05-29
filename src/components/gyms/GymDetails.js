@@ -58,8 +58,11 @@ const GymDetails = () => {
 
                     if (gymDetails) {
                         setGym(gymDetails);
-                        if (currentUser && gymDetails.subscribers.includes(currentUser.id)) {
+                        // Check if the gym's slug is in the user's subscribedGyms array
+                        if (currentUser && currentUser.subscribedGyms && currentUser.subscribedGyms.includes(slug)) {
                             setIsSubscribed(true);
+                        } else {
+                            setIsSubscribed(false);
                         }
                     } else {
                         console.error('Error fetching gym: gymDetails is', gymDetails);
@@ -74,6 +77,7 @@ const GymDetails = () => {
         {gym && console.log('gymDetails GymID', gym.id);}
 
     }, [slug, currentUser, getGymBySlug, gyms, isLoading]);
+
 
     const handleSubscribeToggle = async () => {
         setIsSubscribed(!isSubscribed);
@@ -152,6 +156,7 @@ const GymDetails = () => {
                         <Grid item xs={12}>
                             <p>{gym.location}</p>
                             <p>Location: {gym.address}</p>
+                            <p>ID: {gym.id}</p>
 
                         </Grid>
                     </Grid>
@@ -167,7 +172,6 @@ const GymDetails = () => {
                     <Grid >
                         <Grid item xs={12} sm={6}>
                             {/*//This component is used to control the modal which contains the gym editing form*/}
-                            {/*<EditGymDetails gym={gym} onUpdate={handleGymUpdate} />*/}
                             <EditGymDetails id={gym.id} onUpdate={handleGymUpdate} />
                             <GymBannerUpload
                                 gymId={gym.id}

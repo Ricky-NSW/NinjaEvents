@@ -55,31 +55,31 @@ const EventCard = ({ event, handleDelete, userType, hideGym }) => {
     return (
         // If isLoading is true, display Skeleton component
         isLoading ? (
-            <Grid item xs={12} sm={12} md={12} lg={6} key={event.id}>
-                <Card>
-                    <CardHeader
-                        avatar={<Skeleton variant="circular" width={40} height={40} />}
-                        title={<Skeleton variant="text" />}
-                        subheader={<Skeleton variant="text" />}
-                    />
-                    <Skeleton variant="rectangular" sx={{ height: 140 }} />
-                    <CardContent>
-                        <Typography gutterBottom variant="h5" component="div">
-                            <Skeleton variant="text" />
-                        </Typography>
-                        <Typography><Skeleton variant="text" /></Typography>
-                        <Typography><Skeleton variant="text" /></Typography>
-                        <Typography><Skeleton variant="text" /></Typography>
-                        <Typography><Skeleton variant="text" /></Typography>
-                    </CardContent>
-                    <CardActions>
-                        <Skeleton variant="text" width="50%" />
-                    </CardActions>
-                </Card>
-            </Grid>
+                <Grid item xs={12} sm={12} md={12} lg={6}>
+                    <Card sx={{ maxWidth: 768 }}>
+                        <CardHeader
+                            avatar={<Skeleton variant="circular" width={40} height={40} />}
+                            title={<Skeleton variant="text" />}
+                            subheader={<Skeleton variant="text" />}
+                        />
+                        <Skeleton variant="rectangular" sx={{ height: 140 }} />
+                        <CardContent>
+                            <Typography gutterBottom variant="h5" component="div">
+                                <Skeleton variant="text" />
+                            </Typography>
+                            <Typography><Skeleton variant="text" /></Typography>
+                            <Typography><Skeleton variant="text" /></Typography>
+                            <Typography><Skeleton variant="text" /></Typography>
+                            <Typography><Skeleton variant="text" /></Typography>
+                        </CardContent>
+                        <CardActions>
+                            <Skeleton variant="text" width="50%" />
+                        </CardActions>
+                    </Card>
+                </Grid>
         ) : (
             // If isLoading is false, display your actual component
-            <Grid item xs={12} sm={6} md={4} lg={3} key={event.id}>
+            <Grid item xs={12} sm={6} md={4} lg={6} key={event.id}>
                 <Card sx={{ maxWidth: 768 }}>
                     {!hideGym && (
                         <>
@@ -117,8 +117,8 @@ const EventCard = ({ event, handleDelete, userType, hideGym }) => {
                         <Typography>
                             {gym ? (
                                 <span>
-                Gym: <Link to={`/gyms/${gym.id}`} size="small">{gym.name}</Link>
-              </span>
+                                    Gym: <Link to={`/gyms/${gym.id}`} size="small">{gym.name}</Link>
+                                  </span>
                             ) : (
                                 <span>No gym available</span>
                             )}
@@ -140,7 +140,6 @@ const EventCard = ({ event, handleDelete, userType, hideGym }) => {
                         </Typography>
                     </CardContent>
                     <CardActions>
-                        <Button size="small">Share</Button>
                         <Button component={Link} to={`/events/${event.id}`} size="small">Learn More</Button>
                         {/*{auth.currentUser && (auth.currentUser.uid === event.createdBy || userType === "Admin") ? (*/}
                         {/*    <EventDelete*/}
@@ -154,7 +153,6 @@ const EventCard = ({ event, handleDelete, userType, hideGym }) => {
                         {/*) : null}*/}
                     </CardActions>
                 </Card>
-
             </Grid>
         )
     );

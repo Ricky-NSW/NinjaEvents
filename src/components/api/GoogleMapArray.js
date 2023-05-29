@@ -15,7 +15,7 @@ function GoogleMapArray({ markers = [], onMapLoad, nestedGym }) {
     ), [markers, nestedGym]);
 
 
-    console.log("Map Options:", mapOptions); // Check the mapOptions object in the console
+    // console.log("Map Options:", mapOptions); // Check the mapOptions object in the console
 
     const fitBounds = () => {
         if (!mapRef.current || markerPositions.length === 0) return;

@@ -4,7 +4,8 @@
 //TODO: create a list of all the users who have subscribed for the event
 // TODO: allow the gym manager to add a register for this event button which linkns away to the official page
 //TODO can we careate a calendar file from the event
-import React, { useContext, useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
+
 import AuthContext from '../../contexts/AuthContext';
 import { Link, useParams } from 'react-router-dom';
 import { useDataLayer } from '../data/DataLayer';
@@ -14,6 +15,7 @@ import GymCard from "../gyms/GymCard";
 import LeagueCard from "../leagues/LeagueCard";
 import {formatDate} from '../data/formatDate';
 import EditEventDetails from './EditEventDetails';
+import { onSnapshot } from 'firebase/firestore';
 
 import {getFirestore, doc, getDoc, updateDoc, getDocs, query, collection, where} from 'firebase/firestore';
 import {auth} from "../../FirebaseSetup";
@@ -34,7 +36,7 @@ const EventDelete = styled(Button)`
 
 const EventDetails = ( userType, handleDelete, ) => {
     const { id } = useParams();
-    const { events, gyms, leagues, getEventById } = useDataLayer();
+    const { events, gyms, leagues, getEventById: originalGetEventById } = useDataLayer();
     //TODO check authcontext implementation
     const { currentUser } = useContext(AuthContext);
     const [event, setEvent] = useState(null);
@@ -49,20 +51,24 @@ const EventDetails = ( userType, handleDelete, ) => {
     const [league, setLeague] = useState(null); // Add a state for the league data
     const [results, setResults] = useState([]);
 
-    // Add the getGymById function here
-    const getGymById = (gymId) => {
+    const getEventById = useCallback((id) => {
+        return originalGetEventById(id);
+    }, [events]);
+
+    const getGymById = useCallback((gymId) => {
         const gym = gyms.find((g) => g.id === gymId);
         return gym || { error: 'Gym not found' };
-    };
+    }, [gyms]);
 
-    // Add the getLeagueById function here
-    const getLeagueById = (leagueId) => {
+    const getLeagueById = useCallback((leagueId) => {
         const league = leagues.find((l) => l.id === leagueId);
         return league || { error: 'League not found' };
-    };
+    }, [leagues]);
 
 
     useEffect(() => {
+        console.log('useEffect for fetching event, gym and league data is running. Id: ', id);
+
         const event = getEventById(id);
         setEvent(event);
         if (event && event.gym && event.league) {
@@ -116,6 +122,8 @@ const EventDetails = ( userType, handleDelete, ) => {
     //allow user to register for an event
     useEffect(() => {
         const event = getEventById(id);
+        console.log('useEffect for fetching event, gym and league data is running. Id: ', id);
+
         setEvent(event);
         if (event) {
             if (event.gym && event.gym.id) {
@@ -133,15 +141,20 @@ const EventDetails = ( userType, handleDelete, ) => {
         }
     }, [id, getEventById, getGymById, getLeagueById]);
 
-    const fetchResults = async () => {
+    const fetchResults = () => {
         const eventResultsRef = collection(getFirestore(), 'events', id, 'results');
-        const resultsSnapshot = await getDocs(eventResultsRef);
-        const resultsData = resultsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setResults(resultsData);
+        const unsubscribe = onSnapshot(eventResultsRef, (querySnapshot) => {
+            const resultsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            setResults(resultsData);
+        });
+
+        // Clean up the listener when the component unmounts
+        return unsubscribe;
     };
 
     useEffect(() => {
-        fetchResults();
+        const unsubscribe = fetchResults();
+        return () => unsubscribe();
     }, [id]);
 
     useEffect(() => {
@@ -266,25 +279,27 @@ const EventDetails = ( userType, handleDelete, ) => {
                     )}
 
                     <hr />
-                    <EditEventDetails
-                        open={editEventOpen}
-                        handleClose={handleEditEventClose}
-                        event={event}
-                        gym={gym}
-                        leagues={leagues}
-                    />
+                    {event && (currentUser?.uid === event.createdBy || // Assuming the league admin list is on the league object
+                            (league && league.admins.includes(currentUser?.uid))) &&
+                        <>
+                            <EditEventDetails
+                                open={editEventOpen}
+                                handleClose={handleEditEventClose}
+                                event={event}
+                                gym={gym}
+                                leagues={leagues}
+                            />
 
-
-                    {auth.currentUser && (auth.currentUser.uid === event.createdBy || userType === "Admin") ? (
-                        <EventDelete
-                            onClick={() => handleDelete(event.id)}
-                            size="small"
-                            color="error"
-                            variant="outlined"
-                        >
-                            <DeleteIcon />
-                        </EventDelete>
-                    ) : null}
+                            <EventDelete
+                                onClick={() => handleDelete(event.id)}
+                                size="small"
+                                color="error"
+                                variant="outlined"
+                            >
+                                <DeleteIcon />
+                            </EventDelete>
+                        </>
+                    }
 
 
                     {/*//TODO: after the events date has passed show the results of the event - this needs to be a notification for the league and gym owner*/}

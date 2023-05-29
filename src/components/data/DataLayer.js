@@ -51,6 +51,8 @@ export function DataLayer({ children }) {
             querySnapshot.forEach((doc) => {
                 data.push({ ...doc.data(), id: doc.id });
             });
+            // Sort gyms alphabetically by name
+            data.sort((a, b) => a.name.localeCompare(b.name));
             setGyms(data);
             setIsLoading(false);
         });
@@ -67,12 +69,15 @@ export function DataLayer({ children }) {
             querySnapshot.forEach((doc) => {
                 data.push({ ...doc.data(), id: doc.id });
             });
+            // Sort leagues alphabetically by name
+            data.sort((a, b) => a.name.localeCompare(b.name));
             setLeagues(data);
             setIsLoading(false);
         });
 
         return unsubscribe;
     };
+
 
     const fetchEvents = () => {
         setIsLoading(true);

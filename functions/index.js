@@ -138,7 +138,7 @@ exports.processEventResults = functions.region("australia-southeast1").firestore
       console.log(`Processed event results and sent results for event ${eventName} at ${gymName}`);
     });
 
-// handles images for gyms leagues and users
+// handles avatar images for gyms leagues and users
 exports.resizeAvatar = functions.region("australia-southeast1").storage.object().onFinalize(async (object) => {
   const filePath = object.name;
   const fileName = path.basename(filePath);
@@ -146,8 +146,8 @@ exports.resizeAvatar = functions.region("australia-southeast1").storage.object()
   const tempLocalDir = path.dirname(tempLocalFile);
   const bucket = admin.storage().bucket(object.bucket);
 
-  if (!filePath.startsWith("users/uploads/") && !filePath.startsWith("gyms/uploads/") && !filePath.startsWith("gyms/uploads/gallery/")) {
-    console.log("Not an avatar or gallery image. Exiting...");
+  if (!filePath.startsWith("users/") && !filePath.startsWith("gyms/") && !filePath.startsWith("leagues/")) {
+    console.log("wow what if you done, this image doesnt meet the criteria of 3 types. Exiting...");
     return null;
   }
 
@@ -156,33 +156,43 @@ exports.resizeAvatar = functions.region("australia-southeast1").storage.object()
     return null;
   }
 
-  const uploadType = filePath.startsWith("users/uploads/") ? "users" : "gyms";
+  let uploadType;
+  if (filePath.startsWith("users/")) {
+    uploadType = "users";
+  } else if (filePath.startsWith("gyms/")) {
+    uploadType = "gyms";
+  } else if (filePath.startsWith("leagues/")) {
+    uploadType = "leagues";
+  } else {
+    console.error("Invalid file path: does not start with 'users/', 'gyms/', or 'leagues/'.");
+  }
 
   await fs.promises.mkdir(tempLocalDir, {recursive: true});
   await bucket.file(filePath).download({destination: tempLocalFile});
   console.log("Image downloaded locally to", tempLocalFile);
 
-  if (filePath.startsWith("gyms/uploads/gallery/")) {
+  if (filePath.includes("/gallery/")) {
     // Resize and compress gallery images
+    // TODO: is the images being compressed or resized?
     const resizedFileName = `${fileName.split(".")[0]}_1024x1024.${fileName.split(".")[1]}`;
     const tempResizedLocalFile = path.join(os.tmpdir(), resizedFileName);
     await sharp(tempLocalFile).resize(1024, 1024, {fit: "inside"}).toFile(tempResizedLocalFile);
     console.log("Resized gallery image created at", tempResizedLocalFile);
 
-    const uploadResizedFilePath = `${uploadType}/uploads/gallery/${object.metadata.uid}/${resizedFileName}`;
+    const uploadResizedFilePath = `${uploadType}/gallery/${object.metadata.uid}/${resizedFileName}`;
     await bucket.upload(tempResizedLocalFile, {destination: uploadResizedFilePath});
 
     fs.unlinkSync(tempLocalFile);
     fs.unlinkSync(tempResizedLocalFile);
     console.log("Resized gallery image uploaded to", uploadResizedFilePath);
   } else {
-    // Resize avatars
+    // Not a gallery image? ok then i assume its an avatar  so process it accordingly:
     const resizedFileName = `${fileName.split(".")[0]}_200x200.${fileName.split(".")[1]}`;
     const tempResizedLocalFile = path.join(os.tmpdir(), resizedFileName);
     await sharp(tempLocalFile).resize(200, 200).toFile(tempResizedLocalFile);
     console.log("Resized avatar image created at", tempResizedLocalFile);
 
-    const uploadResizedFilePath = `${uploadType}/uploads/${object.metadata.uid}/${resizedFileName}`;
+    const uploadResizedFilePath = `${uploadType}/avatar/${object.metadata.uid}/${resizedFileName}`;
     await bucket.upload(tempResizedLocalFile, {destination: uploadResizedFilePath});
 
     fs.unlinkSync(tempLocalFile);
@@ -223,7 +233,7 @@ exports.scheduledFunction = functions.pubsub.schedule("0 20 * * *").timeZone("Au
 
 // scrape banner image and move it into firebase storage
 exports.saveGymImageToStorage = functions.region("australia-southeast1").firestore
-    .document("gyms/{gymId}")
+    .document(`gyms/{gymId}`)
     .onCreate(async (snap, context) => {
       const gymData = snap.data();
       const gymId = context.params.gymId;
@@ -243,7 +253,7 @@ exports.saveGymImageToStorage = functions.region("australia-southeast1").firesto
 
         // Upload image to Firebase Storage
         await storage.bucket(bucketName).upload(tempImagePath, {
-          destination: `gyms/${gymId}/banner/${imageFileName}`,
+          destination: `gyms/${gymId}/banner/temp/${imageFileName}`,
         });
 
         try {

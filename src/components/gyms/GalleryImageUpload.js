@@ -61,7 +61,7 @@ const GalleryImageUpload = ({ gymId }) => {
 
     const fetchImages = async () => {
         const storage = getStorage();
-        const storageRef = ref(storage, `gyms/uploads/${gymId}/gallery`);
+        const storageRef = ref(storage, `gyms/${gymId}/gallery/temp/`);
         const imageRefs = await listAll(storageRef);
         const imagePromises = imageRefs.items.map(async (item) => {
             const downloadURL = await getDownloadURL(item);

@@ -31,7 +31,7 @@ function UserGymList() {
         return <div>Loading...</div>;
     }
 
-    console.log('User details on managed gyms', currentUser);
+    // console.log('User details on managed gyms', currentUser);
 
     return (
         <>

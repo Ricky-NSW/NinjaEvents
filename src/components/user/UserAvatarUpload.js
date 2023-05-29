@@ -15,7 +15,7 @@ const UserAvatarUpload = ({ userId, onAvatarUpload }) => {
         if (userId && avatarFile) {
             setIsLoading(true); // Set isLoading to true before starting the upload process
             const storage = getStorage();
-            const avatarRef = ref(storage, `users/uploads/${userId}/${avatarFile.name}`);
+            const avatarRef = ref(storage, `users/${userId}/avatar/temp/${avatarFile.name}`);
             await uploadBytes(avatarRef, avatarFile);
 
             const filename = avatarFile.name.split('.')[0];

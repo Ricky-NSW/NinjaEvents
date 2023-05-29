@@ -43,6 +43,7 @@ import LeagueDetails from "./components/leagues/LeagueDetails";
 //Timers
 import SimpleTimerPage from "./pages/timers/SimpleTimerPage";
 import SimpleTimer from "./components/timers/SimpleTimer";
+import SafeCrackingGame from "./components/timers/safe";
 
 export default function App() {
     return (
@@ -75,6 +76,7 @@ export default function App() {
                     <Route exact path="/leagues/:id" element={<LeagueDetails />} />
                     {/*Timers Pages*/}
                     <Route path="/timers/" element={<SimpleTimerPage />} />
+                    <Route path="/safe/" element={<SafeCrackingGame />} />
                     {/*<Route exact path="/timers/:id" element={<SimpleTimer />} />*/}
                     {/*//element below  is correct (changing it to compeont will break it*/}
                     <Route path="/users/:userId/timers/:timerId" element={<SimpleTimer />} />

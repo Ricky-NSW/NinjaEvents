@@ -125,6 +125,7 @@ const EditEventDetails = ({ event, gym, leagues }) => {
                             required
                             fullWidth
                         >
+                            //TODO: Make it so that only the gyms owned by the user are shown - unless its admin then show all the gyms
                             {gyms.map((gym) => (
                                 <MenuItem key={gym.id} value={gym.id}>
                                     {gym.name}

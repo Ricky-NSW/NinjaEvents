@@ -73,11 +73,15 @@ const SubmitEventResults = ({ eventId, eventDate }) => {
                     <Autocomplete
                         options={users}
                         getOptionLabel={(user) => {
+                            if (typeof user === 'string') {
+                                return user;
+                            }
                             if (user.firstName && user.lastName) {
                                 return `${user.firstName} ${user.lastName}`;
                             }
                             return user.ninjaName || user.displayName || user.email;
                         }}
+
                         isOptionEqualToValue={(option, value) => option.id === value.id || value === ''}
                         renderInput={(params) => <TextField {...params} label={`User at place ${i}`} onBlur={(event) => handleManualEnter(i - 1, event)} />}
                         renderOption={(props, option, { inputValue }) => (
@@ -87,8 +91,8 @@ const SubmitEventResults = ({ eventId, eventDate }) => {
                         )}
                         onChange={(event, newValue) => {
                             const newResults = [...results];
-                            if (typeof newValue === 'string' || Object.keys(newValue).length === 0) {
-                                const inputValue = event.target.value.trim();
+                            if (typeof newValue === 'string' || newValue === null || Object.keys(newValue).length === 0) {
+                                const inputValue = (typeof newValue === 'string' ? newValue : event.target.value).trim();
                                 if (inputValue) {
                                     newResults[i - 1] = { displayName: inputValue };
                                 }
@@ -102,6 +106,8 @@ const SubmitEventResults = ({ eventId, eventDate }) => {
                             }
                             setResults(newResults);
                         }}
+
+
                         filterOptions={(options, state) => {
                             if (state.inputValue.length >= 4) {
                                 return options.filter((option) => {

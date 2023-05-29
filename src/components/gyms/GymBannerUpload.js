@@ -27,7 +27,7 @@ const GymBannerUpload = ({ gymId, onBannerUpload }) => {
             const resizedFileName = `${bannerFile.name.split(".")[0]}_banner.${bannerFile.name.split(".")[1]}`;
 
             // Use resizedFileName instead of bannerFile.name
-            const bannerRef = ref(storage, `gyms/uploads/${gymId}/banner/${resizedFileName}`);
+            const bannerRef = ref(storage, `gyms/${gymId}/banner/${resizedFileName}`);
             try {
                 await uploadBytes(bannerRef, bannerFile);
                 const downloadUrl = await getDownloadURL(bannerRef);

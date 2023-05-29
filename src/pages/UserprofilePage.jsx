@@ -141,14 +141,6 @@ console.log('manage user page', currentUser)
                             })}
                         </>
                     )}
-
-                    {/*{currentUser.subscribedLeagues && (*/}
-                    {/*    <>*/}
-                    {/*        {currentUser.subscribedLeagues.map((league) => (*/}
-                    {/*            <LeagueCard key={league.id} league={league} />*/}
-                    {/*        ))}*/}
-                    {/*    </>*/}
-                    {/*)}*/}
                     <br />
                     <Divider>Gyms You're Following</Divider>
                     <br />
@@ -161,6 +153,40 @@ console.log('manage user page', currentUser)
                             })}
                         </>
                     )}
+
+                    <br />
+                    {/*display all gyms that have this users id as that gyms ownerUid*/}
+                    {leagues && leagues.filter((league) => league.AdminUid && league.AdminUid.includes(currentUser.uid)).length > 0 && (
+                        <>
+                            <Divider>Leagues You're Managing</Divider>
+                            <br />
+                            {leagues.filter((league) => league.AdminUid && league.AdminUid.includes(currentUser.uid)).map((league) => (
+                                <LeagueCard key={league.id} league={league} />
+                            ))}
+                        </>
+                    )}
+                    {console.log('leagues', leagues)}
+
+                    <br />
+                    {gyms && gyms.filter((gym) => gym.ownerUid && gym.ownerUid.includes(currentUser.uid)).length > 0 && (
+                        <>
+                            <Divider>Gyms You're managing</Divider>
+                            <br />
+                            {gyms.filter((gym) => gym.ownerUid && gym.ownerUid.includes(currentUser.uid)).map((gym) => (
+                                <GymCard key={gym.id} gym={gym} />
+                            ))}
+                        </>
+                    )}
+
+                    <Typography
+                        variant="body2"
+                        component="p"
+                        gutterBottom
+                        sx={{ fontStyle: 'italic', color: 'text.disabled' }}
+
+                    >
+                        {currentUser.id}
+                    </Typography>
 
                     {/*{currentUser.subscribedGyms && (*/}
                     {/*    <>*/}

@@ -1,7 +1,9 @@
 // TODO: redirect to the event on submit
-import React, { useState, useEffect } from 'react';
+//TODO: get data from datalayer
+import React, {useState, useEffect, useContext} from 'react';
 import { Link } from 'react-router-dom';
 import { stateToHTML } from 'draft-js-export-html';
+import authContext from "../../contexts/AuthContext";
 
 //Firebase
 import firebase, { db, auth } from '../../FirebaseSetup';
@@ -37,7 +39,6 @@ import { convertToRaw } from 'draft-js';
 
 const CreateEvent = () => {
     const {
-        currentUser,
         gyms,
         leagues,
         events,
@@ -48,7 +49,10 @@ const CreateEvent = () => {
         getEventById,
         addEvent,
         updateEvent,
+        isLoading,
     } = useDataLayer();
+    const { currentUser } = useContext(authContext);
+
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [price, setPrice] = useState('');
@@ -84,12 +88,17 @@ const CreateEvent = () => {
     const handleSubmit = async (e) => {
         //TODO: on submit redirect to the event page
         e.preventDefault();
-        if (!gyms) {
+        if (!userGyms) {
             setError('You need to be logged in to create an event');
             return;
         }
         if (!title) {
             setError('Event Name is required');
+            return;
+        }
+
+        if (!selectedGym) {
+            setError('A gym must be selected');
             return;
         }
 
@@ -216,18 +225,24 @@ const CreateEvent = () => {
     }, [showAlert]);
 
 
-    // If there is only one gym, set it as the default address
-    useEffect(() => {
-        if (gyms.length === 1) {
-            setSelectedGym(gyms[0]);
-        }
-    }, [gyms]);
+    // find all gyms that the current user owns
+    // gym.ownerUid.includes(currentUser.uid)
+    const userGyms = gyms.filter((gym) => gym.ownerUid.includes(currentUser.uid));
+console.log('users gyms', userGyms);
 
+    if (currentUser) {
+        console.log('create event user uid', currentUser.uid);
+    } else {
+        console.log('User not loaded yet');
+    }
 
+    if (isLoading) {
+        return <div>Loading...</div>;
+    }
 
     return (
         <>
-            {gyms.length === 0 && (
+            {userGyms.length === 0 && (
                 <Alert severity="error">
                     You need to create a gym before you can create an event
                 </Alert>
@@ -293,26 +308,26 @@ const CreateEvent = () => {
                     fullWidth
                 />
 
-                {gyms.length === 1 ? (
+                {userGyms.length === 1 ? (
                     //use the default gym id
                     //set gymId to the first gym in the array
                     <TextField
                         label="Gym Address"
                         variant="outlined"
-                        value={gyms[0].name}
+                        value={userGyms[0].name}
                         margin="normal"
                         required
                         fullWidth
                         style={{ display: "none" }}
                     />
 
-                ) : gyms.length > 1 ? (
+                ) : userGyms.length > 1 ? (
                     <TextField
                         select
-                        label="Select Gym"
+                        label="Select Gym *"
                         value={selectedGym?.id || ""}
                         onChange={(e) => {
-                            const gym = gyms.find((g) => g.id === e.target.value);
+                            const gym = userGyms.find((g) => g.id === e.target.value);
                             setSelectedGym(gym);
                         }}
                         variant="outlined"
@@ -320,21 +335,24 @@ const CreateEvent = () => {
                         required
                         fullWidth
                     >
-                        {gyms.map((gym) => (
-                            <MenuItem key={gym.id} value={gym.id}>
-                                {gym.name}
-                            </MenuItem>
-                        ))}
+                        {gyms
+                            .sort((a, b) => a.name.localeCompare(b.name))
+                            .map((gym) => (
+                                <MenuItem key={gym.id} value={gym.id}>
+                                    {gym.name}
+                                </MenuItem>
+                            ))}
+
                     </TextField>
 
-                ) : gyms.length === 0 ? (
+                ) : userGyms.length === 0 ? (
                     <Button
                         variant="contained"
                         color="primary"
                         component={Link}
                         to="/create-gym"
                     >
-                        You need to ad your Gym before you can create an event.
+                        There are no Gyms on your account, if this is an error please contact support #CE3342.
                     </Button>
                 ) : (
                     <div style={{ display: "none" }} />

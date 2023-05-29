@@ -13,23 +13,48 @@ const GymAvatarUpload = ({ gymId, onAvatarUpload }) => {
 
     const handleAvatarUpload = async () => {
         if (gymId && avatarFile) {
-            setIsLoading(true); // Set isLoading to true before starting the upload process
+            setIsLoading(true);
             const storage = getStorage();
-            const avatarRef = ref(storage, `gyms/uploads/${gymId}/${avatarFile.name}`);
+
+            // Upload the original image
+            const avatarRef = ref(storage, `gyms/${gymId}/avatar/temp/${avatarFile.name}`);
             await uploadBytes(avatarRef, avatarFile);
 
+            // Get the URL of the original image
+            const originalUrl = await getDownloadURL(avatarRef);
+
+            // Show the original image first
+            onAvatarUpload(originalUrl);
+
+            // Get the expected path of the resized image
             const filename = avatarFile.name.split('.')[0];
             const extension = avatarFile.name.split('.')[1];
-            const resizedAvatarRef = ref(storage, `gyms/uploads/${gymId}/avatars/${filename}_200x200.${extension}`);
-            console.log("Resized avatar reference:", resizedAvatarRef);
+            // check here for the processed image at a different location
+            const resizedAvatarRef = ref(storage, `gyms/${gymId}/avatar/${filename}_200x200.${extension}`);
 
-            const downloadUrl = await getDownloadURL(resizedAvatarRef);
-            onAvatarUpload(downloadUrl);
-            setIsLoading(false); // Set isLoading to false after the upload process is complete
+            // Start a loop to check for the resized image
+            const checkForResizedImage = setInterval(async () => {
+                try {
+                    // Try to get the URL of the resized image
+                    const resizedUrl = await getDownloadURL(resizedAvatarRef);
+
+                    // If getting the URL is successful, that means the resized image is ready
+                    onAvatarUpload(resizedUrl);
+
+                    // Clear the interval after the resized image is found
+                    clearInterval(checkForResizedImage);
+                    setIsLoading(false);
+                } catch (error) {
+                    // If getting the URL is not successful, that means the resized image is not ready yet
+                    // So, do nothing and wait for the next interval
+                }
+            }, 5000); // Check every 5 seconds
         } else {
             console.error("gymId or avatarFile is not set.");
         }
     };
+
+
 
 
     return (
