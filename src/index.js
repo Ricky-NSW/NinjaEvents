@@ -16,6 +16,7 @@ import ThemeContext from './contexts/ThemeContext';
 import CssBaseline from '@mui/material/CssBaseline';
 import getTheme from './components/theming/theme';
 import createThemeOptions from './components/theming/theme';
+import { colors } from './components/theming/colors';
 
 //MUI date localization
 
@@ -26,7 +27,7 @@ const Root = () => {
 
     const [darkMode, setDarkMode] = useState(false);
     const toggleDarkMode = () => setDarkMode((prevMode) => !prevMode);
-    const theme = createTheme(createThemeOptions(darkMode ? 'dark' : 'light'));
+    const theme = createTheme(createThemeOptions(darkMode ? 'dark' : 'light', colors));
 
 
     return (

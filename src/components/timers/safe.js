@@ -1,7 +1,7 @@
 import './SafeCrackingGames.css';
 import React, { useState, useEffect } from "react";
 
-const correctPin = [1, 9, 7, 3, 4, 6, 2, 8, 5];
+const correctPin = [1, 2, 8, 5];
 
 const SafeCrackingGame = () => {
     const [pin, setPin] = useState([]);

@@ -1,12 +1,20 @@
 //todo centre the mao to contain all markers
 //todo add marker clustering
-import React, { useEffect, useRef, useMemo, useCallback } from "react";
+import React, { useEffect, useRef, useMemo, useCallback, useState } from "react";
 import { GoogleMap, Marker, MarkerClusterer } from "@react-google-maps/api";
 import {mapOptions} from "./mapOptions";
 import { useNavigate } from 'react-router-dom';
 
 function GoogleMapArray({ markers = [], onMapLoad, nestedGym }) {
     const mapRef = useRef(null);
+    const [showMarkers, setShowMarkers] = useState(false); // new state
+
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            setShowMarkers(true); // show markers after 5 seconds
+        }, 5000);
+        return () => clearTimeout(timeoutId); // clear timeout if the component unmounts
+    }, []);
 
     const markerPositions = useMemo(() => markers.map((marker) =>
         nestedGym
@@ -79,26 +87,28 @@ function GoogleMapArray({ markers = [], onMapLoad, nestedGym }) {
                 onLoad={handleMapLoad}
                 mapContainerStyle={{ height: "500px", width: "100%" }}
             >
-                <MarkerClusterer
-                    options={{ imagePath: "https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m" }}
-                >
-                    {(clusterer) =>
-                        validMarkers.map((marker) => {
-                            const position = nestedGym
-                                ? { lat: Number(marker.gym.latitude), lng: Number(marker.gym.longitude) }
-                                : { lat: Number(marker.latitude), lng: Number(marker.longitude) };
+                {showMarkers && (
+                    <MarkerClusterer
+                        options={{ imagePath: "https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m" }}
+                    >
+                        {(clusterer) =>
+                            validMarkers.map((marker) => {
+                                const position = nestedGym
+                                    ? { lat: Number(marker.gym.latitude), lng: Number(marker.gym.longitude) }
+                                    : { lat: Number(marker.latitude), lng: Number(marker.longitude) };
 
-                            return (
-                                <Marker
-                                    key={marker.id}
-                                    position={position}
-                                    onClick={() => handleMarkerClick(marker)}
-                                    clusterer={clusterer}
-                                />
-                            );
-                        })
-                    }
-                </MarkerClusterer>
+                                return (
+                                    <Marker
+                                        key={marker.id}
+                                        position={position}
+                                        onClick={() => handleMarkerClick(marker)}
+                                        clusterer={clusterer}
+                                    />
+                                );
+                            })
+                        }
+                    </MarkerClusterer>
+                )}
             </GoogleMap>
 
         </>

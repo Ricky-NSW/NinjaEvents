@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, CircularProgress } from '@material-ui/core';
+import { Button, CircularProgress } from '@mui/material';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 const LeagueAvatarUpload = ({ leagueId, onAvatarUpload }) => {

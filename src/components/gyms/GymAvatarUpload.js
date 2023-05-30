@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Button, CircularProgress } from '@material-ui/core';
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { Button, CircularProgress } from '@mui/material';
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
 const GymAvatarUpload = ({ gymId, onAvatarUpload }) => {
     const [avatarFile, setAvatarFile] = useState(null);
@@ -11,50 +11,61 @@ const GymAvatarUpload = ({ gymId, onAvatarUpload }) => {
         setAvatarFile(file);
     };
 
-    const handleAvatarUpload = async () => {
+    const handleAvatarUpload = () => {
         if (gymId && avatarFile) {
             setIsLoading(true);
             const storage = getStorage();
 
-            // Upload the original image
+            const metadata = {
+                customMetadata: {
+                    'id': gymId,
+                },
+            };
+            console.log('Metadata before being passed: ', metadata);
+
             const avatarRef = ref(storage, `gyms/${gymId}/avatar/temp/${avatarFile.name}`);
-            await uploadBytes(avatarRef, avatarFile);
+            const uploadTask = uploadBytesResumable(avatarRef, avatarFile, metadata);
 
-            // Get the URL of the original image
-            const originalUrl = await getDownloadURL(avatarRef);
+            uploadTask.on('state_changed',
+                (snapshot) => {
+                    // Observe state change events such as progress, pause, and resume
+                },
+                (error) => {
+                    // Handle unsuccessful uploads
+                    console.error("Upload failed:", error);
+                },
+                () => {
+                    // Handle successful uploads on complete
+                    getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+                        console.log('File available at', downloadURL);
+                        onAvatarUpload(downloadURL);  // Show the original image first
 
-            // Show the original image first
-            onAvatarUpload(originalUrl);
+                        const filename = avatarFile.name.split('.')[0];
+                        const extension = avatarFile.name.split('.')[1];
+                        const resizedAvatarRef = ref(storage, `gyms/${gymId}/avatar/${filename}_200x200.${extension}`);
 
-            // Get the expected path of the resized image
-            const filename = avatarFile.name.split('.')[0];
-            const extension = avatarFile.name.split('.')[1];
-            // check here for the processed image at a different location
-            const resizedAvatarRef = ref(storage, `gyms/${gymId}/avatar/${filename}_200x200.${extension}`);
-
-            // Start a loop to check for the resized image
-            const checkForResizedImage = setInterval(async () => {
-                try {
-                    // Try to get the URL of the resized image
-                    const resizedUrl = await getDownloadURL(resizedAvatarRef);
-
-                    // If getting the URL is successful, that means the resized image is ready
-                    onAvatarUpload(resizedUrl);
-
-                    // Clear the interval after the resized image is found
-                    clearInterval(checkForResizedImage);
-                    setIsLoading(false);
-                } catch (error) {
-                    // If getting the URL is not successful, that means the resized image is not ready yet
-                    // So, do nothing and wait for the next interval
+                        // Start a loop to check for the resized image
+                        const checkForResizedImage = setInterval(async () => {
+                            try {
+                                const resizedUrl = await getDownloadURL(resizedAvatarRef);
+                                onAvatarUpload(resizedUrl);  // Show the resized image
+                                clearInterval(checkForResizedImage);
+                                setIsLoading(false);
+                            } catch (error) {
+                                // Resized image is not ready yet
+                            }
+                        }, 5000);  // Check every 5 seconds
+                    });
                 }
-            }, 5000); // Check every 5 seconds
+            );
         } else {
             console.error("gymId or avatarFile is not set.");
         }
     };
 
 
+
+    console.log('gym avatar gymid', gymId)
 
 
     return (

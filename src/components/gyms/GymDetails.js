@@ -11,7 +11,7 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { getFirestore, doc, updateDoc, getDoc, collection, query, where, onSnapshot, arrayUnion, arrayRemove, } from 'firebase/firestore';
 import { useParams, Link } from 'react-router-dom';
-import { Box, Grid, Typography, Avatar, Button, Dialog, DialogTitle, DialogContent, CardMedia } from '@material-ui/core';
+import { Box, Grid, Typography, Avatar, Button, Dialog, DialogTitle, DialogContent, CardMedia } from '@mui/material';
 
 // Import components
 import GoogleMapSingle from "../api/GoogleMapSingle";

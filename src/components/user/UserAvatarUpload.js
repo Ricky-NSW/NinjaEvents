@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, CircularProgress } from '@material-ui/core';
+import { Button, CircularProgress } from '@mui/material';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 const UserAvatarUpload = ({ userId, onAvatarUpload }) => {
@@ -13,6 +13,14 @@ const UserAvatarUpload = ({ userId, onAvatarUpload }) => {
 
     const handleAvatarUpload = async () => {
         if (userId && avatarFile) {
+
+
+            const metadata = {
+                customMetadata: {
+                    'id': userId,
+                },
+            };
+
             setIsLoading(true); // Set isLoading to true before starting the upload process
             const storage = getStorage();
             const avatarRef = ref(storage, `users/${userId}/avatar/temp/${avatarFile.name}`);

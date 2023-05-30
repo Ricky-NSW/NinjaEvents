@@ -7,8 +7,8 @@ import {
     Typography,
     Grid,
     Paper,
-} from '@material-ui/core';
-import { makeStyles } from '@material-ui/core/styles';
+} from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { useDataLayer } from '../data/DataLayer';
 import AuthContext from '../../contexts/AuthContext';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';

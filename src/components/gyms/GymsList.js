@@ -65,8 +65,9 @@ const GymsList = () => {
                 hasMore={hasMore}
                 loader={gyms.length === 0 && <h4>Loading...</h4>}
             >
+                <br />
                 {gyms.map((gym, index) => (
-                    <GymCard key={`${gym.name}-${index}`} gym={gym} />
+                    <GymCard key={`${gym.name}-${index}`} gym={gym} isLoading={loading} index={index}/>
                 ))}
             </InfiniteScroll>
         </>

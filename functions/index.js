@@ -146,8 +146,18 @@ exports.resizeAvatar = functions.region("australia-southeast1").storage.object()
   const tempLocalDir = path.dirname(tempLocalFile);
   const bucket = admin.storage().bucket(object.bucket);
 
+  console.log("Processing file:", filePath);
+  console.log("Object metadata:", object.metadata);
+  console.log("Object metadata id:", object.metadata.id);
+
+  if (object.metadata && object.metadata.id) {
+    console.log("Object metadata id:", object.metadata.id);
+  } else {
+    console.error("No custom metadata or id found.");
+  }
+
   if (!filePath.startsWith("users/") && !filePath.startsWith("gyms/") && !filePath.startsWith("leagues/")) {
-    console.log("wow what if you done, this image doesnt meet the criteria of 3 types. Exiting...");
+    console.log("This image doesn't meet the criteria of the 3 types. Exiting...");
     return null;
   }
 
@@ -165,43 +175,97 @@ exports.resizeAvatar = functions.region("australia-southeast1").storage.object()
     uploadType = "leagues";
   } else {
     console.error("Invalid file path: does not start with 'users/', 'gyms/', or 'leagues/'.");
+    return null;
   }
 
+  console.log("Image upload type determined as:", uploadType);
+
   await fs.promises.mkdir(tempLocalDir, {recursive: true});
-  await bucket.file(filePath).download({destination: tempLocalFile});
-  console.log("Image downloaded locally to", tempLocalFile);
+  console.log("Temporary local directory created:", tempLocalDir);
+
+  try {
+    await bucket.file(filePath).download({destination: tempLocalFile});
+    console.log("Image downloaded locally to", tempLocalFile);
+  } catch (error) {
+    console.error("Error downloading file:", error);
+    return null;
+  }
 
   if (filePath.includes("/gallery/")) {
-    // Resize and compress gallery images
-    // TODO: is the images being compressed or resized?
     const resizedFileName = `${fileName.split(".")[0]}_1024x1024.${fileName.split(".")[1]}`;
     const tempResizedLocalFile = path.join(os.tmpdir(), resizedFileName);
-    await sharp(tempLocalFile).resize(1024, 1024, {fit: "inside"}).toFile(tempResizedLocalFile);
-    console.log("Resized gallery image created at", tempResizedLocalFile);
 
-    const uploadResizedFilePath = `${uploadType}/gallery/${object.metadata.uid}/${resizedFileName}`;
+    try {
+      await sharp(tempLocalFile).resize(1024, 1024, {fit: "inside"}).toFile(tempResizedLocalFile);
+      console.log("Resized gallery image created at", tempResizedLocalFile);
+    } catch (error) {
+      console.error("Error resizing gallery image:", error);
+      return null;
+    }
+
+    const uploadResizedFilePath = `${uploadType}/${object.metadata.id}/gallery/${resizedFileName}`;
     await bucket.upload(tempResizedLocalFile, {destination: uploadResizedFilePath});
 
     fs.unlinkSync(tempLocalFile);
     fs.unlinkSync(tempResizedLocalFile);
     console.log("Resized gallery image uploaded to", uploadResizedFilePath);
   } else {
-    // Not a gallery image? ok then i assume its an avatar  so process it accordingly:
+    // assume it's an avatar image
     const resizedFileName = `${fileName.split(".")[0]}_200x200.${fileName.split(".")[1]}`;
     const tempResizedLocalFile = path.join(os.tmpdir(), resizedFileName);
-    await sharp(tempLocalFile).resize(200, 200).toFile(tempResizedLocalFile);
-    console.log("Resized avatar image created at", tempResizedLocalFile);
 
-    const uploadResizedFilePath = `${uploadType}/avatar/${object.metadata.uid}/${resizedFileName}`;
+    try {
+      await sharp(tempLocalFile).resize(200, 200).toFile(tempResizedLocalFile);
+      console.log("Resized avatar image created at", tempResizedLocalFile);
+    } catch (error) {
+      console.error("Error resizing avatar image:", error);
+      return null;
+    }
+
+    // object.metadata.id works
+    const id = object.metadata ? object.metadata.id : null;
+
+    if (!id) {
+      console.error("Invalid metadata: 'id' not present in customMetadata.");
+      return null;
+    }
+
+    console.log("Received metadata id:", id);
+
+    const uploadResizedFilePath = `${uploadType}/${object.metadata.id}/avatar/${resizedFileName}`;
     await bucket.upload(tempResizedLocalFile, {destination: uploadResizedFilePath});
 
     fs.unlinkSync(tempLocalFile);
     fs.unlinkSync(tempResizedLocalFile);
     console.log("Resized avatar image uploaded to", uploadResizedFilePath);
+
+    const file = bucket.file(uploadResizedFilePath);
+    const config = {
+      action: "read",
+      expires: Date.now() + 1000 * 60 * 60 * 24 * 365 * 3, // 3 years in the future
+    };
+    const downloadUrl = await file.getSignedUrl(config);
+
+    if (uploadType === "gyms") {
+      await admin.firestore().collection("gyms").doc(id).update({
+        avatarUrl: downloadUrl[0],
+      });
+    } else if (uploadType === "leagues") {
+      await admin.firestore().collection("leagues").doc(id).update({
+        avatarUrl: downloadUrl[0],
+      });
+    } else if (uploadType === "users") {
+      await admin.firestore().collection("users").doc(id).update({
+        avatarUrl: downloadUrl[0],
+      });
+    }
   }
 
+
+  console.log("Image processing function completed.");
   return null;
 });
+
 
 exports.scheduledFunction = functions.pubsub.schedule("0 20 * * *").timeZone("Australia/Sydney").onRun(async (context) => {
   // Your code to check Firestore documents and trigger actions based on the date
@@ -253,7 +317,7 @@ exports.saveGymImageToStorage = functions.region("australia-southeast1").firesto
 
         // Upload image to Firebase Storage
         await storage.bucket(bucketName).upload(tempImagePath, {
-          destination: `gyms/${gymId}/banner/temp/${imageFileName}`,
+          destination: `gyms/${gymId}/banner/${imageFileName}`,
         });
 
         try {

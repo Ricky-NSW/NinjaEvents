@@ -51,14 +51,16 @@ function GymsPage() {
 
     return (
         <div>
-            <h2>scraper</h2>
-            <GymScraper />
+            {/*<h2>scraper</h2>*/}
+            {/*<GymScraper />*/}
+
+            <h2>MAP</h2>
+            <GoogleMapArray markers={gyms}/>
 
             <h1>Gyms</h1>
             <GymsList gyms={gyms} />
 
-            <h2>MAP</h2>
-            <GoogleMapArray markers={gyms}/>
+
         </div>
     );
 }
