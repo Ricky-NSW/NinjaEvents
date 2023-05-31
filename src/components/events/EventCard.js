@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useDataLayer } from '../data/DataLayer';
 import { doc, getDoc } from "firebase/firestore";
 import { CardActionArea } from '@mui/material';
-
+import CollectionCard from '../layout/CollectionCard';
 import styled from 'styled-components';
 import { auth } from '../../FirebaseSetup';
 
@@ -55,7 +55,7 @@ const EventCard = ({ event, handleDelete, userType, hideGym }) => {
     return (
         // If isLoading is true, display Skeleton component
         isLoading ? (
-                <Grid item xs={12} sm={12} md={12} lg={6}>
+                <Grid item xs={12}sm ={12} md={12} lg={6}>
                     <Card sx={{ maxWidth: 768 }}>
                         <CardHeader
                             avatar={<Skeleton variant="circular" width={40} height={40} />}
@@ -79,81 +79,73 @@ const EventCard = ({ event, handleDelete, userType, hideGym }) => {
                 </Grid>
         ) : (
             // If isLoading is false, display your actual component
-            <Grid item xs={12} sm={6} md={4} lg={6} key={event.id}>
-                <Card sx={{ maxWidth: 768 }}>
-                    {!hideGym && (
-                        <>
-                            <CardHeader
-                                avatar={
-                                    gym && gym?.avatarUrl ? (
-                                        <Grid item xs={2} sm={6}>
-                                            <Avatar
-                                                alt={gym?.name}
-                                                src={gym?.avatarUrl}
-                                                //TODO: Add a primary color border
-                                            />
-                                        </Grid>
-                                    ) : null
-                                }
-                                title={gym?.address}
-                                subheader={formatDate(event.date)}
-                            />
-                            {event.imageUrl && (
-                                <CardMedia
-                                    sx={{ height: 140 }}
-                                    image={event.imageUrl}
-                                    title="green iguana"
-                                    type="image"
-                                />
-                            )}
-                        </>
-                    )}
-                    <CardContent>
-                        <Typography gutterBottom variant="h5" component="div">
-                            <Link to={`/events/${event.id}`} size="small">
-                                {event.title}
-                            </Link>
-                        </Typography>
-                        <Typography>
-                            {gym ? (
-                                <span>
-                                    Gym: <Link to={`/gyms/${gym.id}`} size="small">{gym.name}</Link>
-                                  </span>
-                            ) : (
-                                <span>No gym available</span>
-                            )}
-                        </Typography>
-                        {league?.name && (
-                            <Typography>
-                                League: <Link to={`/leagues/${league?.id}`} size="small">{league.name}</Link>
-                            </Typography>
+            <CollectionCard key={event.id}>
+                <CardContent>
+                    <Typography gutterBottom variant="h5" component="div">
+                        <Link to={`/events/${event.id}`} size="small">
+                            {event.title}
+                        </Link>
+                    </Typography>
+                    <Typography variant={"body2"} color={"text.secondary"}>
+                        {formatDate(event.date)}
+                    </Typography>
+                    <Typography>
+                        {gym ? (
+                            <span>
+                                Gym: <Link to={`/gyms/${gym.slug}`} size="small">{gym.name}</Link>
+                              </span>
+                        ) : (
+                            <span>No gym available</span>
                         )}
+                    </Typography>
+                    {league?.name && (
                         <Typography>
-                            {/*<span>League: {event.league.name}</span>*/}
+                            League: <Link to={`/leagues/${league?.id}`} size="small">{league.name}</Link>
                         </Typography>
-                        <Typography>
-                            Price: {event.price}
-                        </Typography>
-                        <Typography>
-                            Age: {event.age}
-                            {/*{event.GeoPoint.latitude} {event.GeoPoint.longitude}*/}
-                        </Typography>
-                    </CardContent>
-                    <CardActions>
-                        <Button component={Link} to={`/events/${event.id}`} size="small">Learn More</Button>
-                        {/*{auth.currentUser && (auth.currentUser.uid === event.createdBy || userType === "Admin") ? (*/}
-                        {/*    <EventDelete*/}
-                        {/*        onClick={() => handleDelete(event.id)}*/}
-                        {/*        size="small"*/}
-                        {/*        color="error"*/}
-                        {/*        variant="outlined"*/}
-                        {/*    >*/}
-                        {/*        <DeleteIcon />*/}
-                        {/*    </EventDelete>*/}
-                        {/*) : null}*/}
-                    </CardActions>
-                </Card>
-            </Grid>
+                    )}
+                    <Typography>
+                        {/*<span>League: {event.league.name}</span>*/}
+                    </Typography>
+                    <Typography>
+                        Price: {event.price}
+                    </Typography>
+                    <Typography>
+                        Age: {event.age}
+                        {/*{event.GeoPoint.latitude} {event.GeoPoint.longitude}*/}
+                    </Typography>
+                </CardContent>
+                {!hideGym && (
+                    <>
+                        <CardHeader
+                            avatar={
+                                gym && gym?.avatarUrl ? (
+                                    <Grid item xs={2} sm={6}>
+                                        <Avatar
+                                            alt={gym?.name}
+                                            src={gym?.avatarUrl}
+                                            //TODO: Add a primary color border
+                                        />
+                                    </Grid>
+                                ) : null
+                            }
+                            title={gym?.name}
+                        />
+                    </>
+                )}
+                <CardActions>
+                    <Button component={Link} to={`/events/${event.id}`} size="small">Learn More</Button>
+                    {/*{auth.currentUser && (auth.currentUser.uid === event.createdBy || userType === "Admin") ? (*/}
+                    {/*    <EventDelete*/}
+                    {/*        onClick={() => handleDelete(event.id)}*/}
+                    {/*        size="small"*/}
+                    {/*        color="error"*/}
+                    {/*        variant="outlined"*/}
+                    {/*    >*/}
+                    {/*        <DeleteIcon />*/}
+                    {/*    </EventDelete>*/}
+                    {/*) : null}*/}
+                </CardActions>
+            </CollectionCard>
         )
     );
 };

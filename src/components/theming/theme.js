@@ -28,6 +28,7 @@ export const createThemeOptions = (mode, colors) => ({
         h1: {
             fontSize: '2.55rem',
             fontWeight: 600,
+            letterSpacing: '0.03em',
         },
         h2: {
             fontSize: '2.45rem',

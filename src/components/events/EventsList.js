@@ -72,7 +72,7 @@ const EventsList = ({ events = [], filterDisabled }) => {
                 const gym = gyms.find(gym => gym.id === event.gym?.id);
                 if (gym && !uniqueGymSet.has(gym.id)) {
                     uniqueGymSet.add(gym.id);
-                    return { key: gym.id, name: gym.name };
+                    return { id: gym.id, name: gym.name };
                 }
                 return null;
             })

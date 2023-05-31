@@ -12,6 +12,7 @@ import React, { useEffect, useState, useContext } from 'react';
 import { getFirestore, doc, updateDoc, getDoc, collection, query, where, onSnapshot, arrayUnion, arrayRemove, } from 'firebase/firestore';
 import { useParams, Link } from 'react-router-dom';
 import { Box, Grid, Typography, Avatar, Button, Dialog, DialogTitle, DialogContent, CardMedia } from '@mui/material';
+import Divider from '@mui/material/Divider';
 
 // Import components
 import GoogleMapSingle from "../api/GoogleMapSingle";
@@ -59,11 +60,12 @@ const GymDetails = () => {
                     if (gymDetails) {
                         setGym(gymDetails);
                         // Check if the gym's slug is in the user's subscribedGyms array
-                        if (currentUser && currentUser.subscribedGyms && currentUser.subscribedGyms.includes(slug)) {
+                        if (currentUser && Array.isArray(currentUser.subscribedGyms) && currentUser.subscribedGyms.includes(slug)) {
                             setIsSubscribed(true);
                         } else {
                             setIsSubscribed(false);
                         }
+
                     } else {
                         console.error('Error fetching gym: gymDetails is', gymDetails);
                     }
@@ -113,7 +115,7 @@ const GymDetails = () => {
             ) : gym ? (
                 <>
                     {gym.bannerUrl && (
-                        <Box sx={{ mx: -2, mb: 2 }}> {/* Adjust the value according to your needs */}
+                        <Box sx={{ mx: -10, mb: 2 }}> {/* Adjust the value according to your needs */}
                             <CardMedia
                                 component="img"
                                 alt={gym.name}
@@ -133,36 +135,85 @@ const GymDetails = () => {
                         alignItems="center"
                         spacing={2}
                     >
-                        <Grid item xs={10} sm={6}>
-                            <Typography variant={"h1"}>{gym.name}</Typography>
-                        </Grid>
-                        <Grid item xs={2} sm={6}>
-                            {gym.avatarUrl ? (
-                                <Avatar alt={gym.name} src={gym.avatarUrl} />
-                            ) : null}
-                        </Grid>
-                        {currentUser ? (
-                            <Grid item xs={12} sm={6}>
-                                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                                    <IsSubscribedSwitch
-                                        isSubscribed={isSubscribed}
-                                        handleSubscription={handleSubscribeToggle}
+                        {gym.avatarUrl ? (
+                            <Grid
+                                item
+                                container
+                                direction="column"
+                                justifyContent="center"
+                                alignItems="center"
+                                spacing={2}
+                                xs={2}
+                                sm={3}
+                            >
+                                <Grid item>
+                                    <Avatar
+                                        alt={gym.name}
+                                        src={gym.avatarUrl}
+                                        // make the avatar fill the width and height
+                                        sx={{ width: '100%', height: 'auto', padding: '10px' }}
                                     />
-                                    <span>Follow this Gym</span>
-                                </div>
-                            </Grid>) : (<Typography variant={"body2"} >Login to follow this gym and be notified of upcoming events</Typography>)
-                        }
+                                </Grid>
+                            </Grid>
+                        ) : null}
+                        <Grid
+                            item
+                            container
+                            direction="column"
+                            justifyContent="flex-start"
+                            alignItems="flex-start"
+                            spacing={2}
+                            xs={8}
+                            sm={9}
+                            //text align left
+                        >
+                            <Grid item>
+                                <Typography
+                                    variant={"h1"}
+                                    sx={{ fontSize: '2rem' }}
+                                >
+                                    {gym.name}
+                                </Typography>
+                            </Grid>
+                            {currentUser ? (
+                                <Grid
+                                    item
+                                    // display flex so that content are in a row and to the left of the container
+                                    container
+                                    direction="row"
+                                    justifyContent="flex-start"
+                                    alignItems="center"
+                                    spacing={0}
+
+                                >
+                                        <IsSubscribedSwitch
+                                            isSubscribed={isSubscribed}
+                                            handleSubscription={handleSubscribeToggle}
+                                        />
+                                        <span>Follow this Gym</span>
+                                </Grid>
+                            ) : (
+                                <Typography variant={"body2"} >Login to follow this gym and be notified of upcoming events</Typography>)
+                            }
+                        </Grid>
+                    </Grid>
+                    <Grid
+                        container
+                        direction="row"
+                        justifyContent="center"
+                        alignItems="center"
+                        spacing={2}
+                    >
+
 
                         <Grid item xs={12}>
-                            <p>{gym.location}</p>
-                            <p>Location: {gym.address}</p>
-                            <p>ID: {gym.id}</p>
-
+                            <Typography variant={"body1"}>{gym.location}</Typography>
+                            <Typography variant={"body1"}><b>Location:</b> {gym.address}</Typography>
+                            <div dangerouslySetInnerHTML={{ __html: gym.description }} />
                         </Grid>
                     </Grid>
                     {/*<Typography variant="body1>{gym.description}</Typography>*/}
-                    <div dangerouslySetInnerHTML={{ __html: gym.description }} />
-
+                    {/*<Typography variant={"body1"}>{gym.longitude}</Typography>*/}
                     <GoogleMapSingle marker={gym} />
 
                     {/*only users with an id whos id can be found in the gym.ownerUid array can edit the gym, else they can only view the gym*/}
@@ -172,15 +223,15 @@ const GymDetails = () => {
                     <Grid >
                         <Grid item xs={12} sm={6}>
                             {/*//This component is used to control the modal which contains the gym editing form*/}
-                            <EditGymDetails id={gym.id} onUpdate={handleGymUpdate} />
-                            <GymBannerUpload
-                                gymId={gym.id}
-                                onBannerUpload={(bannerUrl) => {
-                                    // console.log("Banner uploaded:", bannerUrl);
-                                    updateGymBannerUrl(gym.id, bannerUrl);
-                                }}
-                            />
-                            <GalleryImageUpload gymId={gym.id} />
+                            <EditGymDetails gym={gym} onUpdate={handleGymUpdate} />
+                            {/*<GymBannerUpload*/}
+                            {/*    gymId={gym.id}*/}
+                            {/*    onBannerUpload={(bannerUrl) => {*/}
+                            {/*        // console.log("Banner uploaded:", bannerUrl);*/}
+                            {/*        updateGymBannerUrl(gym.id, bannerUrl);*/}
+                            {/*    }}*/}
+                            {/*/>*/}
+                            {/*<GalleryImageUpload gymId={gym.id} />*/}
                         </Grid>
                     </Grid>
                     ) : (
@@ -207,18 +258,20 @@ const GymDetails = () => {
             ) : (
                 <Typography>Could not find gym with slug: {slug}</Typography>
             )}
-            <Typography variant={"h2"}>Events</Typography>
+            {!isLoading && gym && <Divider>Events at {gym.name}</Divider>}
+
             {
                 gym && events.filter(event => event.gym !== null && event.gym.id === gym.id).length ? (
                     <Grid container spacing={2} columns={{ xs: 4, md: 12 }}>
                         {events.filter(event => event.gym !== null && event.gym.id === gym.id).map((event) => (
-                            <EventCard event={event} hideGym />
+                            <EventCard key={event.id} event={event} hideGym />
                         ))}
                     </Grid>
                 ) : (
                     <Typography variant="h3">There are no upcoming events at this gym</Typography>
                 )
             }
+            <Typography variant={"body1"}>ID: {gym?.id}</Typography>
 
 
         </div>

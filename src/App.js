@@ -17,6 +17,7 @@ import Home from "./pages/Home";
 import Register from "./pages/Register";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
+import BreakpointWatcher from './components/layout/BreakpointWatcher';
 
 // Events
 import EventsPage from "./pages/events/EventsPage";
@@ -49,6 +50,7 @@ export default function App() {
     return (
         <Router>
             <CssBaseline />
+            <BreakpointWatcher />
             <Routes>
                 <Route path="/" element={<Layout />}>
                     <Route index element={<Home />} />

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useGyms } from './useGyms';
 import { Card, CardContent, Typography, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import InfiniteScroll from 'react-infinite-scroll-component';
-import {states, countries} from './ListOfStates';
 import { useDataLayer } from '../data/DataLayer';
 import GymCard from './GymCard';
 import GoogleMapArray from "../api/GoogleMapArray";
@@ -20,6 +19,10 @@ const GymsList = () => {
     const { currentUser } = useDataLayer();
     const { gyms, loading, setLoading, hasMore } = useGyms(filters, triggerFetchMore);
     const classes = useStyles();
+
+    const countriesFromGyms = Array.from(new Set(gyms.map(gym => gym.country)));
+    const statesFromGyms = Array.from(new Set(gyms.map(gym => gym.state)));
+
 
     useEffect(() => {
         if (currentUser) {
@@ -55,9 +58,9 @@ const GymsList = () => {
                     <MenuItem value="">
                         <em>All Countries</em>
                     </MenuItem>
-                    {Object.entries(countries).map(([key, name]) => (
-                        <MenuItem key={key} value={key}>
-                            {name}
+                    {countriesFromGyms.map(country => (
+                        <MenuItem key={country} value={country}>
+                            {country}
                         </MenuItem>
                     ))}
                 </Select>
@@ -75,17 +78,11 @@ const GymsList = () => {
                     <MenuItem value="">
                         <em>All States</em>
                     </MenuItem>
-                    {states[filters.country] ?
-                        (states[filters.country] || []).map(({ code, name }) => (
-                            <MenuItem key={code} value={code}>
-                                {name}
-                            </MenuItem>
-                        ))
-                        :
-                        <MenuItem value="">
-                            <em style={{fontSize: '0.75rem'}}>Select a country first</em>
+                    {statesFromGyms.map(state => (
+                        <MenuItem key={state} value={state}>
+                            {state}
                         </MenuItem>
-                    }
+                    ))}
                 </Select>
 
             </FormControl>

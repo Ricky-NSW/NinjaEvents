@@ -5,7 +5,7 @@ import {
     DialogContent,
     DialogActions,
     Button,
-    TextField,
+    TextField, Grid,
 } from '@mui/material';
 import { getFirestore, updateDoc, doc, getDoc } from 'firebase/firestore';
 import { useParams } from 'react-router-dom';
@@ -20,27 +20,34 @@ import { Editor as WysiwygEditor } from 'react-draft-wysiwyg';
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
 import { convertToHTML, convertFromHTML } from 'draft-convert';
 import htmlToDraft from 'html-to-draftjs';
-import GymAvatarUpload from './GymAvatarUpload'; // Adjust the path as needed
+import GymAvatarUpload from './GymAvatarUpload';
+import GalleryImageUpload from "./GalleryImageUpload"; // Adjust the path as needed
 
 // Define the HTML string you want to convert to a Draft.js ContentState
 const htmlString = '<p>Hello World!</p>';
 // Convert the HTML string to a Draft.js ContentState
 const contentState = htmlToDraft(htmlString);
 
-const EditGymDetails = ({ onUpdate, id }) => {
+const EditGymDetails = ({ onUpdate, gym }) => {
     const [open, setOpen] = useState(false);
-    const [gym, setGym] = useState(null);
     const [updatedGym, setUpdatedGym] = useState(null);
 
-    const [isApiLoaded, setIsApiLoaded] = useState(false);
-    const [loadError, setLoadError] = useState(null);
-
     const [editorState, setEditorState] = useState(() => {
-        const contentBlock = htmlToDraft(''); // set your default HTML content here
-        const contentState = contentBlock ? ContentState.createFromBlockArray(contentBlock.contentBlocks) : ContentState.createFromText('');
-        return EditorState.createWithContent(contentState);
+        if (gym && gym.description) {
+            const contentBlock = htmlToDraft(gym.description);
+            const contentState = contentBlock
+                ? ContentState.createFromBlockArray(contentBlock.contentBlocks)
+                : ContentState.createFromText('');
+            return EditorState.createWithContent(contentState);
+        } else {
+            const contentBlock = htmlToDraft(''); // set your default HTML content here
+            const contentState = contentBlock
+                ? ContentState.createFromBlockArray(contentBlock.contentBlocks)
+                : ContentState.createFromText('');
+            return EditorState.createWithContent(contentState);
+        }
     });
-    const [avatarUrl, setAvatarUrl] = useState(null);
+    const [avatarUrl, setAvatarUrl] = useState(gym ? gym.avatarUrl : null);
 
     const handleEditorChange = (state) => {
         setEditorState(state);
@@ -48,25 +55,25 @@ const EditGymDetails = ({ onUpdate, id }) => {
         setUpdatedGym({ ...updatedGym, description: contentHTML });
     };
 
-    useEffect(() => {
-        const fetchGym = async () => {
-            const gymRef = doc(getFirestore(), 'gyms', id);
-            const gymDoc = await getDoc(gymRef);
-            if (gymDoc.exists()) {
-                const fetchedGym = { id, ...gymDoc.data() };
-                setGym(fetchedGym);
-
-                // Set editor state with the gym's description
-                const contentBlock = htmlToDraft(fetchedGym.description || '');
-                const contentState = contentBlock
-                    ? ContentState.createFromBlockArray(contentBlock.contentBlocks)
-                    : ContentState.createFromText('');
-                setEditorState(EditorState.createWithContent(contentState));
-            }
-        };
-
-        fetchGym();
-    }, [id]);
+    // useEffect(() => {
+    //     const fetchGym = async () => {
+    //         const gymRef = doc(getFirestore(), 'gyms', id);
+    //         const gymDoc = await getDoc(gymRef);
+    //         if (gymDoc.exists()) {
+    //             const fetchedGym = { id, ...gymDoc.data() };
+    //             setGym(fetchedGym);
+    //
+    //             // Set editor state with the gym's description
+    //             const contentBlock = htmlToDraft(fetchedGym.description || '');
+    //             const contentState = contentBlock
+    //                 ? ContentState.createFromBlockArray(contentBlock.contentBlocks)
+    //                 : ContentState.createFromText('');
+    //             setEditorState(EditorState.createWithContent(contentState));
+    //         }
+    //     };
+    //
+    //     fetchGym();
+    // }, [id]);
 
 
     const handleClickOpen = () => {
@@ -141,21 +148,34 @@ const EditGymDetails = ({ onUpdate, id }) => {
                         editorState={editorState}
                         onEditorStateChange={handleEditorChange}
                     />
-                    {(avatarUrl || gym.avatarUrl) && (
-                        <img
-                            src={`${avatarUrl || gym.avatarUrl}`}
-                            alt="Avatar"
-                            style={{ maxWidth: '100%', maxHeight: '200px' }}
-                        />
-                    )}
-                    <GymAvatarUpload gymId={gym.id} onAvatarUpload={handleAvatarUpload} />
-                    <GymBannerUpload
-                        gymId={gym.id}
-                        onBannerUpload={(bannerUrl) => {
-                            console.log("Banner uploaded:", bannerUrl);
-                            // Do something with the bannerUrl, e.g., save it to the gym document in Firestore
-                        }}
-                    />
+                    <Grid container spacing={2}>
+                        <Grid item xs={12}>
+                            {(avatarUrl || gym.avatarUrl) && (
+                                <img
+                                    src={`${avatarUrl || gym.avatarUrl}`}
+                                    alt="Avatar"
+                                    style={{ maxWidth: '100%', maxHeight: '200px' }}
+                                />
+                            )}
+                        </Grid>
+                        <Grid item xs={12}>
+                            <GymAvatarUpload gymId={gym.id} onAvatarUpload={handleAvatarUpload} />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <GymBannerUpload
+                                gymId={gym.id}
+                                onBannerUpload={(bannerUrl) => {
+                                    console.log("Banner uploaded:", bannerUrl);
+                                    // Do something with the bannerUrl, e.g., save it to the gym document in Firestore
+                                }}
+                            />
+                        </Grid>
+
+                        <Grid item xs={12}>
+                            <GalleryImageUpload gymId={gym.id} />
+                        </Grid>
+                    </Grid>
+
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleClose} color="primary">

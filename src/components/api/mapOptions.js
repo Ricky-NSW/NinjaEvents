@@ -5,7 +5,6 @@ export const mapOptions = {
     streetViewControl: false,
     rotateControl: false,
     fullscreenControl: true,
-    zoom: 5,
     styles: [
         {
             featureType: "all",
