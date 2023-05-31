@@ -12,7 +12,7 @@ function GoogleMapArray({ markers = [], onMapLoad, nestedGym }) {
     useEffect(() => {
         const timeoutId = setTimeout(() => {
             setShowMarkers(true); // show markers after 5 seconds
-        }, 5000);
+        }, 1000);
         return () => clearTimeout(timeoutId); // clear timeout if the component unmounts
     }, []);
 

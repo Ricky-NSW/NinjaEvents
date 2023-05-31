@@ -55,7 +55,7 @@ function GymsPage() {
             {/*<GymScraper />*/}
 
             <h2>MAP</h2>
-            <GoogleMapArray markers={gyms}/>
+            {/*<GoogleMapArray markers={gyms}/>*/}
 
             <h1>Gyms</h1>
             <GymsList gyms={gyms} />

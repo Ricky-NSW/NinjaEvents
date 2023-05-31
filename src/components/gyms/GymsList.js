@@ -1,17 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { useGyms } from './useGyms';
-import { Card, CardContent, Typography, Select, MenuItem, FormControl } from '@mui/material';
+import { Card, CardContent, Typography, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import {states, countries} from './ListOfStates';
 import { useDataLayer } from '../data/DataLayer';
 import GymCard from './GymCard';
+import GoogleMapArray from "../api/GoogleMapArray";
+import { makeStyles } from '@material-ui/core/styles';
+
+const useStyles = makeStyles((theme) => ({
+    select: {
+        minWidth: '12rem',
+    }
+}));
+
 const GymsList = () => {
     const [filters, setFilters] = useState({ country: '', state: '' });
     const [triggerFetchMore, setTriggerFetchMore] = useState(false);
-
     const { currentUser } = useDataLayer();
-
     const { gyms, loading, setLoading, hasMore } = useGyms(filters, triggerFetchMore);
+    const classes = useStyles();
 
     useEffect(() => {
         if (currentUser) {
@@ -33,7 +41,20 @@ const GymsList = () => {
     return (
         <>
             <FormControl>
-                <Select value={filters.country} onChange={handleCountryChange}>
+                <InputLabel id="demo-simple-select-placeholder-label-label">
+                    Country
+                </InputLabel>
+                <Select
+                    labelId="demo-simple-select-placeholder-label-label"
+                    id="demo-simple-select-placeholder-label"
+                    value={filters.country || ""}
+                    onChange={handleCountryChange}
+                    className={classes.select}
+                    label="Select"
+                >
+                    <MenuItem value="">
+                        <em>All Countries</em>
+                    </MenuItem>
                     {Object.entries(countries).map(([key, name]) => (
                         <MenuItem key={key} value={key}>
                             {name}
@@ -41,18 +62,38 @@ const GymsList = () => {
                     ))}
                 </Select>
             </FormControl>
+
             <FormControl>
-                <Select value={filters.state} onChange={handleStateChange}>
+                <InputLabel id="demo-simple-select-placeholder-label-label">
+                    State
+                </InputLabel>
+                <Select
+                    value={filters.state}
+                    onChange={handleStateChange}
+                    className={classes.select}
+                >
                     <MenuItem value="">
-                        <em>Select a state</em>
+                        <em>All States</em>
                     </MenuItem>
-                    {(states[filters.country] || []).map(({ code, name }) => (
-                        <MenuItem key={code} value={code}>
-                            {name}
+                    {states[filters.country] ?
+                        (states[filters.country] || []).map(({ code, name }) => (
+                            <MenuItem key={code} value={code}>
+                                {name}
+                            </MenuItem>
+                        ))
+                        :
+                        <MenuItem value="">
+                            <em style={{fontSize: '0.75rem'}}>Select a country first</em>
                         </MenuItem>
-                    ))}
+                    }
                 </Select>
+
             </FormControl>
+            <br />
+            <br />
+
+            <GoogleMapArray markers={gyms}/>
+
 
             <InfiniteScroll
                 dataLength={gyms.length}
@@ -70,6 +111,8 @@ const GymsList = () => {
                     <GymCard key={`${gym.name}-${index}`} gym={gym} isLoading={loading} index={index}/>
                 ))}
             </InfiniteScroll>
+
+
         </>
     );
 };
