@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/NinjaEvents/static/css/main.84901bfe.css",
-    "main.js": "/NinjaEvents/static/js/main.276fc3f4.js",
+    "main.js": "/NinjaEvents/static/js/main.2b2dbb46.js",
     "static/js/496.639bb045.chunk.js": "/NinjaEvents/static/js/496.639bb045.chunk.js",
     "static/media/login-background.jpg": "/NinjaEvents/static/media/login-background.714aac206fda9230d9b8.jpg",
     "static/media/roboto-latin-500-normal.woff2": "/NinjaEvents/static/media/roboto-latin-500-normal.f25d774ecfe0996f8eb5.woff2",
@@ -62,11 +62,11 @@
     "static/media/roboto-greek-ext-700-normal.woff": "/NinjaEvents/static/media/roboto-greek-ext-700-normal.249853776d22a271b2b5.woff",
     "index.html": "/NinjaEvents/index.html",
     "main.84901bfe.css.map": "/NinjaEvents/static/css/main.84901bfe.css.map",
-    "main.276fc3f4.js.map": "/NinjaEvents/static/js/main.276fc3f4.js.map",
+    "main.2b2dbb46.js.map": "/NinjaEvents/static/js/main.2b2dbb46.js.map",
     "496.639bb045.chunk.js.map": "/NinjaEvents/static/js/496.639bb045.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.84901bfe.css",
-    "static/js/main.276fc3f4.js"
+    "static/js/main.2b2dbb46.js"
   ]
 }
