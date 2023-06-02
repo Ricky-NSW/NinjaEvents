@@ -118,7 +118,7 @@ const GymScraper = () => {
 
 
             <GoogleMapsApi
-                apiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY}
+                apiKey="AIzaSyAecDrlTL6KojsjVproBpL7iXo4ys-3FNA"
                 libraries={['places']}
             />
         </>

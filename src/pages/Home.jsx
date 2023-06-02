@@ -6,7 +6,16 @@ import AuthContext from '../contexts/AuthContext';
 import { useDataLayer } from '../components/data/DataLayer';
 import SearchBar from '../components/layout/tools/SearchBar';
 import { getFirestore, collection, getDocs, query, where } from 'firebase/firestore';
+import { Link } from 'react-router-dom';
+import { Typography } from '@mui/material';
+import Divider from '@mui/material/Divider';
 
+import Grid from '@mui/material/Grid';
+import Box from '@mui/material/Box';
+import Paper from '@mui/material/Paper';
+import Stack from '@mui/material/Stack';
+import { styled } from '@mui/material/styles';
+import CollectionCard from '../components/layout/CollectionCard';
 const Home = () => {
     // State to hold the IDs of the gyms the user has subscribed
     const [subscribedGymsIDs, setSubscribedGymsIDs] = useState([]);
@@ -72,9 +81,25 @@ const Home = () => {
             docsSnapshot.forEach((doc) => {
                 const docData = doc.data();
 
-                // Convert the name field value to lowercase and check if it contains the search text
-                if (docData.name && docData.name.toLowerCase().includes(lowerCaseSearchText)) {
-                    allResults.push({ collection: collectionName, id: doc.id, data: docData });
+                if (collectionName === 'users') {
+                    // In 'users' collection, search in firstName, lastName, and ninjaName fields
+                    if (
+                        (docData.firstName && docData.firstName.toLowerCase().includes(lowerCaseSearchText)) ||
+                        (docData.lastName && docData.lastName.toLowerCase().includes(lowerCaseSearchText)) ||
+                        (docData.ninjaName && docData.ninjaName.toLowerCase().includes(lowerCaseSearchText))
+                    ) {
+                        allResults.push({ collection: collectionName, id: doc.id, data: docData, slug: docData.slug });
+                    }
+                } else if (collectionName === 'events') {
+                    // In 'events' collection, search in the 'title' field
+                    if (docData.title && docData.title.toLowerCase().includes(lowerCaseSearchText)) {
+                        allResults.push({ collection: collectionName, id: doc.id, data: docData, slug: docData.slug });
+                    }
+                } else {
+                    // In other collections, continue to search in the 'name' field
+                    if (docData.name && docData.name.toLowerCase().includes(lowerCaseSearchText)) {
+                        allResults.push({ collection: collectionName, id: doc.id, data: docData, slug: docData.slug });
+                    }
                 }
             });
         }
@@ -82,26 +107,63 @@ const Home = () => {
         setSearchResults(allResults);
     };
 
-
     return (
         <div>
             <p>&nbsp;</p>
             {/*//TODO: move all the search logic into the search component*/}
+            <h1>Ninja Community</h1>
+            <h4>Use the search bar to find a Gym, League, User or an event.</h4>
             <SearchBar onSearch={handleSearch} />
-            <h1>Ninja Community aaa</h1>
-            <h4>or something like that</h4>
             {searchResults.length > 0 && (
                 <div>
                     <h2>Search results:</h2>
-                    <ul>
-                        {searchResults.map((result, index) => (
-                            <li key={index}>
-                                {result.collection}: {result.data.name} (ID: {result.id})
-                            </li>
-                        ))}
-                    </ul>
+                    {
+                        ['users', 'leagues', 'gyms', 'events'].map(collectionName => {
+                            const collectionResults = searchResults.filter(result => result.collection === collectionName);
+
+                            if(collectionResults.length > 0) {
+                                return (
+                                    <Grid
+                                        container
+                                        spacing={2}
+                                        direction="column"
+                                        key={collectionName}>
+
+                                        <Divider
+                                            sx={{ my: 2 }}
+                                        >{collectionName.toUpperCase()}</Divider>
+
+                                            {collectionResults.map((result, index) => (
+                                                <CollectionCard>
+
+                                                        <Typography>
+                                                            <Link
+                                                                style={{ textDecoration: 'none' }}
+                                                                to={`/${result.collection}/${result.slug}`}>
+                                                                {
+                                                                    result.collection === 'users'
+                                                                        ? `${result.data.firstName} ${result.data.lastName} (Ninja Name: ${result.data.ninjaName})`
+                                                                        : result.collection === 'events'
+                                                                            ? result.data.title
+                                                                            : result.data.name
+                                                                }
+                                                            </Link>
+                                                        </Typography>
+
+                                                </CollectionCard>
+                                            ))}
+
+                                    </Grid>
+                                );
+                            } else {
+                                return null;
+                            }
+                        })
+                    }
                 </div>
             )}
+
+
 
             <h2>Upcoming Events at Gyms and Leagues you follow</h2>
             {filteredEvents.length > 0 ? (

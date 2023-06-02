@@ -115,7 +115,10 @@ const GymDetails = () => {
             ) : gym ? (
                 <>
                     {gym.bannerUrl && (
-                        <Box sx={{ mx: -10, mb: 2 }}> {/* Adjust the value according to your needs */}
+                        <Box
+                            // add a border radius of 14 px
+                            sx={{ borderRadius: '14px' }}
+                        >
                             <CardMedia
                                 component="img"
                                 alt={gym.name}

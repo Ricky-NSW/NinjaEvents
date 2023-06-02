@@ -1,15 +1,11 @@
-import React, { useRef, useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import GymScraper from '../../components/gyms/GymScraper';
+import React, { useState, useEffect } from 'react';
 
 //Firebase
 import { db } from '../../FirebaseSetup';
 
 //MUI
 import GymsList from "../../components/gyms/GymsList";
-import GoogleMapArray from '../../components/api/GoogleMapArray';
-import GoogleMapsApi from "../../components/api/GoogleMapsApi";
-import {useDataLayer} from "../../components/data/DataLayer";
+
 
 
 const style = {

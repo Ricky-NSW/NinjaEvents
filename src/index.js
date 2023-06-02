@@ -23,7 +23,7 @@ import { colors } from './components/theming/colors';
 const Root = () => {
 
     const libraries = ["places"];
-    const apiKey = process.env.REACT_APP_GOOGLE_API_KEY;
+    const apiKey = 'AIzaSyAecDrlTL6KojsjVproBpL7iXo4ys-3FNA';
 
     const [darkMode, setDarkMode] = useState(false);
     const toggleDarkMode = () => setDarkMode((prevMode) => !prevMode);

@@ -20,15 +20,14 @@ const GymCard = ({ gym, index }) => {
                     <Typography variant="h3">{gym.name}</Typography>
                     {gym.address && (
                         <>
-                            <Typography variant="subtitle1">{gym.address}</Typography>
+                            {/*<Typography variant="subtitle1">{gym.address}</Typography>*/}
                             <Typography variant="subtitle2">
                                 {gym.state}, {gym.country}
                             </Typography>
                         </>
                     )}
-                    {/*<Typography variant="body1">Latitude: {gym.latitude}</Typography>*/}
-                    {/*<Typography variant="body1">Longitude: {gym.longitude}</Typography>*/}
                 </Grid>
+                <Typography variant="body1">{gym.events}</Typography>
                 {gym.avatarUrl ? (
                     <Grid item xs={2} sm={2}>
                         <Avatar
