@@ -33,7 +33,7 @@ const GoogleMapSingle = ({ marker, loadError }) => {
                             zoom: 10, // set zoom level to 10
                         }}
                         center={{ lat: latitude, lng: longitude }} // Add this line
-                        mapContainerStyle={{ height: "500px", width: "100%" }}
+                        mapContainerStyle={{ height: "300px", width: "100%" }}
                     >
                         {isMarkerLoaded &&
                             <Marker

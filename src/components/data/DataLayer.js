@@ -49,6 +49,7 @@ export function DataLayer({ children }) {
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
             const data = [];
             querySnapshot.forEach((doc) => {
+                // Store the document id in the data
                 data.push({ ...doc.data(), id: doc.id });
             });
             // Sort gyms alphabetically by name
@@ -122,12 +123,12 @@ export function DataLayer({ children }) {
 
     const getGymBySlug = (gymSlug) => {
         const gym = gyms.find((g) => g.slug === gymSlug);
-        return gym || { error: 'Gym slug not found' };
+        return gym || { error: 'Gym slug not found in datalayer' };
     };
 
     const getGymById = (gymId) => {
-        const gym = gyms.find((g) => g.slug === gymId);
-        return gym || { error: 'Gym id not found' };
+        const gym = gyms.find((g) => g.id === gymId);
+        return gym || { error: 'Gym id not found in datalayer' };
     };
 
     const getLeagueBySlug = (leagueSlug) => {

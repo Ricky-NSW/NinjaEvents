@@ -215,6 +215,23 @@ const GymDetails = () => {
                             <div dangerouslySetInnerHTML={{ __html: gym.description }} />
                         </Grid>
                     </Grid>
+
+                    {/*// loop through this array gym.leagues*/}
+                    {/*{gym.leagues && gym.leagues.map((league) => (*/}
+                    {/*    <Grid*/}
+                    {/*        container*/}
+                    {/*        direction="row"*/}
+                    {/*        justifyContent="center"*/}
+                    {/*            */}
+                    {/*        alignItems="center"*/}
+                    {/*        spacing={2}*/}
+                    {/*    >*/}
+                    {/*        <Grid item xs={12}>*/}
+                    {/*            <Typography variant={"body1"}><b>League:</b> {league.name}</Typography>*/}
+                    {/*        </Grid>*/}
+                    {/*    </Grid>*/}
+                    {/*))}*/}
+
                     {/*<Typography variant="body1>{gym.description}</Typography>*/}
                     {/*<Typography variant={"body1"}>{gym.longitude}</Typography>*/}
                     <GoogleMapSingle marker={gym} />

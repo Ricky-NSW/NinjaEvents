@@ -7,6 +7,7 @@ import {
     Button,
     TextField, Grid,
 } from '@mui/material';
+import Typography from '@mui/material/Typography';
 import { getFirestore, updateDoc, doc, getDoc } from 'firebase/firestore';
 import { useParams } from 'react-router-dom';
 import GymBannerUpload from './GymBannerUpload';
@@ -21,16 +22,24 @@ import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
 import { convertToHTML, convertFromHTML } from 'draft-convert';
 import htmlToDraft from 'html-to-draftjs';
 import GymAvatarUpload from './GymAvatarUpload';
-import GalleryImageUpload from "./GalleryImageUpload"; // Adjust the path as needed
+import GalleryImageUpload from "./GalleryImageUpload";
+import {useDataLayer} from "../data/DataLayer"; // Adjust the path as needed
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Checkbox from '@mui/material/Checkbox';
 
 // Define the HTML string you want to convert to a Draft.js ContentState
 const htmlString = '<p>Hello World!</p>';
 // Convert the HTML string to a Draft.js ContentState
 const contentState = htmlToDraft(htmlString);
 
+
 const EditGymDetails = ({ onUpdate, gym }) => {
     const [open, setOpen] = useState(false);
     const [updatedGym, setUpdatedGym] = useState(null);
+    const { gyms, leagues } = useDataLayer();
+    const [gymLeagues, setGymLeagues] = useState([]);
+
+    // const [leagues, setLeagues] = useState([]);
 
     const [editorState, setEditorState] = useState(() => {
         if (gym && gym.description) {
@@ -48,6 +57,13 @@ const EditGymDetails = ({ onUpdate, gym }) => {
         }
     });
     const [avatarUrl, setAvatarUrl] = useState(gym ? gym.avatarUrl : null);
+
+    useEffect(() => {
+        if (gym && gym.leagues) {
+            console.log('Setting initial gymLeagues:', gym.leagues);
+            setGymLeagues(gym.leagues);
+        }
+    }, [gym]);
 
     const handleEditorChange = (state) => {
         setEditorState(state);
@@ -74,6 +90,36 @@ const EditGymDetails = ({ onUpdate, gym }) => {
     //
     //     fetchGym();
     // }, [id]);
+
+    const handleLeagueChange = async (event) => {
+        const leagueId = event.target.id;
+        const isChecked = event.target.checked;
+
+        console.log('Changed league:', leagueId, 'New status:', isChecked);
+
+        let updatedLeagues;
+        if (isChecked) {
+            // Add the league to the gym document
+            updatedLeagues = [...gymLeagues, leagueId];
+        } else {
+            // Remove the league from the gym document
+            updatedLeagues = gymLeagues.filter(id => id !== leagueId);
+        }
+
+        console.log('Updated leagues:', updatedLeagues);
+
+
+        try {
+            // Update the gym document in Firestore
+            const gymRef = doc(getFirestore(), 'gyms', gym.id);
+            await updateDoc(gymRef, { leagues: updatedLeagues });
+
+            // Update the state
+            setGymLeagues(updatedLeagues);
+        } catch (error) {
+            console.error('Error updating gym leagues:', error);
+        }
+    };
 
 
     const handleClickOpen = () => {
@@ -148,6 +194,29 @@ const EditGymDetails = ({ onUpdate, gym }) => {
                         editorState={editorState}
                         onEditorStateChange={handleEditorChange}
                     />
+<Typography variant="h5">Which leagues are you associated with?</Typography>
+                    {leagues.map((league) => {
+                        // Check if the league's id is in the gymLeagues array
+                        console.log('League:', league.id, 'Is in gym leagues:', gymLeagues.includes(league.id));
+
+                        return (
+                            <FormControlLabel
+                                key={league.id}
+                                control={
+                                    <Checkbox
+                                        id={league.id} // Assign the league's id as the id of the checkbox
+                                        checked={gymLeagues.includes(league.id)}
+                                        onChange={handleLeagueChange}
+                                        name={league.name}
+                                    />
+                                }
+                                label={league.name}
+                            />
+                        );
+                    })}
+
+
+
                     <Grid container spacing={2}>
                         <Grid item xs={12}>
                             {(avatarUrl || gym.avatarUrl) && (

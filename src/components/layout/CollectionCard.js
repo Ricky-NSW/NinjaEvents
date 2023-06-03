@@ -46,16 +46,17 @@ const Collection = ({ key, loading, link, index, children}) => {
         return (
             <>
                 <StyledGrid container direction="row" justify="flex-start" alignItems="center">
-                    <Grid item xs={10} sm={10}>
-                        <Skeleton variant="text" />
-                        <Skeleton variant="text" />
-                        <Skeleton variant="text" />
-                    </Grid>
                     <Grid item xs={2} sm={2}>
                         <Skeleton variant="circle">
                             <Avatar />
                         </Skeleton>
                     </Grid>
+                    <Grid item xs={10} sm={10}>
+                        <Skeleton variant="text" />
+                        <Skeleton variant="text" />
+                        <Skeleton variant="text" />
+                    </Grid>
+
                 </StyledGrid>
             </>
         );
@@ -68,8 +69,7 @@ const Collection = ({ key, loading, link, index, children}) => {
                     index={index}
                     container
                     direction="row"
-                    justify="flex-start"
-                    alignItems="center"
+                    xs={12}
                 >
                     {children}
                 </StyledGrid>
