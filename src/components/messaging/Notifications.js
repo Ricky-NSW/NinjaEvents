@@ -50,7 +50,11 @@ const Notifications = ({ lightMode }) => {
 
     const handleNotificationClick = async (notification) => {
         const db = getFirestore();
-        const notificationDoc = doc(db, 'users', auth.currentUser.uid, 'notifications', notification.id);
+
+        // Define the collection based on the notification type
+        const notificationCollection = notification.type === 'notification' ? 'notifications' : 'results';
+
+        const notificationDoc = doc(db, 'users', auth.currentUser.uid, notificationCollection, notification.id);
         try {
             await updateDoc(notificationDoc, {
                 status: 'read',
@@ -146,7 +150,7 @@ const Notifications = ({ lightMode }) => {
                                                     New Results:
                                                 </Typography>
                                                 <Typography>
-                                                    Congratulations, you placed {notification.resultPlace} on the {formattedDate} in the {notification.eventName} at {notification.gymName}!
+                                                    Congratulations, you placed {notification.resultPlace} on the {notification.eventDate} in the {notification.eventName} at {notification.gymName}!
                                                 </Typography>
                                                 {/*<Typography variant="paragraph" gutterBottom>*/}
                                                 {/*    Event: {notification.eventName}*/}

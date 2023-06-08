@@ -116,7 +116,7 @@ const CreateEvent = () => {
                 description: updatedEvent.description, // Use updatedEvent.description instead of description
                 price,
                 age,
-                gym: selectedGym.id,
+                gymId: selectedGym.id,
                 createdBy: uid,
                 leagueId: selectedLeague ? selectedLeague.id : null,
                 name: title,

@@ -64,6 +64,10 @@ const Collection = ({ key, loading, link, index, children}) => {
 
     return (
         <>
+            <Link
+                to={link}
+                style={{ display: 'block' }}
+            >
                 <StyledGrid
                     key={key}
                     index={index}
@@ -73,6 +77,7 @@ const Collection = ({ key, loading, link, index, children}) => {
                 >
                     {children}
                 </StyledGrid>
+            </Link>
         </>
     );
 };

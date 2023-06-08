@@ -55,11 +55,13 @@ const EventDetails = ( userType, handleDelete, ) => {
         return originalGetEventById(id);
     }, [events]);
 
+    // find the matching gym basd on the gym id in the event
     const getGymById = useCallback((gymId) => {
         const gym = gyms.find((g) => g.id === gymId);
-        return gym || { error: 'Gym not found' };
+        return gymId || { error: 'Gym not found' };
     }, [gyms]);
 
+    //find the matching league based on the id in the event
     const getLeagueById = useCallback((leagueId) => {
         const league = leagues.find((l) => l.id === leagueId);
         return league || { error: 'League not found' };
@@ -199,13 +201,19 @@ const EventDetails = ( userType, handleDelete, ) => {
                         {participants.map((participant, index) => {
                             const placeLabel = index === 0 ? "First" : index === 1 ? "Second" : index === 2 ? "Third" : `${index + 1}th`;
                             return (
-                                <div key={participant.id || participant.displayName}>
+                                <div key={participant.id || participant.displayName || index}>
                                     {participant.displayName
                                         ? <div>
                                             <p>{placeLabel}: {participant.displayName}</p>
                                         </div>
                                         : <div>
-                                            <p>{placeLabel}: {participant.firstName} {participant.lastName}</p>
+
+                                            <p>
+                                                {placeLabel}:
+                                                <Link to={`/users/${participant.id}`}>
+                                                    {participant.firstName} {participant.lastName}
+                                                </Link>
+                                            </p>
                                         </div>
                                     }
                                 </div>
@@ -269,8 +277,8 @@ const EventDetails = ( userType, handleDelete, ) => {
                         <>
                             <h3>Subscribed Ninjas</h3>
                             <ul>
-                                {subscribedUsers.map((user) => (
-                                    <li key={user.id}>
+                                {subscribedUsers.map((user, index) => (
+                                    <li key={user.id || index}>
                                         <Link to={`/users/${user.id}`}>{user.ninjaName || user.displayName || user.email}</Link>
                                     </li>
                                 ))}
@@ -280,7 +288,8 @@ const EventDetails = ( userType, handleDelete, ) => {
 
                     <hr />
                     {event && (currentUser?.uid === event.createdBy || // Assuming the league admin list is on the league object
-                            (league && league.admins.includes(currentUser?.uid))) &&
+                            (league && league.admins && league.admins.includes(currentUser?.uid))) &&
+
                         <>
                             <EditEventDetails
                                 open={editEventOpen}

@@ -2,9 +2,11 @@
 
 //I am using AuthProvider to handle authentication and user state
 // Importing necessary hooks and services from react, firebase and local files.
-import React, { createContext, useContext, useReducer, useEffect, useState, useMemo } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useState, useMemo, useCallback } from 'react';
+
 import { db } from '../../FirebaseSetup';
 import { getFirestore, doc, onSnapshot, updateDoc, collection, query, getDocs, addDoc } from 'firebase/firestore';
+import AuthContext from '../../contexts/AuthContext'; // Update the path to your actual file
 
 import reducer, { initialState } from './reducer';
 
@@ -22,7 +24,10 @@ export function DataLayer({ children }) {
     const [gyms, setGyms] = useState([]);
     const [leagues, setLeagues] = useState([]);
     const [events, setEvents] = useState([]);
-    const [currentUser, setCurrentUser] = useState(null);
+    const [users, setUsers] = useState([]);
+    // const [currentUser, setCurrentUser] = useState(null);
+    const { currentUser, setCurrentUser } = useContext(AuthContext);
+
     // Memoizing currentUser state to avoid unnecessary re-renders.
     const memoizedCurrentUser = useMemo(() => currentUser, [currentUser]);
     const [isLoading, setIsLoading] = useState(true);
@@ -34,13 +39,16 @@ export function DataLayer({ children }) {
         const unsubscribeGyms = fetchGyms();
         const unsubscribeLeagues = fetchLeagues();
         const unsubscribeEvents = fetchEvents();
+        const unsubscribeUsers = fetchUsers();
 
         return () => {
             unsubscribeGyms();
             unsubscribeLeagues();
             unsubscribeEvents();
+            unsubscribeUsers();
         };
     }, []);
+
 
     const fetchGyms = () => {
         setIsLoading(true);
@@ -96,7 +104,25 @@ export function DataLayer({ children }) {
         return unsubscribe;
     };
 
+    // get users
+    const fetchUsers = () => {
+        setIsLoading(true);
+        const ref = collection(db, 'users');
+        const q = query(ref);
+        const unsubscribe = onSnapshot(q, (querySnapshot) => {
+            const data = [];
+            querySnapshot.forEach((doc) => {
+                data.push({ ...doc.data(), id: doc.id });
+            });
+            setUsers(data);
+            setIsLoading(false);
+        });
 
+        return unsubscribe;
+    };
+
+
+    //TODO: Can i delete this?
     const fetchDataFromFirestore = async (collectionName) => {
         const ref = collection(db, collectionName);
         const q = query(ref);
@@ -121,10 +147,14 @@ export function DataLayer({ children }) {
     };
 
 
-    const getGymBySlug = (gymSlug) => {
+
+
+    // In order to prevent unnecessary re-renders, you can memoize your getGymBySlug function using the useCallback hook:
+    //TODO  loook at applying this to all functions
+    const getGymBySlug = useCallback((gymSlug) => {
         const gym = gyms.find((g) => g.slug === gymSlug);
         return gym || { error: 'Gym slug not found in datalayer' };
-    };
+    }, [gyms]);
 
     const getGymById = (gymId) => {
         const gym = gyms.find((g) => g.id === gymId);
@@ -140,6 +170,34 @@ export function DataLayer({ children }) {
         const league = leagues.find((l) => l.id === leagueId);
         return league;
     };
+
+    const getUserById = (userId) => {
+        if (!userId) {
+            console.error("No userId provided");
+            return null;
+        }
+
+        if (!users || users.length === 0) {
+            console.error("Users array is empty or not loaded yet");
+            return null;
+        }
+
+        const user = users.find((u) => u.id === userId);
+        if (!user) {
+            console.error(`User with userId ${userId} not found`);
+        }
+
+        return user;
+    };
+
+    const getEventById = useCallback((eventId) => {
+        if (!events.length) {
+            return null; // Or a loading status
+        }
+        const event = events.find((e) => e.id === eventId);
+        return event;
+    }, [events]);
+
 
     // const fetchEventsForLeague = (leagueId) => {
     //     console.log('League ID:', leagueId);
@@ -211,10 +269,7 @@ export function DataLayer({ children }) {
         }
     };
 
-    const getEventById = (eventId) => {
-        const event = events.find((e) => e.id === eventId);
-        return event;
-    };
+
 
     const addEvent = async (eventData) => {
         const eventRef = collection(db, 'events');
@@ -234,6 +289,44 @@ export function DataLayer({ children }) {
         }
     };
 
+    //this needs to be after the get eventbyId function
+    // this needs to be after the get eventbyId function
+    const fetchUserResults = useCallback(async () => {
+        if (currentUser) {
+            setIsLoading(true);
+            const userRef = doc(db, 'users', currentUser.uid);
+            const resultsRef = collection(userRef, 'results');
+
+            const snapshot = await getDocs(resultsRef);
+
+            const results = await Promise.all(snapshot.docs.map(async (doc) => {
+                const result = doc.data();
+                let eventTitle = 'N/A';
+                if (result.eventId) {
+                    const event = getEventById(result.eventId);
+                    if (event) {
+                        eventTitle = event.title;
+                    } else {
+                        console.error(`No event found with id: ${result.eventId}`);
+                    }
+                }
+                return { ...result, id: doc.id, eventTitle: eventTitle };
+            }));
+
+            setIsLoading(false);
+            console.log('Results:', results);
+
+            return results;
+        }
+    }, [currentUser, getEventById, db]); // Remember to add all dependencies
+
+    useEffect(() => {
+        fetchUserResults();
+    }, [fetchUserResults]); // Add fetchUserResults as dependency
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+
+
     const value = {
         state,
         dispatch,
@@ -248,15 +341,18 @@ export function DataLayer({ children }) {
         gyms,
         leagues,
         events,
+        users,
         fetchLeagues,
         getLeagueById,
         getLeagueBySlug,
         getEventById,
+        getUserById,
         addEvent,
         updateEvent,
         checkUserSubscriptionToLeague,
         updateUserSubscriptionToLeague,
         fetchEventsForLeague,
+        fetchUserResults,
     };
 
     return (

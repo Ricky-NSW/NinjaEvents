@@ -34,6 +34,8 @@ import LeaguesPage from "./pages/leagues/Leagues-Page";
 import AddLeaguePage from "./pages/leagues/AddLeague-Page";
 
 // /User
+import UsersPage from "./pages/users/UsersPage";
+import UserDetails from "./components/user/UserDetails";
 import UserprofilePage from "./pages/UserprofilePage";
 import NoPage from "./pages/NoPage";
 import EventDetails from './components/events/EventDetails';
@@ -76,6 +78,10 @@ export default function App() {
                     <Route path="leagues" element={<LeaguesPage />} />
                     <Route path="add-league" element={<AddLeaguePage />} />
                     <Route exact path="/leagues/:id" element={<LeagueDetails />} />
+                    {/* -------Users pages */}
+                    <Route path="users" element={<UsersPage />} />
+                    <Route exact path="/users/:userId" element={<UserDetails />} />
+
                     {/*Timers Pages*/}
                     <Route path="/timers/" element={<SimpleTimerPage />} />
                     <Route path="/safe/" element={<SafeCrackingGame />} />

@@ -45,11 +45,11 @@ const formatDate = (date) => {
 const EventCard = ({ event, handleDelete, userType, hideGym }) => {
     const { gyms, leagues, isLoading } = useDataLayer();
 
-    // Find the gym with the same id as event.gym.id
-    const gym = gyms.find(gym => event.gym?.id === gym.id);
+// Find the gym with the same id as event.gym.id or event.gymId
+    const gym = gyms.find(gym => (event.gym ? event.gym.id : event.gymId) === gym.id);
 
     // Find the league with the same id as event.league.id
-    const league = leagues.find(league => event.league?.id === league.id);
+    const league = leagues.find(league => event.leagueId === league.id);
 
 
     return (

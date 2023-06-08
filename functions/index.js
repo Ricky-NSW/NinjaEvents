@@ -32,6 +32,7 @@ exports.createNotificationOnEventCreate = functions.region("australia-southeast1
       const eventId = context.params.eventId;
       const date = event.date;
       const gymName = event.gym.name;
+      const gynSlug = event.gym.slug;
       const eventTitle = event.title;
 
       // Fetch all users
@@ -61,6 +62,7 @@ exports.createNotificationOnEventCreate = functions.region("australia-southeast1
             status: "unread",
             date: date,
             gymName: gymName,
+            gynSlug: gynSlug,
             eventTitle: eventTitle,
           });
         }
@@ -91,6 +93,7 @@ exports.processEventResults = functions.region("australia-southeast1").firestore
       const eventData = eventDoc.data();
       const eventName = eventData.title;
       const gymName = eventData.gym.name;
+      const gymSlug = eventData.gym.slug;
 
       function ordinalSuffix(i) {
         const j = i % 10;
@@ -122,7 +125,9 @@ exports.processEventResults = functions.region("australia-southeast1").firestore
             resultId: resultId,
             resultPlace: ordinalSuffix(index + 1), // Use the ordinalSuffix function here
             eventName: eventName,
+            eventDate: eventData.date,
             gymName: gymName,
+            gymSlug: gymSlug,
             message: `New results for ${eventName} at ${gymName} have been processed.`,
             timestamp: admin.firestore.FieldValue.serverTimestamp(),
             status: "unread",

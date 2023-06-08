@@ -11,14 +11,22 @@ const AuthProvider = ({ children }) => {
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((user) => {
             if (user) {
+                console.log("Auth state changed: User logged in", user.uid);
+
                 // User is signed in, get additional user data from Firestore
                 const docRef = doc(db, 'users', user.uid);
                 onSnapshot(docRef, (doc) => {
                     if (doc.exists()) {
-                        setCurrentUser({ uid: doc.id, ...doc.data() });
+                        console.log("User document updated", doc.data());
+                        const newUserData = { uid: doc.id, ...doc.data() };
+                        if (JSON.stringify(newUserData) !== JSON.stringify(currentUser)) {
+                            setCurrentUser(newUserData);
+                        }
                     }
                 });
             } else {
+                console.log("Auth state changed: User logged out");
+
                 // User is signed out
                 setCurrentUser(null);
             }
@@ -27,7 +35,7 @@ const AuthProvider = ({ children }) => {
 
         // Clean up the listener on unmount
         return () => unsubscribe();
-    }, []);
+    }, [currentUser]);
 
     if (loading) {
         return <div>Loading...</div>;

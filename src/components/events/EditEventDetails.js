@@ -115,7 +115,7 @@ const EditEventDetails = ({ event, gym, leagues }) => {
                         <TextField
                             select
                             label="Select Gym"
-                            value={selectedGym.id} // Change this line
+                            value={selectedGym ? selectedGym.id : ''} // Add a check for selectedGym
                             onChange={(e) => {
                                 const gym = gyms.find((g) => g.id === e.target.value);
                                 setSelectedGym(gym);

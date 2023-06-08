@@ -235,11 +235,11 @@ const GymDetails = () => {
                     {/*<Typography variant="body1>{gym.description}</Typography>*/}
                     {/*<Typography variant={"body1"}>{gym.longitude}</Typography>*/}
                     <GoogleMapSingle marker={gym} />
-
+{/*//TODO: Hide the edit and post results buttons from those who are not owneers or admins*/}
                     {/*only users with an id whos id can be found in the gym.ownerUid array can edit the gym, else they can only view the gym*/}
                     {/*check if there is a current user and if the current user id is in the gym.ownerUid array*/}
                     {/*or if the user type = admin*/}
-                    {(currentUser && (gym.ownerUid.includes(currentUser.uid) || currentUser.type === 'Admin')) ? (
+                    {(currentUser && gym && gym.ownerUid && (gym.ownerUid.includes(currentUser.uid) || currentUser.type === 'Admin')) ? (
                     <Grid >
                         <Grid item xs={12} sm={6}>
                             {/*//This component is used to control the modal which contains the gym editing form*/}
@@ -281,9 +281,9 @@ const GymDetails = () => {
             {!isLoading && gym && <Divider>Events at {gym.name}</Divider>}
 
             {
-                gym && events.filter(event => event.gym !== null && event.gym.id === gym.id).length ? (
+                gym && events.filter(event => event.gym?.id === gym.id || event.gymId === gym.id).length ? (
                     <Grid container spacing={2} columns={{ xs: 4, md: 12 }}>
-                        {events.filter(event => event.gym !== null && event.gym.id === gym.id).map((event) => (
+                        {events.filter(event => event.gym?.id === gym.id || event.gymId === gym.id).map((event) => (
                             <EventCard key={event.id} event={event} hideGym />
                         ))}
                     </Grid>
@@ -291,6 +291,8 @@ const GymDetails = () => {
                     <Typography variant="h3">There are no upcoming events at this gym</Typography>
                 )
             }
+
+
             <Typography variant={"body1"}>ID: {gym?.id}</Typography>
 
 

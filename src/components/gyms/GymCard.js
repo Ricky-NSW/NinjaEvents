@@ -15,8 +15,9 @@ const GymCard = ({ gym, index }) => {
     const { events, leagues } = useDataLayer();
 
     //search through the events collection and find events that have the same gym id as the gym id
-    const upcomingEvents = events.filter(event => event.gym.id === gym.id);
+    const upcomingEvents = events.filter(event => (event.gym?.id === gym.id) || (event.gymId === gym.id));
 
+    //TODO: make it so that I only need to send the gym id to thei coponent and it will use the ID to lookup and find that gym
     return (
         <CollectionCard key={gym.id} index={index}>
             <Link to={`/gyms/${gym.slug}`}>
