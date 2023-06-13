@@ -17,7 +17,7 @@ const GymScraper = () => {
         const request = {
             location: center,
             radius: '999999', // Specify the search radius in meters
-            keyword: 'Ninja Warrior Gym',
+            keyword: 'Ninja Warrior',
         };
         service.nearbySearch(request, callback);
     };
@@ -50,7 +50,7 @@ const GymScraper = () => {
                         };
                         // Get the photo URL if there is at least one photo.
                         if (details.photos && details.photos.length > 0) {
-                            const scrapedImage = details.photos[0].getUrl({maxWidth: 1000, maxHeight: 1000});
+                            const scrapedImage = details.photos[0].getUrl({maxWidth: 2000, maxHeight: 1000});
                             gym.scrapedImage = scrapedImage;
                         }
                         locationData.push(gym);

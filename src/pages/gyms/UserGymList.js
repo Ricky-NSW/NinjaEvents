@@ -9,7 +9,7 @@ import MenuItemIcon from "@mui/material/ListItemIcon";
 import AddLocationIcon from '@mui/icons-material/AddLocation';
 import GymCard from '../../components/gyms/GymCard';
 import { useDataLayer } from '../../components/data/DataLayer'; // Import useDataLayer
-
+import Loading from '../../components/data/Loading';
 const style = {
     position: 'absolute',
     top: '50%',
@@ -28,7 +28,7 @@ function UserGymList() {
 
 
     if (!currentUser) {
-        return <div>Loading...</div>;
+        return <Loading />;
     }
 
     // console.log('User details on managed gyms', currentUser);

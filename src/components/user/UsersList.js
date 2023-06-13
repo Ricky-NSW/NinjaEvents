@@ -2,12 +2,12 @@ import React, { useContext } from 'react';
 import { useDataLayer } from "../data/DataLayer";
 import { List, ListItem, ListItemText } from '@mui/material';
 import UserCard from "./UserCard";
-
+import Loading from '../data/Loading';
 const UsersList = () => {
     const { users } = useDataLayer();
 
     if (!users) {
-        return <p>Loading...</p>
+        return <Loading />
     }
 
     return (

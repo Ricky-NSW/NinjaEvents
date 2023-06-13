@@ -66,7 +66,6 @@ const Home = () => {
 
     const handleSearch = async (searchText) => {
         console.log('Search text:', searchText);
-
         const db = getFirestore();
         const collections = ['users', 'leagues', 'gyms', 'events'];
         let allResults = [];

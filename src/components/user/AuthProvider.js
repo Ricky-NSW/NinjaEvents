@@ -3,7 +3,7 @@ import { auth } from '../../FirebaseSetup';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../../FirebaseSetup'; // Replace with your actual import
 import AuthContext from '../../contexts/AuthContext';
-
+import Loading from '../data/Loading';
 const AuthProvider = ({ children }) => {
     const [currentUser, setCurrentUser] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -38,7 +38,7 @@ const AuthProvider = ({ children }) => {
     }, [currentUser]);
 
     if (loading) {
-        return <div>Loading...</div>;
+        return <Loading />;
     }
 
     return (

@@ -29,7 +29,7 @@ import { EditorState, ContentState } from 'draft-js';
 import htmlToDraft from 'html-to-draftjs';
 import draftToHtml from 'draftjs-to-html';
 import { convertToRaw } from 'draft-js';
-
+import Loading from '../data/Loading';
 
 // import { stateToHTML } from 'draft-js-export-html';
 // import htmlToDraft from 'html-to-draftjs';
@@ -237,7 +237,7 @@ console.log('users gyms', userGyms);
     }
 
     if (isLoading) {
-        return <div>Loading...</div>;
+        return <Loading />;
     }
 
     return (

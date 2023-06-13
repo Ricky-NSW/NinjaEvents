@@ -35,7 +35,8 @@ const contentState = htmlToDraft(htmlString);
 
 const EditGymDetails = ({ onUpdate, gym }) => {
     const [open, setOpen] = useState(false);
-    const [updatedGym, setUpdatedGym] = useState(null);
+    const [updatedGym, setUpdatedGym] = useState(gym ? { ...gym, bannerUrl: gym.bannerUrl || null } : null);
+
     const { gyms, leagues } = useDataLayer();
     const [gymLeagues, setGymLeagues] = useState([]);
 
@@ -139,6 +140,7 @@ const EditGymDetails = ({ onUpdate, gym }) => {
             const updateData = {
                 name: updatedGym.name,
                 description: contentHTML,
+                bannerUrl: updatedGym.bannerUrl,
             };
 
             // Only include avatarUrl in the update if it's not undefined
@@ -164,6 +166,11 @@ const EditGymDetails = ({ onUpdate, gym }) => {
     const handleAvatarUpload = (newAvatarUrl) => {
         setAvatarUrl(newAvatarUrl);
         setUpdatedGym({ ...updatedGym, avatarUrl: newAvatarUrl });
+    };
+
+
+    const handleBannerUpload = (newBannerUrl) => {
+        setUpdatedGym({ ...updatedGym, bannerUrl: newBannerUrl });
     };
 
 
@@ -233,10 +240,7 @@ const EditGymDetails = ({ onUpdate, gym }) => {
                         <Grid item xs={12}>
                             <GymBannerUpload
                                 gymId={gym.id}
-                                onBannerUpload={(bannerUrl) => {
-                                    console.log("Banner uploaded:", bannerUrl);
-                                    // Do something with the bannerUrl, e.g., save it to the gym document in Firestore
-                                }}
+                                onBannerUpload={handleBannerUpload}
                             />
                         </Grid>
 

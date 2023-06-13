@@ -30,9 +30,18 @@ export function DataLayer({ children }) {
 
     // Memoizing currentUser state to avoid unnecessary re-renders.
     const memoizedCurrentUser = useMemo(() => currentUser, [currentUser]);
-    const [isLoading, setIsLoading] = useState(true);
     // Initializing state and dispatch from useReducer hook with initialState and reducer.
     const [state, dispatch] = useReducer(reducer, initialState)
+
+    const [isLoading, setIsLoading] = useState({
+        gyms: true,
+        leagues: true,
+        events: true,
+        users: true,
+        userResults: true,
+    });
+    const isAnyDataLoading = () => Object.values(isLoading).some(value => value);
+
 
     // Fetch data from Firestore and set them in state.
     useEffect(() => {
@@ -51,7 +60,7 @@ export function DataLayer({ children }) {
 
 
     const fetchGyms = () => {
-        setIsLoading(true);
+        setIsLoading(prevState => ({ ...prevState, gyms: true }));
         const ref = collection(db, 'gyms');
         const q = query(ref);
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -63,14 +72,14 @@ export function DataLayer({ children }) {
             // Sort gyms alphabetically by name
             data.sort((a, b) => a.name.localeCompare(b.name));
             setGyms(data);
-            setIsLoading(false);
+            setIsLoading(prevState => ({ ...prevState, gyms: false }));
         });
 
         return unsubscribe;
     };
 
     const fetchLeagues = () => {
-        setIsLoading(true);
+        setIsLoading(prevState => ({ ...prevState, leagues: true }));
         const ref = collection(db, 'leagues');
         const q = query(ref);
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -81,7 +90,7 @@ export function DataLayer({ children }) {
             // Sort leagues alphabetically by name
             data.sort((a, b) => a.name.localeCompare(b.name));
             setLeagues(data);
-            setIsLoading(false);
+            setIsLoading(prevState => ({ ...prevState, leagues: false }));
         });
 
         return unsubscribe;
@@ -89,7 +98,7 @@ export function DataLayer({ children }) {
 
 
     const fetchEvents = () => {
-        setIsLoading(true);
+        setIsLoading(prevState => ({ ...prevState, events: true }));
         const ref = collection(db, 'events');
         const q = query(ref);
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -98,7 +107,7 @@ export function DataLayer({ children }) {
                 data.push({ ...doc.data(), id: doc.id });
             });
             setEvents(data);
-            setIsLoading(false);
+            setIsLoading(prevState => ({ ...prevState, events: false }));
         });
 
         return unsubscribe;
@@ -106,7 +115,7 @@ export function DataLayer({ children }) {
 
     // get users
     const fetchUsers = () => {
-        setIsLoading(true);
+        setIsLoading(prevState => ({ ...prevState, users: true }));
         const ref = collection(db, 'users');
         const q = query(ref);
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -115,7 +124,7 @@ export function DataLayer({ children }) {
                 data.push({ ...doc.data(), id: doc.id });
             });
             setUsers(data);
-            setIsLoading(false);
+            setIsLoading(prevState => ({ ...prevState, users: false }));
         });
 
         return unsubscribe;
@@ -289,11 +298,24 @@ export function DataLayer({ children }) {
         }
     };
 
+    const updateLeague = async (leagueId, leagueData) => {
+        const leagueDocRef = doc(db, 'leagues', leagueId);
+
+        try {
+            await updateDoc(leagueDocRef, leagueData);
+            console.log("League updated successfully");
+        } catch (error) {
+            console.error("Error updating league: ", error);
+            throw error;
+        }
+    };
+
+
     //this needs to be after the get eventbyId function
     // this needs to be after the get eventbyId function
     const fetchUserResults = useCallback(async () => {
         if (currentUser) {
-            setIsLoading(true);
+            setIsLoading(prevState => ({ ...prevState, userResults: true }));
             const userRef = doc(db, 'users', currentUser.uid);
             const resultsRef = collection(userRef, 'results');
 
@@ -313,7 +335,7 @@ export function DataLayer({ children }) {
                 return { ...result, id: doc.id, eventTitle: eventTitle };
             }));
 
-            setIsLoading(false);
+            setIsLoading(prevState => ({ ...prevState, userResults: false }));
             console.log('Results:', results);
 
             return results;
@@ -331,6 +353,8 @@ export function DataLayer({ children }) {
         state,
         dispatch,
         isLoading,
+        //This function could be used by components that need to wait for multiple types of data to load.
+        isAnyDataLoading,
         currentUser: memoizedCurrentUser,
         isUserSubscribedToGym,
         updateUserData,
@@ -351,6 +375,7 @@ export function DataLayer({ children }) {
         updateEvent,
         checkUserSubscriptionToLeague,
         updateUserSubscriptionToLeague,
+        updateLeague,
         fetchEventsForLeague,
         fetchUserResults,
     };

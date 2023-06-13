@@ -4,7 +4,7 @@ import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
 import EventCard from '../../components/events/EventCard';
 import { useDataLayer } from '../../components/data/DataLayer';
-
+import Loading from '../../components/data/Loading';
 function UserEventList() {
     const { currentUser, events } = useDataLayer();
     const [filteredEvents, setFilteredEvents] = useState([]);
@@ -27,7 +27,7 @@ function UserEventList() {
 
 
     if (!currentUser) {
-        return <div>Loading...</div>;
+        return <Loading />;
     }
 
     // console.log('filteredEvents',filteredEvents)

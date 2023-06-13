@@ -31,9 +31,14 @@ exports.createNotificationOnEventCreate = functions.region("australia-southeast1
       const event = snapshot.data();
       const eventId = context.params.eventId;
       const date = event.date;
-      const gymName = event.gym.name;
-      const gynSlug = event.gym.slug;
+      const gymId = event.gymId;
       const eventTitle = event.title;
+
+      // Fetch gym details
+      const gymSnapshot = await admin.firestore().collection("gyms").doc(gymId).get();
+      const gymData = gymSnapshot.data();
+      const gymName = gymData.name;
+      const gymSlug = gymData.slug;
 
       // Fetch all users
       const usersSnapshot = await admin.firestore().collection("users").get();
@@ -46,8 +51,8 @@ exports.createNotificationOnEventCreate = functions.region("australia-southeast1
         const subscribedLeagues = userData.subscribedLeagues || [];
 
         if (
-          subscribedGyms.includes(event.gym.id) ||
-                (event.league && subscribedLeagues.includes(event.league.id))
+            subscribedGyms.includes(gymId) ||
+            (event.leagueId && subscribedLeagues.includes(event.leagueId))
         ) {
           const notificationRef = admin.firestore()
               .collection("users")
@@ -62,7 +67,7 @@ exports.createNotificationOnEventCreate = functions.region("australia-southeast1
             status: "unread",
             date: date,
             gymName: gymName,
-            gynSlug: gynSlug,
+            gymSlug: gymSlug,
             eventTitle: eventTitle,
           });
         }
@@ -73,6 +78,7 @@ exports.createNotificationOnEventCreate = functions.region("australia-southeast1
 
       console.log(`Created notifications for ${eventId}`);
     });
+
 
 // notify users when a new result is added to an event
 exports.processEventResults = functions.region("australia-southeast1").firestore
@@ -227,6 +233,25 @@ exports.resizeAvatar = functions.region("australia-southeast1").storage.object()
       return null;
     }
 
+    // Add here: if it's a league image, also create a 30px version
+    if (uploadType === "leagues") {
+      const resizedFileName30px = `${fileName.split(".")[0]}_30px.${fileName.split(".")[1]}`;
+      const tempResizedLocalFile30px = path.join(os.tmpdir(), resizedFileName30px);
+
+      try {
+        await sharp(tempLocalFile).resize(30).toFile(tempResizedLocalFile30px);
+        console.log("Resized 30px league image created at", tempResizedLocalFile30px);
+
+        // Upload the resized 30px image
+        const uploadResizedFilePath30px = `${uploadType}/${object.metadata.id}/avatar/${resizedFileName30px}`;
+        await bucket.upload(tempResizedLocalFile30px, {destination: uploadResizedFilePath30px});
+        console.log("Resized 30px league image uploaded to", uploadResizedFilePath30px);
+      } catch (error) {
+        console.error("Error resizing 30px league image:", error);
+        return null;
+      }
+    }
+
     // object.metadata.id works
     const id = object.metadata ? object.metadata.id : null;
 
@@ -265,13 +290,11 @@ exports.resizeAvatar = functions.region("australia-southeast1").storage.object()
       });
     }
   }
-
-
   console.log("Image processing function completed.");
   return null;
 });
 
-
+// Update the event document with the status field set to 'expired' after event has happened
 exports.scheduledFunction = functions.pubsub.schedule("0 20 * * *").timeZone("Australia/Sydney").onRun(async (context) => {
   // Your code to check Firestore documents and trigger actions based on the date
 
@@ -300,7 +323,6 @@ exports.scheduledFunction = functions.pubsub.schedule("0 20 * * *").timeZone("Au
 });
 
 
-// scrape banner image and move it into firebase storage
 exports.saveGymImageToStorage = functions.region("australia-southeast1").firestore
     .document(`gyms/{gymId}`)
     .onCreate(async (snap, context) => {
@@ -320,33 +342,29 @@ exports.saveGymImageToStorage = functions.region("australia-southeast1").firesto
               .on("finish", resolve);
         });
 
-        // Upload image to Firebase Storage
+        // Upload image to Firebase Storage and make it public
         await storage.bucket(bucketName).upload(tempImagePath, {
           destination: `gyms/${gymId}/banner/${imageFileName}`,
+          public: true, // Make the file public
         });
 
-        try {
-          // Get the download URL of the newly uploaded image
-          const file = storage.bucket(bucketName).file(`gyms/${gymId}/banner/${imageFileName}`);
-          const config = {
-            action: "read", // You may adjust the expiration date
-            expires: Date.now() + 1000 * 60 * 60 * 24 * 365 * 3, // 3 years in the future
-          };
-          const downloadUrl = await file.getSignedUrl(config);
-          console.log(`Generated download URL: ${downloadUrl[0]}`);
+        // Construct the public URL
+        const publicUrl = `https://storage.googleapis.com/${bucketName}/gyms/${gymId}/banner/${imageFileName}`;
 
-          // Save the download URL to Firestore
+        // Save the public URL to Firestore
+        try {
           await admin.firestore().collection("gyms").doc(gymId).update({
-            bannerUrl: downloadUrl[0],
+            bannerUrl: publicUrl,
           });
-          console.log("Saved download URL to Firestore");
+          console.log(`Saved public URL to Firestore: ${publicUrl}`);
         } catch (error) {
-          console.error("Failed to get download URL or update Firestore", error);
+          console.error("Failed to update Firestore", error);
         }
 
         // Remove temporary image file
         fs.unlinkSync(tempImagePath);
       }
     });
+
 
 

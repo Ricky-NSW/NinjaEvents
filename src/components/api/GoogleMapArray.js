@@ -4,25 +4,63 @@ import React, { useEffect, useRef, useMemo, useState, useCallback } from "react"
 import { GoogleMap, Marker, MarkerClusterer } from "@react-google-maps/api";
 import {mapOptions} from "./mapOptions";
 import { useNavigate } from 'react-router-dom';
+import { useDataLayer } from '../data/DataLayer';
 
 function GoogleMapArray({ markers = [], onMapLoad, nestedGym }) {
     const mapRef = useRef(null);
     const [markersLoaded, setMarkersLoaded] = useState(false);
+    const { gyms } = useDataLayer();
+    // Function to get gym data based on gymId
+    const getGymData = (gymId) => gyms.find(gym => gym.id === gymId);
+
+    function removeDuplicates(originalArray, props) {
+        let unique_values = [];
+        let result = originalArray.filter((obj, index, self) =>
+            self.findIndex((t) => {
+                let match = true;
+                for (let p of props) {
+                    match = match && t[p] === obj[p];
+                }
+                if (match) {
+                    if (!unique_values.includes(obj[props[0]])) {
+                        unique_values.push(obj[props[0]]);
+                        return true;
+                    }
+                }
+                return false;
+            }) === index
+        );
+        return result;
+    }
+
 
     const markerPositions = useMemo(() => markers.map((marker) =>
         nestedGym
-            ? { lat: Number(marker.gym.latitude), lng: Number(marker.gym.longitude) }
+            ? getGymData(marker.gymId)
+                ? { lat: Number(getGymData(marker.gymId).latitude), lng: Number(getGymData(marker.gymId).longitude) }
+                : { lat: Number(marker.latitude), lng: Number(marker.longitude) }
             : { lat: Number(marker.latitude), lng: Number(marker.longitude) }
-    ), [markers, nestedGym]);
+    ), [markers, nestedGym, gyms]);
+
+    const uniqueMarkerPositions = removeDuplicates(markerPositions, ['lat', 'lng']);
+
+// Filter out markers with invalid latitudes or longitudes
+    const validMarkers = markers.filter((marker) =>
+        nestedGym
+            ? getGymData(marker.gymId) && getGymData(marker.gymId).latitude && getGymData(marker.gymId).longitude
+            : marker.latitude && marker.longitude
+    );
+
+    const uniqueValidMarkers = removeDuplicates(validMarkers, ['latitude', 'longitude']);
 
 
     // console.log("Map Options:", mapOptions); // Check the mapOptions object in the console
 
     const fitBounds = () => {
-        if (!mapRef.current || markerPositions.length === 0) return;
+        if (!mapRef.current || uniqueMarkerPositions.length === 0) return;
 
         const bounds = new window.google.maps.LatLngBounds();
-        markerPositions.forEach((position) => {
+        uniqueMarkerPositions.forEach((position) => {
             bounds.extend({ lat: position.lat, lng: position.lng });
         });
 
@@ -40,17 +78,7 @@ function GoogleMapArray({ markers = [], onMapLoad, nestedGym }) {
         if (mapRef.current) {
             setTimeout(fitBounds, 200);
         }
-    }, [markers, mapRef.current, markerPositions]);
-
-
-
-    // Filter out markers with invalid latitudes or longitudes
-// Filter out markers with invalid latitudes or longitudes
-    const validMarkers = markers.filter((marker) =>
-        nestedGym
-            ? marker.gym && marker.gym.latitude && marker.gym.longitude
-            : marker.latitude && marker.longitude
-    );
+    }, [markers, mapRef.current, uniqueMarkerPositions]);
 
 
     // handle click event for the marker
@@ -87,25 +115,27 @@ function GoogleMapArray({ markers = [], onMapLoad, nestedGym }) {
             >
                 {markersLoaded &&
                     <MarkerClusterer
-                    options={{ imagePath: "https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m" }}
-                >
-                    {(clusterer) =>
-                        validMarkers.map((marker) => {
-                            const position = nestedGym
-                                ? { lat: Number(marker.gym.latitude), lng: Number(marker.gym.longitude) }
-                                : { lat: Number(marker.latitude), lng: Number(marker.longitude) };
+                        options={{ imagePath: "https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m" }}
+                    >
+                        {(clusterer) =>
+                            uniqueValidMarkers.map((marker) => {
+                                const position = nestedGym
+                                    ? getGymData(marker.gymId)
+                                        ? { lat: Number(getGymData(marker.gymId).latitude), lng: Number(getGymData(marker.gymId).longitude) }
+                                        : { lat: Number(marker.latitude), lng: Number(marker.longitude) }
+                                    : { lat: Number(marker.latitude), lng: Number(marker.longitude) };
 
-                            return (
-                                <Marker
-                                    key={marker.id}
-                                    position={position}
-                                    onClick={() => handleMarkerClick(marker)}
-                                    clusterer={clusterer}
-                                />
-                            );
-                        })
-                    }
-                </MarkerClusterer>
+                                return (
+                                    <Marker
+                                        key={marker.id}
+                                        position={position}
+                                        onClick={() => handleMarkerClick(marker)}
+                                        clusterer={clusterer}
+                                    />
+                                );
+                            })
+                        }
+                    </MarkerClusterer>
                 }
             </GoogleMap>
 

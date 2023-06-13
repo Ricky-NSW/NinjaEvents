@@ -7,6 +7,7 @@ import { useDataLayer } from '../../components/data/DataLayer';  // Import the h
 //MUI
 import EventsList from "../../components/events/EventsList";
 import GoogleMapArray from '../../components/api/GoogleMapArray';
+import Loading from '../../components/data/Loading';
 
 const style = {
     position: 'absolute',
@@ -24,7 +25,7 @@ function EventsPage() {
     const { events, isLoading } = useDataLayer();  // Get events and isLoading from the DataLayer
 
     if (isLoading) {
-        return <div>Events are Loading...</div>; // Or your preferred loading UI
+        return <Loading />; // Or your preferred loading UI
     }
 
     // console.log('events page:', events)

@@ -40,13 +40,18 @@ const EditEventDetails = ({ event, gym, leagues }) => {
     const handleSaveChanges = async () => {
         // Handle saving changes for the event
         try {
-            await updateEvent(event.id, { ...updatedEvent, gym: selectedGym, league: selectedLeague });
+            await updateEvent(event.id, {
+                ...updatedEvent,
+                gymId: selectedGym ? selectedGym.id : null,
+                leagueId: selectedLeague ? selectedLeague.id : null
+            });
             console.log('Event updated successfully:', updatedEvent);
         } catch (error) {
             console.error('Error updating event:', error);
         }
         toggleModal();
     };
+
 
 
 
@@ -218,7 +223,8 @@ const EditEventDetails = ({ event, gym, leagues }) => {
                 <Button onClick={toggleModal} color="primary">
                     Cancel
                 </Button>
-                <Button onClick={handleSaveChanges} color="primary">
+                <Button onClick={handleSaveChanges} color="primary" disabled={!selectedGym}>
+
                     Save changes
                 </Button>
             </DialogActions>

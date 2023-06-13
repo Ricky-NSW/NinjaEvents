@@ -5,7 +5,7 @@ import { db } from '../../FirebaseSetup';
 
 //MUI
 import GymsList from "../../components/gyms/GymsList";
-
+import GymScraper from "../../components/gyms/GymScraper";
 
 
 const style = {

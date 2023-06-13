@@ -8,6 +8,7 @@ import TextField from '@mui/material/TextField';
 import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
+import Loading from '../data/Loading';
 
 const EventsList = ({ events = [], filterDisabled }) => {
     const { gyms, loading } = useDataLayer();
@@ -32,7 +33,9 @@ const EventsList = ({ events = [], filterDisabled }) => {
                 events
                     .filter((event) => {
                         // Find the gym only once
-                        const eventGym = gyms.find(gym => gym.id === event.gym?.id);
+                        const eventGym = gyms.find(gym => gym.id === (event.gym ? event.gym.id : event.gymId));
+                        //TODO: FIX this
+                        // const eventGym = gyms.find(gym => (gym.id || gym.gymId) === (event.gym ? event.gym.id : event.gymId));
 
                         // Filter by gym name
                         const gymMatch = selectedGym
@@ -69,7 +72,8 @@ const EventsList = ({ events = [], filterDisabled }) => {
 
         const uniqueGyms = events
             .map((event) => {
-                const gym = gyms.find(gym => gym.id === event.gym?.id);
+                const gym = gyms.find(gym => gym.id === (event.gym ? event.gym.id : event.gymId));
+                // const gym = gyms.find(gym => gym.id === event.gym?.id);
                 if (gym && !uniqueGymSet.has(gym.id)) {
                     uniqueGymSet.add(gym.id);
                     return { id: gym.id, name: gym.name };
@@ -100,7 +104,7 @@ const EventsList = ({ events = [], filterDisabled }) => {
     }, [gyms]);
 
     if (loading) {
-        return <div>Loading...</div>; // or some other placeholder content
+        return <Loading />; // or some other placeholder content
     }
 
 

@@ -27,6 +27,9 @@ import { Card, CardHeader, Avatar, IconButton, CardMedia, CardContent, Typograph
 import DeleteIcon from '@mui/icons-material/Delete';
 import styled from "styled-components";
 
+import ResultsDisplay from "./ResultsDisplay";
+
+
 
 const EventDelete = styled(Button)`
   margin: 0 0 0 1rem;
@@ -58,8 +61,10 @@ const EventDetails = ( userType, handleDelete, ) => {
     // find the matching gym basd on the gym id in the event
     const getGymById = useCallback((gymId) => {
         const gym = gyms.find((g) => g.id === gymId);
-        return gymId || { error: 'Gym not found' };
+        return gym || { error: 'Gym not found' };
     }, [gyms]);
+
+
 
     //find the matching league based on the id in the event
     const getLeagueById = useCallback((leagueId) => {
@@ -69,17 +74,23 @@ const EventDetails = ( userType, handleDelete, ) => {
 
 
     useEffect(() => {
-        console.log('useEffect for fetching event, gym and league data is running. Id: ', id);
+        console.log('useEffect for fetching event, gym, and league data is running. Id: ', id);
 
-        const event = getEventById(id);
-        setEvent(event);
-        if (event && event.gym && event.league) {
-            const gymData = getGymById(event.gym.id);
-            setGym(gymData);
-            const leagueData = getLeagueById(event.league.id);
-            setLeague(leagueData);
-        }
-    }, [id, getEventById, gyms, leagues]);
+        const fetchData = async () => {
+            const eventData = await getEventById(id);
+            setEvent(eventData);
+
+            if (eventData) {
+                const gymData = eventData.gymId ? await getGymById(eventData.gymId) : null;
+                setGym(gymData);
+
+                const leagueData = eventData.leagueId ? await getLeagueById(eventData.leagueId) : null;
+                setLeague(leagueData);
+            }
+        };
+
+        fetchData();
+    }, [id, getEventById, getGymById, getLeagueById]);
 
 
 
@@ -88,8 +99,8 @@ const EventDetails = ( userType, handleDelete, ) => {
     //     const event = getEventById(id);
     //     setEvent(event);
     //     if (event && event.gym && event.league) {
-    //         if (event.gym.id) {
-    //             const gymData = getGymById(event.gym.id);
+    //         if (event.gymId) {
+    //             const gymData = getGymById(event.gymId);
     //             setGym(gymData);
     //         } else {
     //             setGym(null);
@@ -128,8 +139,8 @@ const EventDetails = ( userType, handleDelete, ) => {
 
         setEvent(event);
         if (event) {
-            if (event.gym && event.gym.id) {
-                const gymData = getGymById(event.gym.id);
+            if (event.gym && event.gymId) {
+                const gymData = getGymById(event.gymId);
                 setGym(gymData);
             } else {
                 setGym(null);
@@ -159,9 +170,6 @@ const EventDetails = ( userType, handleDelete, ) => {
         return () => unsubscribe();
     }, [id]);
 
-    useEffect(() => {
-        displayResults();
-    }, [results]);
 
 
 // console.log('gym on eventDetails'.getGymById);
@@ -188,54 +196,12 @@ const EventDetails = ( userType, handleDelete, ) => {
         setEditEventOpen(false);
     };
 
-    function displayResults() {
-        if (Object.keys(results).length > 0) {
-            return Object.entries(results).map(([divisionId, divisionData]) => {
-                const divisionName = divisionData.name;
-
-                const participants = divisionData.results;
-
-                return (
-                    <div key={divisionId}>
-                        <h3>Division: {divisionName}</h3>
-                        {participants.map((participant, index) => {
-                            const placeLabel = index === 0 ? "First" : index === 1 ? "Second" : index === 2 ? "Third" : `${index + 1}th`;
-                            return (
-                                <div key={participant.id || participant.displayName || index}>
-                                    {participant.displayName
-                                        ? <div>
-                                            <p>{placeLabel}: {participant.displayName}</p>
-                                        </div>
-                                        : <div>
-
-                                            <p>
-                                                {placeLabel}:
-                                                <Link to={`/users/${participant.id}`}>
-                                                    {participant.firstName} {participant.lastName}
-                                                </Link>
-                                            </p>
-                                        </div>
-                                    }
-                                </div>
-                            );
-                        })}
-                    </div>
-                );
-            });
-        }
-
-        return <p>No results yet</p>;
-    }
-
-
-
-
-
+    //check if the date has passed
+    const isEventDatePassed = event && new Date(event.date) < new Date();
 
 
 
     // {event && <div>{console.log("event league", event.league.id)}</div>}
-    console.log(results)
     return (
         <>
         <div>
@@ -313,15 +279,17 @@ const EventDetails = ( userType, handleDelete, ) => {
 
                     {/*//TODO: after the events date has passed show the results of the event - this needs to be a notification for the league and gym owner*/}
                     {/*//TODO: once events results have been added, they should be displayed below*/}
-                    <SubmitResultsForm eventId={event.id} eventDate={event.date} />
+                    <SubmitResultsForm eventId={event.id} eventDate={event.date} isEventDatePassed />
 
-                    {Object.keys(results).length > 0 ? (
-                        <>
-                            {displayResults(results)}
-                        </>
-                    ) : (
-                        <p>No results yet</p>
-                    )}
+                    {/*Check if event.date is after current date and if so then show <ResultsDisplay />*/}
+
+
+
+
+
+
+
+                    <ResultsDisplay results={results} />
                 </>
 
             ) : (

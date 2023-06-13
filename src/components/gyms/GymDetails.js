@@ -11,7 +11,8 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { getFirestore, doc, updateDoc, getDoc, collection, query, where, onSnapshot, arrayUnion, arrayRemove, } from 'firebase/firestore';
 import { useParams, Link } from 'react-router-dom';
-import { Box, Grid, Typography, Avatar, Button, Dialog, DialogTitle, DialogContent, CardMedia } from '@mui/material';
+import { Stack, Dialog, DialogTitle, DialogContent, ImageList, ImageListItem, Button, Typography, Box, CardMedia, Avatar } from '@mui/material';
+
 import Divider from '@mui/material/Divider';
 
 // Import components
@@ -40,6 +41,8 @@ import GymBannerImage from "./GymBannerImage";
 
 // Import notifications
 import { requestNotificationPermission } from '../messaging/fcm';
+import {getDownloadURL, getStorage, listAll, ref, uploadBytes} from "firebase/storage";
+import {Close} from "@mui/icons-material";
 
 const GymDetails = () => {
     const { events, getGymBySlug, gyms, updateGymBannerUrl, isLoading } = useDataLayer();
@@ -49,6 +52,11 @@ const GymDetails = () => {
     const [isSubscribed, setIsSubscribed] = useState(false);
     const [mapDialogOpen, setMapDialogOpen] = useState(false);
     const [gym, setGym] = useState(null);
+    const [images, setImages] = useState([]);
+    const [isGalleryLoading, setIsGalleryLoading] = useState(true);
+    const [open, setOpen] = useState(false);
+    const [selectedImage, setSelectedImage] = useState(null);
+    const [selectedFiles, setSelectedFiles] = useState(null);
 
     useEffect(() => {
         if (!isLoading) {
@@ -65,7 +73,7 @@ const GymDetails = () => {
                         } else {
                             setIsSubscribed(false);
                         }
-
+                        console.log("Gym data: ", gymDetails); // Here's the log
                     } else {
                         console.error('Error fetching gym: gymDetails is', gymDetails);
                     }
@@ -76,9 +84,35 @@ const GymDetails = () => {
             };
             fetchGym();
         }
-        {gym && console.log('gymDetails GymID', gym.id);}
+        {gym && console.log('gymDetails GymID', gym.slug);}
 
     }, [slug, currentUser, getGymBySlug, gyms, isLoading]);
+
+
+    const fetchImages = async () => {
+        try {
+            setIsGalleryLoading(true);
+            const storage = getStorage();
+            const storageRef = ref(storage, `gyms/${gym.id}/gallery/temp/`);
+            const imageRefs = await listAll(storageRef);
+            const imagePromises = imageRefs.items.map(getDownloadURL);
+
+            const imageArray = await Promise.all(imagePromises);
+            setImages(imageArray);
+            console.log("Fetched Images: ", imageArray); // Here's the log
+        } catch (error) {
+            console.error('Error fetching images:', error);
+        } finally {
+            setIsGalleryLoading(false);
+        }
+    };
+
+
+    useEffect(() => {
+        if (gym) {
+            fetchImages();
+        }
+    }, [gym]);
 
 
     const handleSubscribeToggle = async () => {
@@ -107,13 +141,36 @@ const GymDetails = () => {
         setMapDialogOpen(false);
     };
 
+    const handleOpen = (image) => {
+        setSelectedImage(image);
+        setOpen(true);
+    };
+
+    const handleClose = () => {
+        setOpen(false);
+    };
+
+    const modalStyle = {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+    };
+
+    const imgStyle = {
+        maxWidth: '90%',
+        maxHeight: '90%',
+    };
 
     return (
-        <div>
+        <Stack spacing={2}>
             {isLoading ? (
                 <Typography>Loading gym details...</Typography>
             ) : gym ? (
-                <>
+                <Stack
+                    spacing={2}
+                    container
+                    marginTop={2}
+                >
                     {gym.bannerUrl && (
                         <Box
                             // add a border radius of 14 px
@@ -125,22 +182,21 @@ const GymDetails = () => {
                                 height="auto"
                                 image={gym.bannerUrl}
                                 title={gym.name}
-                                sx={{ width: '100%' }}
+                                //birder radius 14px, margin bottom 2
+                                sx={{ width: '100%', borderRadius: '14px', marginBottom: 2 }}
                             />
                         </Box>
                     )}
 
                     {/*<Button variant="contained" onClick={sendNotification}>Send Test Notification</Button>*/}
-                    <Grid
+                    <Stack
                         container
                         direction="row"
                         justifyContent="center"
-                        alignItems="center"
                         spacing={2}
                     >
                         {gym.avatarUrl ? (
-                            <Grid
-                                item
+                            <Stack
                                 container
                                 direction="column"
                                 justifyContent="center"
@@ -149,37 +205,38 @@ const GymDetails = () => {
                                 xs={2}
                                 sm={3}
                             >
-                                <Grid item>
+                                <Stack>
                                     <Avatar
                                         alt={gym.name}
                                         src={gym.avatarUrl}
                                         // make the avatar fill the width and height
                                         sx={{ width: '100%', height: 'auto', padding: '10px' }}
                                     />
-                                </Grid>
-                            </Grid>
+                                </Stack>
+                            </Stack>
                         ) : null}
-                        <Grid
-                            item
+                        <Stack
                             container
                             direction="column"
                             justifyContent="flex-start"
                             alignItems="flex-start"
                             spacing={2}
-                            xs={8}
+                            xs={gym.avatarUrl ? 10 : 12}
                             sm={9}
+                            sx={{ width: '100%' }}
+
                             //text align left
                         >
-                            <Grid item>
+                            <Stack item>
                                 <Typography
                                     variant={"h1"}
                                     sx={{ fontSize: '2rem' }}
                                 >
                                     {gym.name}
                                 </Typography>
-                            </Grid>
+                            </Stack>
                             {currentUser ? (
-                                <Grid
+                                <Stack
                                     item
                                     // display flex so that content are in a row and to the left of the container
                                     container
@@ -194,13 +251,13 @@ const GymDetails = () => {
                                             handleSubscription={handleSubscribeToggle}
                                         />
                                         <span>Follow this Gym</span>
-                                </Grid>
+                                </Stack>
                             ) : (
                                 <Typography variant={"body2"} >Login to follow this gym and be notified of upcoming events</Typography>)
                             }
-                        </Grid>
-                    </Grid>
-                    <Grid
+                        </Stack>
+                    </Stack>
+                    <Stack
                         container
                         direction="row"
                         justifyContent="center"
@@ -209,16 +266,16 @@ const GymDetails = () => {
                     >
 
 
-                        <Grid item xs={12}>
+                        <Stack item xs={12}>
                             <Typography variant={"body1"}>{gym.location}</Typography>
                             <Typography variant={"body1"}><b>Location:</b> {gym.address}</Typography>
                             <div dangerouslySetInnerHTML={{ __html: gym.description }} />
-                        </Grid>
-                    </Grid>
+                        </Stack>
+                    </Stack>
 
                     {/*// loop through this array gym.leagues*/}
                     {/*{gym.leagues && gym.leagues.map((league) => (*/}
-                    {/*    <Grid*/}
+                    {/*    <Stack*/}
                     {/*        container*/}
                     {/*        direction="row"*/}
                     {/*        justifyContent="center"*/}
@@ -226,77 +283,87 @@ const GymDetails = () => {
                     {/*        alignItems="center"*/}
                     {/*        spacing={2}*/}
                     {/*    >*/}
-                    {/*        <Grid item xs={12}>*/}
+                    {/*        <Stack item xs={12}>*/}
                     {/*            <Typography variant={"body1"}><b>League:</b> {league.name}</Typography>*/}
-                    {/*        </Grid>*/}
-                    {/*    </Grid>*/}
+                    {/*        </Stack>*/}
+                    {/*    </Stack>*/}
                     {/*))}*/}
 
                     {/*<Typography variant="body1>{gym.description}</Typography>*/}
                     {/*<Typography variant={"body1"}>{gym.longitude}</Typography>*/}
-                    <GoogleMapSingle marker={gym} />
+                    <GoogleMapSingle key={gym.id} marker={gym} />
 {/*//TODO: Hide the edit and post results buttons from those who are not owneers or admins*/}
                     {/*only users with an id whos id can be found in the gym.ownerUid array can edit the gym, else they can only view the gym*/}
-                    {/*check if there is a current user and if the current user id is in the gym.ownerUid array*/}
                     {/*or if the user type = admin*/}
                     {(currentUser && gym && gym.ownerUid && (gym.ownerUid.includes(currentUser.uid) || currentUser.type === 'Admin')) ? (
-                    <Grid >
-                        <Grid item xs={12} sm={6}>
+                    <Stack >
+                        <Stack item xs={12} sm={6}>
                             {/*//This component is used to control the modal which contains the gym editing form*/}
                             <EditGymDetails gym={gym} onUpdate={handleGymUpdate} />
-                            {/*<GymBannerUpload*/}
-                            {/*    gymId={gym.id}*/}
-                            {/*    onBannerUpload={(bannerUrl) => {*/}
-                            {/*        // console.log("Banner uploaded:", bannerUrl);*/}
-                            {/*        updateGymBannerUrl(gym.id, bannerUrl);*/}
-                            {/*    }}*/}
-                            {/*/>*/}
-                            {/*<GalleryImageUpload gymId={gym.id} />*/}
-                        </Grid>
-                    </Grid>
-                    ) : (
-                        <Typography>Only the owner of this gym can edit it</Typography>
-                    )}
+                        </Stack>
+                    </Stack>
+                    ) : null}
 
-
-                    {/*//This is the modal which contains the map*/}
-                    {/*<Dialog*/}
-                    {/*    open={mapDialogOpen}*/}
-                    {/*    onClose={closeMapDialog}*/}
-                    {/*    aria-labelledby="map-dialog-title"*/}
-                    {/*>*/}
-                    {/*    <DialogTitle id="map-dialog-title">Gym Location</DialogTitle>*/}
-                    {/*    /!*TODO: Set the width of the dialigue to fill more space*!/*/}
-                    {/*    <DialogContent*/}
-                    {/*        fullWidth*/}
-                    {/*        maxWidth="xs"*/}
-                    {/*    >*/}
-                    {/*        <GoogleMapSingle marker={gym} />*/}
-                    {/*    </DialogContent>*/}
-                    {/*</Dialog>*/}
-                </>
+                </Stack>
             ) : (
                 <Typography>Could not find gym with slug: {slug}</Typography>
             )}
-            {!isLoading && gym && <Divider>Events at {gym.name}</Divider>}
+
+            {isGalleryLoading ? (
+                <p>Loading images...</p>
+            ) : (
+                <>
+                    <Divider>Photo Gallery</Divider>
+                    {console.log("Rendering images: ", images)}
+                    <ImageList cols={4} gap={8}>
+                        {images.map((item, index) => (
+                            <ImageListItem key={index}>
+                                <img src={item} alt={`Image ${index}`} loading="lazy" onClick={() => handleOpen(item)} />
+                            </ImageListItem>
+                        ))}
+                    </ImageList>
+
+                    <Dialog
+                        open={open}
+                        onClose={handleClose}
+                        style={modalStyle}
+                        aria-labelledby="image-modal"
+                        aria-describedby="image-modal-description"
+                    >
+                        <DialogContent>
+                            <img src={selectedImage} alt={`Selected image`} style={imgStyle} />
+                            <IconButton
+                                edge="end"
+                                color="inherit"
+                                onClick={handleClose}
+                                aria-label="close"
+                                sx={{
+                                    position: 'absolute',
+                                    top: 8,
+                                    right: 8,
+                                }}
+                            >
+                                <Close />
+                            </IconButton>
+                        </DialogContent>
+                    </Dialog>
+                </>
+            )}
 
             {
-                gym && events.filter(event => event.gym?.id === gym.id || event.gymId === gym.id).length ? (
-                    <Grid container spacing={2} columns={{ xs: 4, md: 12 }}>
-                        {events.filter(event => event.gym?.id === gym.id || event.gymId === gym.id).map((event) => (
-                            <EventCard key={event.id} event={event} hideGym />
-                        ))}
-                    </Grid>
-                ) : (
-                    <Typography variant="h3">There are no upcoming events at this gym</Typography>
-                )
+                gym && events && events.filter(event => event.gym?.id === gym.id || event.gymId === gym.id).length ? (
+                    <>
+                        <Divider>Events at {gym.name}</Divider>
+                        <Stack container spacing={2} columns={{ xs: 4, md: 12 }}>
+                            {events.filter(event => event.gym?.id === gym.id || event.gymId === gym.id).map((event) => (
+                                <EventCard key={event.id} event={event} hideGym />
+                            ))}
+                        </Stack>
+                    </>
+                ) : null
             }
-
-
             <Typography variant={"body1"}>ID: {gym?.id}</Typography>
-
-
-        </div>
+        </Stack>
     );
 };
 

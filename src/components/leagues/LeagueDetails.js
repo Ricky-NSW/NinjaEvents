@@ -18,7 +18,8 @@ import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
 import CardActions from "@mui/material/CardActions";
 import Button from "@mui/material/Button";
-import { useDataLayer } from '../data/DataLayer';
+import { useDataLayer, DataLayerContext } from '../data/DataLayer';
+import EditLeagueDialog from "./editLeagueDetails";
 
 const LeagueDetails = () => {
     const { id } = useParams();
@@ -27,6 +28,8 @@ const LeagueDetails = () => {
     const [events, setEvents] = useState([]);
     const [mapDialogOpen, setMapDialogOpen] = useState(false);
     const { currentUser } = useContext(AuthContext);
+    const [editDialogOpen, setEditDialogOpen] = useState(false);
+    const { updateLeague } = useContext(DataLayerContext);
 
     const {
         getLeagueById,
@@ -67,13 +70,22 @@ const LeagueDetails = () => {
         await updateUserSubscriptionToLeague(id, currentUser);
     };
 
-    // Functions to open and close the map dialog
-    const openMapDialog = () => {
-        setMapDialogOpen(true);
+    const handleEditDialogOpen = () => {
+        setEditDialogOpen(true);
     };
 
-    const closeMapDialog = () => {
-        setMapDialogOpen(false);
+    const handleEditDialogClose = () => {
+        setEditDialogOpen(false);
+    };
+
+    // You can call the function whenever you want to update the league. Here is a sample of how you can call it:
+    const updateLeagueDetails = () => {
+        const newLeagueData = { name: 'New League Name', /* Add other league details you want to update */ };
+        updateLeague(league.id, newLeagueData).then(() => {
+            console.log('League details updated successfully');
+        }).catch((error) => {
+            console.error('Failed to update league details: ', error);
+        });
     };
 
     // console.log('league details user', currentUser)
@@ -96,6 +108,17 @@ const LeagueDetails = () => {
             ) : (
                 <p>Loading league details...</p>
             )}
+
+            {(currentUser && league && league.ownerUid && (league.ownerUid.includes(currentUser.uid) || currentUser.type === 'Admin')) ? (
+                <>
+                    <button onClick={handleEditDialogOpen}>Edit</button>
+                    <EditLeagueDialog
+                        open={editDialogOpen}
+                        handleClose={handleEditDialogClose}
+                        league={league}
+                        updateLeague={updateLeagueDetails}
+                    />
+                </>) : null}
 
             {/*//TODO: wrap this in a ternary so that it only shows if there are events*/}
 
