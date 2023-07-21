@@ -123,7 +123,6 @@ export default function NavDrawer() {
                 <MenuItem component={Link} to="/leagues"><MenuItemIcon><AddLocationIcon /></MenuItemIcon>Leagues</MenuItem>
                 <MenuItem component={Link} to="/users"><MenuItemIcon><AddLocationIcon /></MenuItemIcon>Ninjas</MenuItem>
                 <MenuItem component={Link} to="/timers/"><MenuItemIcon><AddLocationIcon /></MenuItemIcon>Add Time</MenuItem>
-                <MenuItem component={Link} to="/safe/"><MenuItemIcon><AddLocationIcon /></MenuItemIcon>Safe Game</MenuItem>
                 <MenuItem component={Link} to="/users/:userId/timers/:timerId"><MenuItemIcon><AddLocationIcon /></MenuItemIcon>Your Timers</MenuItem>
 
                 <Divider/>
@@ -159,7 +158,7 @@ export default function NavDrawer() {
                     </>
                 )}
                 {/*if the user is a leage admin and has not created a league yet*/}
-                {userDetails && (userDetails.userType === 'League Admin' || userDetails.userType === 'admin') && !userDetails.league && (
+                {userDetails && (userDetails.userType === 'League Admin' || userDetails.userType === 'Admin') && !userDetails.league && (
                     <>
                         <MenuItem component={Link} to="add-league"><MenuItemIcon><EmojiEventsIcon /></MenuItemIcon>Add your League</MenuItem>
                     </>

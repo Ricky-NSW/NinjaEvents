@@ -43,7 +43,7 @@ const formatDate = (date) => {
 };
 
 const EventCard = ({ event, handleDelete, userType, hideGym }) => {
-    const { gyms, leagues, isLoading } = useDataLayer();
+    const { gyms, leagues, isAnyDataLoading } = useDataLayer();
 
 // Find the gym with the same id as event.gym.id or event.gymId
     const gym = gyms.find(gym => (event.gym ? event.gym.id : event.gymId) === gym.id);
@@ -53,10 +53,10 @@ const EventCard = ({ event, handleDelete, userType, hideGym }) => {
 
 
     return (
-        // If isLoading is true, display Skeleton component
-        isLoading ? (
-                <Grid item xs={12}sm ={12} md={12} lg={6}>
-                    <Card sx={{ maxWidth: 768 }}>
+        // If isAnyDataLoading is true, display Skeleton component
+        isAnyDataLoading ? (
+                <Grid item xs={12} sm={12} md={12} lg={6}>
+                    <Card style={{ maxWidth: 768 }}>
                         <CardHeader
                             avatar={<Skeleton variant="circular" width={40} height={40} />}
                             title={<Skeleton variant="text" />}
@@ -78,7 +78,7 @@ const EventCard = ({ event, handleDelete, userType, hideGym }) => {
                     </Card>
                 </Grid>
         ) : (
-            // If isLoading is false, display your actual component
+            // If isAnyDataLoading is false, display your actual component
             <CollectionCard key={event.id}>
                 <CardContent>
                     <Typography gutterBottom variant="h5" component="div">
@@ -100,19 +100,27 @@ const EventCard = ({ event, handleDelete, userType, hideGym }) => {
                     </Typography>
                     {league?.name && (
                         <Typography>
-                            League: <Link to={`/leagues/${league?.id}`} size="small">{league.name}</Link>
+                            League: <Link to={`/leagues/${league?.slug}`} size="small">{league.name}</Link>
                         </Typography>
                     )}
                     <Typography>
                         {/*<span>League: {event.league.name}</span>*/}
                     </Typography>
                     <Typography>
-                        Price: {event.price}
-                    </Typography>
-                    <Typography>
                         Age: {event.age}
                         {/*{event.GeoPoint.latitude} {event.GeoPoint.longitude}*/}
                     </Typography>
+                    <Button
+                        component={Link}
+                        to={`/events/${event.id}`}
+                        size="small"
+                     //   make the button solid with a background
+                        variant="contained"
+                        color="primary"
+                        sx={{ mt: 3, mb: 0 }}
+                    >
+                        Learn More Here
+                    </Button>
                 </CardContent>
                 {!hideGym && (
                     <>
@@ -132,19 +140,6 @@ const EventCard = ({ event, handleDelete, userType, hideGym }) => {
                         />
                     </>
                 )}
-                <CardActions>
-                    <Button component={Link} to={`/events/${event.id}`} size="small">Learn More</Button>
-                    {/*{auth.currentUser && (auth.currentUser.uid === event.createdBy || userType === "Admin") ? (*/}
-                    {/*    <EventDelete*/}
-                    {/*        onClick={() => handleDelete(event.id)}*/}
-                    {/*        size="small"*/}
-                    {/*        color="error"*/}
-                    {/*        variant="outlined"*/}
-                    {/*    >*/}
-                    {/*        <DeleteIcon />*/}
-                    {/*    </EventDelete>*/}
-                    {/*) : null}*/}
-                </CardActions>
             </CollectionCard>
         )
     );

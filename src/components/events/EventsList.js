@@ -9,7 +9,7 @@ import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Loading from '../data/Loading';
-
+import LoginModal from '../user/LoginModal';
 const EventsList = ({ events = [], filterDisabled }) => {
     const { gyms, loading } = useDataLayer();
     //TODO check authcontext implementation
@@ -20,11 +20,24 @@ const EventsList = ({ events = [], filterDisabled }) => {
     const [stateSearch, setStateSearch] = useState('');
     const [countrySearch, setCountrySearch] = useState('');
     const [filteredEvents, setFilteredEvents] = useState([]);
+    const [modalOpen, setModalOpen] = useState(false);
 
-    console.log('gymn on eventlist component', gyms)
+    // console.log('gymn on eventlist component', gyms)
 
     const dataLayer = useDataLayer();
     console.log('dataLayer', dataLayer);
+
+
+    useEffect(() => {
+        if (!currentUser) {
+            setModalOpen(true);
+        }
+    }, [currentUser]);
+
+    const handleClose = () => {
+        setModalOpen(false);
+        // You can handle any additional logic on closing the modal
+    };
 
 
     useEffect(() => {
@@ -110,6 +123,8 @@ const EventsList = ({ events = [], filterDisabled }) => {
 
     return (
         <>
+            <LoginModal open={modalOpen} handleClose={handleClose} />
+
             {!filterDisabled && (
                 <>
                     <Autocomplete

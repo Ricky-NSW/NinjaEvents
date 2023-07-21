@@ -18,8 +18,11 @@ const EditEventDetails = ({ event, gym, leagues }) => {
     const [updatedEvent, setUpdatedEvent] = useState(event);
     const [searchBox, setSearchBox] = useState(null);
     const { updateEvent, gyms, league } = useDataLayer();
-    const [selectedGym, setSelectedGym] = useState(event.gym || null);
-    const [selectedLeague, setSelectedLeague] = useState(null);
+    // const [selectedGym, setSelectedGym] = useState(event.gymId || null);
+    // const [selectedLeague, setSelectedLeague] = useState(event.leagueId || null);
+    //
+    const [selectedLeague, setSelectedLeague] = useState(leagues.find(league => league.id === event.leagueId) || null);
+    const [selectedGym, setSelectedGym] = useState(gyms.find(gym => gym.id === event.gymId) || null);
 
     if (!event) {
         return null; // or show a loading indicator or error message

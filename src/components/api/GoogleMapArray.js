@@ -5,6 +5,10 @@ import { GoogleMap, Marker, MarkerClusterer } from "@react-google-maps/api";
 import {mapOptions} from "./mapOptions";
 import { useNavigate } from 'react-router-dom';
 import { useDataLayer } from '../data/DataLayer';
+import { markerIcon, clusterIcon } from './markerIcon';
+
+import { colors } from '../theming/colors'; // Adjust the path according to your file structure
+
 
 function GoogleMapArray({ markers = [], onMapLoad, nestedGym }) {
     const mapRef = useRef(null);
@@ -43,6 +47,10 @@ function GoogleMapArray({ markers = [], onMapLoad, nestedGym }) {
     ), [markers, nestedGym, gyms]);
 
     const uniqueMarkerPositions = removeDuplicates(markerPositions, ['lat', 'lng']);
+
+    const getMarkerIcon = (color) => {
+        return `data:image/svg+xml,${encodeURIComponent(markerIcon(color))}`;
+    }
 
 // Filter out markers with invalid latitudes or longitudes
     const validMarkers = markers.filter((marker) =>
@@ -102,10 +110,29 @@ function GoogleMapArray({ markers = [], onMapLoad, nestedGym }) {
         setMarkersLoaded(true); // Map has finished loading
     }, []);
 
+    // Returns a cluster icon style given the number of markers
+    const getClusterIconStyle = () => [
+        {
+            url: `data:image/svg+xml,${encodeURIComponent(clusterIcon(colors.secondary.main))}`,
+            width: 60,
+            height: 60,
+            textColor: '#ffffff',
+            textSize: 16,
+        },
+    ];
+
+    const clusterIconCalculator = (markers, numStyles) => {
+        return {
+            text: markers.length.toString(), // Convert marker count to string
+            index: numStyles,
+        };
+    };
+
+// Define the style
+    let clusterIconStyles = getClusterIconStyle();
 
     return (
         <>
-
             <GoogleMap
                 ref={mapRef}
                 options={mapOptions}
@@ -115,7 +142,10 @@ function GoogleMapArray({ markers = [], onMapLoad, nestedGym }) {
             >
                 {markersLoaded &&
                     <MarkerClusterer
-                        options={{ imagePath: "https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m" }}
+                        options={{
+                            calculator: clusterIconCalculator,
+                            styles: getClusterIconStyle(),
+                        }}
                     >
                         {(clusterer) =>
                             uniqueValidMarkers.map((marker) => {
@@ -131,6 +161,10 @@ function GoogleMapArray({ markers = [], onMapLoad, nestedGym }) {
                                         position={position}
                                         onClick={() => handleMarkerClick(marker)}
                                         clusterer={clusterer}
+                                        icon={{
+                                            url: getMarkerIcon(colors.primary.main), // use primary color from colors.js
+                                            scaledSize: new window.google.maps.Size(35, 35), // scale your icon if needed
+                                        }}
                                     />
                                 );
                             })
@@ -138,7 +172,6 @@ function GoogleMapArray({ markers = [], onMapLoad, nestedGym }) {
                     </MarkerClusterer>
                 }
             </GoogleMap>
-
         </>
     );
 };

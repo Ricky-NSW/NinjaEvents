@@ -1,34 +1,23 @@
-//TODO: remove h1 and h2 from text editor etc
-import React, { Component } from 'react';
-import { EditorState, ContentState, convertToRaw } from 'draft-js';
-import { Editor } from 'react-draft-wysiwyg';
-import draftToHtml from 'draftjs-to-html';
-import htmlToDraft from 'html-to-draftjs';
+import React, { useState } from 'react';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css'; // import the styles
 
-class WysiwygEditorComponent extends React.Component {
-    render() {
-        const { editorState, onEditorStateChange } = this.props;
-        return (
-            <div>
-                <Editor
-                    editorState={editorState}
-                    wrapperClassName="demo-wrapper"
-                    editorClassName="demo-editor"
-                    onEditorStateChange={onEditorStateChange}
-                    // toolbar={{
-                    //     blockType: {
-                    //         inDropdown: true,
-                    //         options: ['Normal', 'H3', 'H4', 'H5', 'H6', 'Blockquote'],
-                    //     },
-                    // }}
-                />
-                <textarea
-                    disabled
-                    value={draftToHtml(convertToRaw(editorState.getCurrentContent()))}
-                />
-            </div>
-        );
-    }
-}
+const WysiwygEditorComponent = ({ initialContent, handleContentChange }) => {
+    const [editorContent, setEditorContent] = useState(initialContent || '');
+
+    const handleChange = (content, delta, source, editor) => {
+        setEditorContent(content);
+        if (handleContentChange) {
+            handleContentChange(content, delta, source, editor);
+        }
+    };
+
+    return (
+        <ReactQuill
+            value={editorContent}
+            onChange={handleChange}
+        />
+    );
+};
 
 export default WysiwygEditorComponent;

@@ -156,11 +156,11 @@ console.log('manage user page', currentUser)
 
                     <br />
                     {/*display all gyms that have this users id as that gyms ownerUid*/}
-                    {leagues && leagues.filter((league) => league.AdminUid && league.AdminUid.includes(currentUser.uid)).length > 0 && (
+                    {leagues && leagues.filter((league) => league.OwnerUid && league.OwnerUid.includes(currentUser.uid)).length > 0 && (
                         <>
                             <Divider>Leagues You're Managing</Divider>
                             <br />
-                            {leagues.filter((league) => league.AdminUid && league.AdminUid.includes(currentUser.uid)).map((league) => (
+                            {leagues.filter((league) => league.OwnerUid && league.OwnerUid.includes(currentUser.uid)).map((league) => (
                                 <LeagueCard key={league.id} league={league} />
                             ))}
                         </>

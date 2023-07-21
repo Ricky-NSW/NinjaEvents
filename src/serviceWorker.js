@@ -1,3 +1,4 @@
+//SOURCE https://github.com/cra-template/pwa/blob/main/packages/cra-template-pwa-typescript/template/src/serviceWorkerRegistration.ts
 // This optional code is used to register a service worker.
 // register() is not called by default.
 
@@ -9,6 +10,22 @@
 
 // To learn more about the benefits of this model and instructions on how to
 // opt-in, read https://cra.link/PWA
+
+function urlBase64ToUint8Array(base64String) {
+    const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+    const base64 = (base64String + padding)
+        .replace(/-/g, "+")
+        .replace(/_/g, "/");
+
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+
+    for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+}
+
 
 const isLocalhost = Boolean(
     window.location.hostname === 'localhost' ||
@@ -58,6 +75,28 @@ function registerValidSW(swUrl, config) {
     navigator.serviceWorker
         .register(swUrl)
         .then(registration => {
+            // Requesting notification permission
+            Notification.requestPermission().then((permission) => {
+                if (permission === "granted") {
+                    console.log("Notification permission granted.");
+
+                    const convertedVapidKey = urlBase64ToUint8Array('BLNeeiFy6-ncaH6qgNcXquEdXR2CbQ9zrOLpIr7znh0qY0D_dqBONZyolac_yc6714-TOldUFVAlES0kzwRAhEU');
+
+                    // subscribe user to push notifications
+                    registration.pushManager.subscribe({
+                        userVisibleOnly: true,
+                        applicationServerKey: convertedVapidKey
+                    }).then((subscription) => {
+                        console.log("User is subscribed: ", subscription);
+                    })
+                        .catch((err) => {
+                            console.log("Failed to subscribe the user: ", err);
+                        });
+                } else {
+                    console.log("Unable to get permission to notify.");
+                }
+            });
+
             registration.onupdatefound = () => {
                 const installingWorker = registration.installing;
                 if (installingWorker == null) {
@@ -66,7 +105,6 @@ function registerValidSW(swUrl, config) {
                 installingWorker.onstatechange = () => {
                     if (installingWorker.state === 'installed') {
                         if (navigator.serviceWorker.controller) {
-                            // content until all client tabs are closed.
                             console.log(
                                 'New content is available and will be used when all ' +
                                 'tabs for this page are closed. See https://cra.link/PWA.'
@@ -77,9 +115,6 @@ function registerValidSW(swUrl, config) {
                                 config.onUpdate(registration);
                             }
                         } else {
-                            // At this point, everything has been precached.
-                            // It's the perfect time to display a
-                            // "Content is cached for offline use." message.
                             console.log('Content is cached for offline use.');
 
                             // Execute callback
@@ -95,6 +130,8 @@ function registerValidSW(swUrl, config) {
             console.error('Error during service worker registration:', error);
         });
 }
+
+
 
 function checkValidServiceWorker(swUrl, config) {
     // Check if the service worker can be found. If it can't reload the page.

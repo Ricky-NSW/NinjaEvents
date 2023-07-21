@@ -38,9 +38,14 @@ export function DataLayer({ children }) {
         leagues: true,
         events: true,
         users: true,
-        userResults: true,
+        // userResults: true,
     });
-    const isAnyDataLoading = () => Object.values(isLoading).some(value => value);
+
+    // useMemo will ensure that the isAnyDataLoading function is only recalculated when the isLoading state changes.
+    const isAnyDataLoading = useMemo(() => {
+        console.log('isAnyDataLoading', isLoading); // For debugging
+        return Object.values(isLoading).some(value => value);
+    }, [isLoading]);
 
 
     // Fetch data from Firestore and set them in state.
@@ -73,10 +78,15 @@ export function DataLayer({ children }) {
             data.sort((a, b) => a.name.localeCompare(b.name));
             setGyms(data);
             setIsLoading(prevState => ({ ...prevState, gyms: false }));
+            // console.log("Gyms fetched: ", data);
+        }, (error) => {
+            console.error("Error fetching gyms: ", error);
+            setIsLoading(prevState => ({ ...prevState, gyms: false }));
         });
 
         return unsubscribe;
     };
+
 
     const fetchLeagues = () => {
         setIsLoading(prevState => ({ ...prevState, leagues: true }));
@@ -221,7 +231,7 @@ export function DataLayer({ children }) {
 
     //If I refactor league data in the event to only contain the league id, I might need to reconfigure this function.
     const fetchEventsForLeague = (leagueId) => {
-        const leagueEvents = events.filter(event => event.league && event.league.id === leagueId);
+        const leagueEvents = events.filter(event => event.leagueId === leagueId);
         console.log('Fetched events for league:', leagueEvents);
         return leagueEvents;
     };

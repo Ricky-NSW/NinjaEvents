@@ -6,7 +6,7 @@ import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
-
+import Grid from '@mui/material/Grid';
 const SubmitEventResults = ({ eventId, eventDate }) => {
     const [numPlaces, setNumPlaces] = useState(0);
     const [users, setUsers] = useState([]);
@@ -15,6 +15,7 @@ const SubmitEventResults = ({ eventId, eventDate }) => {
     const [name, setName] = useState('');
     const [open, setOpen] = useState(false);
     const [showForm, setShowForm] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleManualEnter = (index, event) => {
         const newResults = [...results];
@@ -64,61 +65,131 @@ const SubmitEventResults = ({ eventId, eventDate }) => {
         getUsers();
     }, []);
 
+    //handle result time
+    const handleMinutesChange = (event, index) => {
+        const newResults = [...results];
+        newResults[index] = newResults[index] || {}; // <-- This line
+        newResults[index].totalTime = (newResults[index].totalTime % 60000) + (parseInt(event.target.value, 10) * 60000);
+        setResults(newResults);
+    }
+
+    const handleSecondsChange = (event, index) => {
+        const newResults = [...results];
+        newResults[index] = newResults[index] || {}; // <-- This line
+        newResults[index].totalTime = (newResults[index].totalTime % 1000) + ((parseInt(event.target.value, 10) % 60) * 1000);
+        setResults(newResults);
+    }
+
+    const handleSplitSecondsChange = (event, index) => {
+        const newResults = [...results];
+        newResults[index] = newResults[index] || {}; // <-- This line
+        newResults[index].totalTime = ((Math.floor(newResults[index].totalTime / 1000)) * 1000) + (parseInt(event.target.value, 10) % 1000);
+        setResults(newResults);
+    }
+
+
+
     useEffect(() => {
         const fields = [];
         for (let i = 1; i <= numPlaces; i++) {
             fields.push(
                 <div key={i}>
                     <h4>Place {i}</h4>
-                    <Autocomplete
-                        options={users}
-                        getOptionLabel={(user) => {
-                            if (typeof user === 'string') {
-                                return user;
-                            }
-                            if (user.firstName && user.lastName) {
-                                return `${user.firstName} ${user.lastName}`;
-                            }
-                            return user.ninjaName || user.displayName || user.email;
-                        }}
+                    <Grid container spacing={3}>
+                        <Grid item xs={12}>
+                            <Autocomplete
+                                options={users}
+                                getOptionLabel={(user) => {
+                                    if (typeof user === 'string') {
+                                        return user;
+                                    }
+                                    if (user.firstName && user.lastName) {
+                                        return `${user.firstName} ${user.lastName}`;
+                                    }
+                                    return user.ninjaName || user.displayName || user.email;
+                                }}
 
-                        isOptionEqualToValue={(option, value) => option.id === value.id || value === ''}
-                        renderInput={(params) => <TextField {...params} label={`User at place ${i}`} onBlur={(event) => handleManualEnter(i - 1, event)} />}
-                        renderOption={(props, option, { inputValue }) => (
-                            <div {...props}>
-                                {option.firstName && option.lastName ? `${option.firstName} ${option.lastName}` : option.displayName || option.email || option.ninjaName}
-                            </div>
-                        )}
-                        onChange={(event, newValue) => {
-                            const newResults = [...results];
-                            if (typeof newValue === 'string' || newValue === null || Object.keys(newValue).length === 0) {
-                                const inputValue = (typeof newValue === 'string' ? newValue : event.target.value).trim();
-                                if (inputValue) {
-                                    newResults[i - 1] = { displayName: inputValue };
-                                }
-                            } else {
-                                newResults[i - 1] = {
-                                    id: newValue.id,
-                                    firstName: newValue.firstName,
-                                    lastName: newValue.lastName,
-                                    displayName: newValue.ninjaName || newValue.displayName || newValue.email,
-                                };
-                            }
-                            setResults(newResults);
-                        }}
+                                isOptionEqualToValue={(option, value) => option.id === value.id || value === ''}
+                                renderInput={(params) => <TextField {...params} label={`User at place ${i}`} fullWidth onChange={(event) => handleManualEnter(i, event)} />}
+
+                                renderOption={(props, option, { inputValue }) => (
+                                    <div {...props}>
+                                        {option.firstName && option.lastName ? `${option.firstName} ${option.lastName}` : option.displayName || option.email || option.ninjaName}
+                                    </div>
+                                )}
+                                onChange={(event, newValue) => {
+                                    const newResults = [...results];
+                                    if (typeof newValue === 'string' || newValue === null || Object.keys(newValue).length === 0) {
+                                        const inputValue = (typeof newValue === 'string' ? newValue : event.target.value).trim();
+                                        if (inputValue) {
+                                            newResults[i - 1] = { displayName: inputValue };
+                                        }
+                                    } else {
+                                        newResults[i - 1] = {
+                                            id: newValue.id,
+                                            firstName: newValue.firstName,
+                                            lastName: newValue.lastName,
+                                            displayName: newValue.ninjaName || newValue.displayName || newValue.email,
+                                        };
+                                    }
+                                    setResults(newResults);
+                                }}
 
 
-                        filterOptions={(options, state) => {
-                            if (state.inputValue.length >= 4) {
-                                return options.filter((option) => {
-                                    const label = option.firstName && option.lastName ? `${option.firstName} ${option.lastName}` : option.ninjaName || option.displayName || option.email;
-                                    return label.toLowerCase().includes(state.inputValue.toLowerCase());
-                                });
-                            }
-                            return [];
-                        }}
-                        freeSolo={true}
-                    />
+                                filterOptions={(options, state) => {
+                                    if (state.inputValue.length >= 4) {
+                                        return options.filter((option) => {
+                                            const label = option.firstName && option.lastName ? `${option.firstName} ${option.lastName}` : option.ninjaName || option.displayName || option.email;
+                                            return label.toLowerCase().includes(state.inputValue.toLowerCase());
+                                        });
+                                    }
+                                    return [];
+                                }}
+                                freeSolo={true}
+                            />
+                        </Grid>
+                        <Grid container XS={6} spacing={1}>
+                            <Grid item xs={4}>
+                                <TextField
+                                    type="number"
+                                    label="Minutes"
+                                    fullWidth
+                                    inputProps={{ min: 0 }}
+                                    onChange={(event) => handleMinutesChange(event, i - 1)}
+                                />
+                            </Grid>
+                            <Grid item xs={4}>
+                                <TextField
+                                    type="number"
+                                    label="Seconds"
+                                    fullWidth
+                                    inputProps={{ min: 0, max: 59 }}
+                                    onChange={(event) => handleSecondsChange(event, i - 1)}
+                                />
+                            </Grid>
+                            <Grid item xs={4}>
+                                <TextField
+                                    type="number"
+                                    label="Split Seconds"
+                                    fullWidth
+                                    inputProps={{ min: 0, max: 999 }}
+                                    onChange={(event) => handleSplitSecondsChange(event, i - 1)}
+                                />
+                            </Grid>
+                        </Grid>
+                        <Grid item xs={6}>
+                            <TextField
+                                type="text"
+                                label="Furthest Obstacle"
+                                fullWidth
+                                onChange={(event) => {
+                                    const newResults = [...results];
+                                    newResults[i - 1] = { ...newResults[i - 1], furthestObstacle: event.target.value };
+                                    setResults(newResults);
+                                }}
+                            />
+                        </Grid>
+                    </Grid>
                 </div>
             );
         }
@@ -142,6 +213,7 @@ const SubmitEventResults = ({ eventId, eventDate }) => {
         const db = getFirestore();
         const eventDocRef = doc(db, 'events', eventId);
         const resultsCollectionRef = collection(eventDocRef, 'results');
+        setIsSubmitting(true);
 
         try {
             // Create a new document in the results subcollection and set its data to the form results
@@ -153,10 +225,16 @@ const SubmitEventResults = ({ eventId, eventDate }) => {
                             id: result.id,
                             firstName: result.firstName,
                             lastName: result.lastName,
+                            totalTime: result.totalTime ?? 0,  // default value if undefined
+                            furthestObstacle: result.furthestObstacle ?? "",  // default value if undefined
                             resultPlace: index + 1, // get the index of the result in the results array and add 1
                         };
                     } else {
-                        return { displayName: result.displayName };
+                        return {
+                            displayName: result.displayName,
+                            totalTime: result.totalTime ?? 0,  // default value if undefined
+                            furthestObstacle: result.furthestObstacle ?? "",  // default value if undefined
+                        };
                     }
                 }),
             });
@@ -165,6 +243,8 @@ const SubmitEventResults = ({ eventId, eventDate }) => {
             resetForm();
         } catch (error) {
             console.error('Error adding document:', error);
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -194,7 +274,11 @@ const SubmitEventResults = ({ eventId, eventDate }) => {
                         onChange={(e) => setNumPlaces(Math.max(0, parseInt(e.target.value)))}
                     />
                     {placeFields}
-                    <Button variant="contained" onClick={handleSubmit}>Submit Results</Button>
+                    <Grid container spacing={3}>
+                        <Grid item xs={12}>
+                            <Button variant="contained" onClick={handleSubmit} disabled={isSubmitting}>Submit Results</Button>
+                        </Grid>
+                    </Grid>
                 </DialogContent>
             </Dialog>
         </div>

@@ -222,34 +222,28 @@ exports.resizeAvatar = functions.region("australia-southeast1").storage.object()
     console.log("Resized gallery image uploaded to", uploadResizedFilePath);
   } else {
     // assume it's an avatar image
+    // Creating 200x200 avatar image
     const resizedFileName = `${fileName.split(".")[0]}_200x200.${fileName.split(".")[1]}`;
     const tempResizedLocalFile = path.join(os.tmpdir(), resizedFileName);
 
     try {
-      await sharp(tempLocalFile).resize(200, 200).toFile(tempResizedLocalFile);
+      await sharp(tempLocalFile).resize(200, 200, {fit: "inside"}).toFile(tempResizedLocalFile);
       console.log("Resized avatar image created at", tempResizedLocalFile);
     } catch (error) {
       console.error("Error resizing avatar image:", error);
       return null;
     }
 
-    // Add here: if it's a league image, also create a 30px version
-    if (uploadType === "leagues") {
-      const resizedFileName30px = `${fileName.split(".")[0]}_30px.${fileName.split(".")[1]}`;
-      const tempResizedLocalFile30px = path.join(os.tmpdir(), resizedFileName30px);
+    // Creating 35x35 avatar image
+    const smallResizedFileName = `${fileName.split(".")[0]}_35x35.${fileName.split(".")[1]}`;
+    const smallTempResizedLocalFile = path.join(os.tmpdir(), smallResizedFileName);
 
-      try {
-        await sharp(tempLocalFile).resize(30).toFile(tempResizedLocalFile30px);
-        console.log("Resized 30px league image created at", tempResizedLocalFile30px);
-
-        // Upload the resized 30px image
-        const uploadResizedFilePath30px = `${uploadType}/${object.metadata.id}/avatar/${resizedFileName30px}`;
-        await bucket.upload(tempResizedLocalFile30px, {destination: uploadResizedFilePath30px});
-        console.log("Resized 30px league image uploaded to", uploadResizedFilePath30px);
-      } catch (error) {
-        console.error("Error resizing 30px league image:", error);
-        return null;
-      }
+    try {
+      await sharp(tempLocalFile).resize(35, 35).toFile(smallTempResizedLocalFile);
+      console.log("Small resized avatar image created at", smallTempResizedLocalFile);
+    } catch (error) {
+      console.error("Error resizing small avatar image:", error);
+      return null;
     }
 
     // object.metadata.id works
@@ -262,32 +256,50 @@ exports.resizeAvatar = functions.region("australia-southeast1").storage.object()
 
     console.log("Received metadata id:", id);
 
+    // Uploading 200x200 avatar
     const uploadResizedFilePath = `${uploadType}/${object.metadata.id}/avatar/${resizedFileName}`;
     await bucket.upload(tempResizedLocalFile, {destination: uploadResizedFilePath});
 
+    // Uploading 35x35 avatar
+    const smallUploadResizedFilePath = `${uploadType}/${object.metadata.id}/avatar/${smallResizedFileName}`;
+    await bucket.upload(smallTempResizedLocalFile, {destination: smallUploadResizedFilePath});
+
     fs.unlinkSync(tempLocalFile);
     fs.unlinkSync(tempResizedLocalFile);
-    console.log("Resized avatar image uploaded to", uploadResizedFilePath);
+    fs.unlinkSync(smallTempResizedLocalFile);
+    console.log("Resized avatar images uploaded to", uploadResizedFilePath, "and", smallUploadResizedFilePath);
+
 
     const file = bucket.file(uploadResizedFilePath);
-    const config = {
-      action: "read",
-      expires: Date.now() + 1000 * 60 * 60 * 24 * 365 * 3, // 3 years in the future
-    };
-    const downloadUrl = await file.getSignedUrl(config);
+    const smallFile = bucket.file(smallUploadResizedFilePath);
 
+    // Make the file publicly accessible
+    await file.makePublic();
+    await smallFile.makePublic();
+
+    // Generate a public URL for the files
+    const publicUrl = `https://storage.googleapis.com/${bucket.name}/${encodeURIComponent(uploadResizedFilePath)}`;
+    const smallPublicUrl = `https://storage.googleapis.com/${bucket.name}/${encodeURIComponent(smallUploadResizedFilePath)}`;
+
+    // Update the document with the URL of the 200x200 avatar and the URL of the 35x35 avatar
     if (uploadType === "gyms") {
       await admin.firestore().collection("gyms").doc(id).update({
-        avatarUrl: downloadUrl[0],
+        avatarUrl: publicUrl,
+        smallAvatarUrl: smallPublicUrl,
       });
     } else if (uploadType === "leagues") {
       await admin.firestore().collection("leagues").doc(id).update({
-        avatarUrl: downloadUrl[0],
+        avatarUrl: publicUrl,
+        smallAvatarUrl: smallPublicUrl,
       });
     } else if (uploadType === "users") {
       await admin.firestore().collection("users").doc(id).update({
-        avatarUrl: downloadUrl[0],
+        avatarUrl: publicUrl,
+        smallAvatarUrl: smallPublicUrl,
       });
+    } else {
+      console.error("Invalid upload type:", uploadType);
+      return null;
     }
   }
   console.log("Image processing function completed.");

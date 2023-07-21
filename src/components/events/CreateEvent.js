@@ -2,7 +2,6 @@
 //TODO: get data from datalayer
 import React, {useState, useEffect, useContext} from 'react';
 import { Link } from 'react-router-dom';
-import { stateToHTML } from 'draft-js-export-html';
 import authContext from "../../contexts/AuthContext";
 
 //Firebase
@@ -23,19 +22,8 @@ import { LocalizationProvider } from '@mui/x-date-pickers';
 import { DateTimePicker } from '@mui/x-date-pickers';
 
 //wysiwyg
-// import { EditorState, ContentState } from 'draft-js';
-import WysiwygEditorComponent from '../layout/tools/WysiwygEditorComponent';
-import { EditorState, ContentState } from 'draft-js';
-import htmlToDraft from 'html-to-draftjs';
-import draftToHtml from 'draftjs-to-html';
-import { convertToRaw } from 'draft-js';
+
 import Loading from '../data/Loading';
-
-// import { stateToHTML } from 'draft-js-export-html';
-// import htmlToDraft from 'html-to-draftjs';
-
-// const htmlString = '<p>Hello World!</p>';
-// const contentState = htmlToDraft(htmlString);
 
 const CreateEvent = () => {
     const {
@@ -49,7 +37,7 @@ const CreateEvent = () => {
         getEventById,
         addEvent,
         updateEvent,
-        isLoading,
+        isAnyDataLoading,
     } = useDataLayer();
     const { currentUser } = useContext(authContext);
 
@@ -67,22 +55,6 @@ const CreateEvent = () => {
     const [selectedLeague, setSelectedLeague] = useState(null);
     const [selectedGym, setSelectedGym] = useState(null);
     const [updatedEvent, setUpdatedEvent] = useState(null);
-
-
-    const [editorState, setEditorState] = useState(
-        EditorState.createWithContent(
-            ContentState.createFromBlockArray(
-                htmlToDraft('').contentBlocks
-            )
-        )
-    );
-
-    const handleEditorChange = (state) => {
-        setEditorState(state);
-        const contentHTML = draftToHtml(convertToRaw(state.getCurrentContent()));
-        setUpdatedEvent({ ...updatedEvent, description: contentHTML });
-    };
-
 
 
     const handleSubmit = async (e) => {
@@ -113,7 +85,6 @@ const CreateEvent = () => {
             const newEvent = {
                 date: dateTime.toISOString(),
                 title,
-                description: updatedEvent.description, // Use updatedEvent.description instead of description
                 price,
                 age,
                 gymId: selectedGym.id,
@@ -236,7 +207,7 @@ console.log('users gyms', userGyms);
         console.log('User not loaded yet');
     }
 
-    if (isLoading) {
+    if (isAnyDataLoading) {
         return <Loading />;
     }
 
@@ -285,10 +256,8 @@ console.log('users gyms', userGyms);
                     component="p"
                     style={{ marginBottom: "10px" }}
                 >Event Description</Typography>
-                <WysiwygEditorComponent
-                    editorState={editorState}
-                    onEditorStateChange={handleEditorChange}
-                />
+                {/*WysiwygEditorComponent goes here*/}
+
                 <TextField
                     label="Price"
                     variant="outlined"

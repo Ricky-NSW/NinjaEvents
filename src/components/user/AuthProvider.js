@@ -17,7 +17,7 @@ const AuthProvider = ({ children }) => {
                 const docRef = doc(db, 'users', user.uid);
                 onSnapshot(docRef, (doc) => {
                     if (doc.exists()) {
-                        console.log("User document updated", doc.data());
+                        // console.log("User document updated", doc.data());
                         const newUserData = { uid: doc.id, ...doc.data() };
                         if (JSON.stringify(newUserData) !== JSON.stringify(currentUser)) {
                             setCurrentUser(newUserData);

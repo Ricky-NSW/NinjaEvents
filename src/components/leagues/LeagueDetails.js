@@ -1,28 +1,16 @@
 import React, { useContext, useEffect, useState } from "react";
 import AuthContext from '../../contexts/AuthContext';
-import { Link, useParams } from 'react-router-dom';
-import CardMedia from "@mui/material/CardMedia";
-import Switch from "@mui/material/Switch";
-import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
-import FavoriteIcon from "@mui/icons-material/Favorite";
+import { useParams } from 'react-router-dom';
 import IsSubscribedSwitch from "../user/isSubscribedSwitch";
-import { requestNotificationPermission } from './../messaging/fcm';
-import Grid from "@mui/material/Grid";
-import Card from "@mui/material/Card";
-import CardHeader from "@mui/material/CardHeader";
-import Avatar from "@mui/material/Avatar";
-import {red} from "@mui/material/colors";
-import IconButton from "@mui/material/IconButton";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import CardContent from "@mui/material/CardContent";
-import Typography from "@mui/material/Typography";
-import CardActions from "@mui/material/CardActions";
-import Button from "@mui/material/Button";
+
 import { useDataLayer, DataLayerContext } from '../data/DataLayer';
 import EditLeagueDialog from "./editLeagueDetails";
-
+import {Stack} from "@mui/material";
+import EventCard from '../events/EventCard';
+import EventTabs from '../events/EventTabs';
 const LeagueDetails = () => {
-    const { id } = useParams();
+    //change this to use the league.slug instead of the league.id
+    const { slug } = useParams();
     const [league, setLeague] = useState(null);
     const [isSubscribed, setIsSubscribed] = useState(false);
     const [events, setEvents] = useState([]);
@@ -32,7 +20,8 @@ const LeagueDetails = () => {
     const { updateLeague } = useContext(DataLayerContext);
 
     const {
-        getLeagueById,
+        gyms,
+        getLeagueBySlug,
         fetchLeagues,
         updateUserData,
         fetchEventsForLeague,
@@ -40,35 +29,41 @@ const LeagueDetails = () => {
         updateUserSubscriptionToLeague
     } = useDataLayer();
 
-    // Fetch league data from DataLayer
-    // useEffect(() => {
-    //     fetchLeagues();
-    // }, [fetchLeagues]);
-
     useEffect(() => {
-        const fetchedLeague = getLeagueById(id);
-        if (fetchedLeague) {
-            setLeague(fetchedLeague);
-        }
-    }, [id, getLeagueById]);
+        const fetchLeagueAndEvents = async () => {
+            const fetchedLeague = await getLeagueBySlug(slug);
+            if (fetchedLeague) {
+                setLeague(fetchedLeague);
 
-    // Fetch events associated with the league from DataLayer
-    useEffect(() => {
-        const eventsData = fetchEventsForLeague(id);
-        setEvents(eventsData);
-    }, [id, fetchEventsForLeague]);
+                const eventsData = await fetchEventsForLeague(fetchedLeague.id);
+                setEvents(eventsData);
+            }
+        };
+
+        fetchLeagueAndEvents();
+    }, [slug, getLeagueBySlug, fetchEventsForLeague]);
+
 
     // Check if the user is subscribed to this league
     useEffect(() => {
-        const isSubscribed = checkUserSubscriptionToLeague(id);
-        setIsSubscribed(isSubscribed);
-    }, [id, checkUserSubscriptionToLeague]);
+        const checkSubscription = async () => {
+            const isSubscribed = await checkUserSubscriptionToLeague(slug);
+            setIsSubscribed(isSubscribed);
+        };
+        checkSubscription();
+    }, [slug, checkUserSubscriptionToLeague]);
+
 
     // Handle subscribed/unsubscribed league toggle
     const handleSubscribeToggle = async () => {
         setIsSubscribed(!isSubscribed);
-        await updateUserSubscriptionToLeague(id, currentUser);
+        await updateUserSubscriptionToLeague(slug, !isSubscribed, currentUser);
     };
+
+    // const handleSubscribeToggle = async () => {
+    //     setIsSubscribed(!isSubscribed);
+    //     await updateUserSubscriptionToLeague(slug, currentUser);
+    // };
 
     const handleEditDialogOpen = () => {
         setEditDialogOpen(true);
@@ -88,14 +83,38 @@ const LeagueDetails = () => {
         });
     };
 
-    // console.log('league details user', currentUser)
 
+console.log('gyms', gyms)
+    // console.log('league details user', currentUser)
+    if (league) {
+        console.log('league details', league.id);
+    }    // const associatedGyms = gyms.filter(gym => gym.leagues.includes(league.id));
 
     return (
         <div>
             {league ? (
                 <>
                     <h2>{league.name}</h2>
+                    {league.avatarUrl ? (
+                        <Stack
+                            container
+                            direction="column"
+                            justifyContent="center"
+                            alignItems="center"
+                            spacing={2}
+                            xs={2}
+                            sm={3}
+                        >
+                            <Stack>
+                                <img
+                                    alt={league.name}
+                                    src={league.avatarUrl}
+                                    // make the avatar fill the width and height
+                                    style={{ width: '100%', height: 'auto', padding: '10px' }}
+                                />
+                            </Stack>
+                        </Stack>
+                    ) : null}
                     <div>
                         <IsSubscribedSwitch
                             isSubscribed={isSubscribed}
@@ -103,87 +122,40 @@ const LeagueDetails = () => {
                         />
                         <span>Follow this league</span>
                     </div>
-                    <p>{league.description}</p>
+                    <div dangerouslySetInnerHTML={{ __html: league.description }} />
+
+                    <EventTabs
+                        collection={league}
+                        collectionType='league'
+                    />
+
+                    {/*<h2>Gyms:</h2>*/}
+                    {/*{associatedGyms.map((gym) => (*/}
+                    {/*    <div key={gym.slug}>*/}
+                    {/*        <h3>{gym.name}</h3>*/}
+                    {/*        /!* display other gym details *!/*/}
+                    {/*    </div>*/}
+                    {/*))}*/}
                 </>
             ) : (
                 <p>Loading league details...</p>
             )}
 
-            {(currentUser && league && league.ownerUid && (league.ownerUid.includes(currentUser.uid) || currentUser.type === 'Admin')) ? (
-                <>
-                    <button onClick={handleEditDialogOpen}>Edit</button>
-                    <EditLeagueDialog
-                        open={editDialogOpen}
-                        handleClose={handleEditDialogClose}
-                        league={league}
-                        updateLeague={updateLeagueDetails}
-                    />
-                </>) : null}
+            {(currentUser && league && league.ownerUid && league.ownerUid.includes(currentUser.uid)) || (currentUser && currentUser.type === 'Admin') ? (
+                    <>
+                        <button onClick={handleEditDialogOpen}>Edit</button>
+                        <EditLeagueDialog
+                            isOpen={editDialogOpen}
+                            onClose={handleEditDialogClose}
+                            leagueId={league.id}
+                            updateLeague={updateLeagueDetails}
+                        />
+                    </>)
+                : null}
 
             {/*//TODO: wrap this in a ternary so that it only shows if there are events*/}
 
-            <Typography variant={"h2"}>Upcoming Events</Typography>
-            {/* Display events associated with the league */}
-            {events.map((event) => (
-                <Grid item xs={12} sm={6} md={4} lg={3} key={event.id} sx={{ marginBottom: 2 }}>
-                    <Card sx={{ maxWidth: 768 }}>
-                        {/* Event card header */}
-                        <CardHeader
-                            avatar={
-                                <Avatar sx={{ bgcolor: red[500] }} aria-label="recipe">
-                                    {event.createdBy ? event.createdBy.charAt(0) : "X"}
-                                </Avatar>
-                            }
-                            action={
-                                <IconButton aria-label="settings">
-                                    <MoreVertIcon />
-                                </IconButton>
-                            }
-                            title={event.address}
-                            subheader={event.date}
-                        />
-                        {
-                            event.imageUrl ? (
-                                <CardMedia
-                                    sx={{ height: 140 }}
-                                    image={event.imageUrl}
-                                    title="green iguana"
-                                    type="image"
-                                />
-                            ) : (
-                                null
-                            )
-                        }
-                        {/* Event details */}
-                        <CardContent>
-                            <Typography gutterBottom variant="h5" component="div">
-                                <Link component={Link} to={`/events/` + (event.id)} size="small">{event.title}</Link>
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                                {event.description}
 
-                                {/*{description.length > maxLength*/}
-                                {/*    ? description.substring(0, maxLength) + '...'*/}
-                                {/*    : description;}*/}
-                            </Typography>
-                            <Typography>
-                                <span>League: {event.league.name}</span>
-                            </Typography>
-                            <Typography>
-                                <span>Price: {event.price}</span>
-                            </Typography>
-                            <Typography>
-                                <span>Age: {event.age}</span>
-                                {/*{event.GeoPoint.latitude} {event.GeoPoint.longitude}*/}
-                            </Typography>
-                        </CardContent>
-                        <CardActions>
-                            <Button size="small">Share</Button>
-                            <Button component={Link} to={`/events/` + (event.id)} size="small">Learn More</Button>
-                        </CardActions>
-                    </Card>
-                </Grid>
-            ))}
         </div>
     );
 };

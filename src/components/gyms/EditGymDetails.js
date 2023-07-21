@@ -11,52 +11,22 @@ import Typography from '@mui/material/Typography';
 import { getFirestore, updateDoc, doc, getDoc } from 'firebase/firestore';
 import { useParams } from 'react-router-dom';
 import GymBannerUpload from './GymBannerUpload';
-//wysiwyg https://www.npmjs.com/package/react-mui-draft-wysiwyg
-import WysiwygEditorComponent from '../layout/tools/WysiwygEditorComponent';
 
-import { Editor, EditorState, ContentState, convertToRaw } from "draft-js";
-import { stateToHTML } from 'draft-js-export-html';
-import { stateFromHTML } from 'draft-js-import-html';
-import { Editor as WysiwygEditor } from 'react-draft-wysiwyg';
-import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
-import { convertToHTML, convertFromHTML } from 'draft-convert';
-import htmlToDraft from 'html-to-draftjs';
 import GymAvatarUpload from './GymAvatarUpload';
 import GalleryImageUpload from "./GalleryImageUpload";
 import {useDataLayer} from "../data/DataLayer"; // Adjust the path as needed
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
-
-// Define the HTML string you want to convert to a Draft.js ContentState
-const htmlString = '<p>Hello World!</p>';
-// Convert the HTML string to a Draft.js ContentState
-const contentState = htmlToDraft(htmlString);
-
-
+import WysiwygEditorComponent from '../layout/tools/WysiwygEditorComponent';
 const EditGymDetails = ({ onUpdate, gym }) => {
     const [open, setOpen] = useState(false);
     const [updatedGym, setUpdatedGym] = useState(gym ? { ...gym, bannerUrl: gym.bannerUrl || null } : null);
-
     const { gyms, leagues } = useDataLayer();
     const [gymLeagues, setGymLeagues] = useState([]);
+    const [editorContent, setEditorContent] = useState(gym ? gym.description : '<span></span>');
 
     // const [leagues, setLeagues] = useState([]);
 
-    const [editorState, setEditorState] = useState(() => {
-        if (gym && gym.description) {
-            const contentBlock = htmlToDraft(gym.description);
-            const contentState = contentBlock
-                ? ContentState.createFromBlockArray(contentBlock.contentBlocks)
-                : ContentState.createFromText('');
-            return EditorState.createWithContent(contentState);
-        } else {
-            const contentBlock = htmlToDraft(''); // set your default HTML content here
-            const contentState = contentBlock
-                ? ContentState.createFromBlockArray(contentBlock.contentBlocks)
-                : ContentState.createFromText('');
-            return EditorState.createWithContent(contentState);
-        }
-    });
     const [avatarUrl, setAvatarUrl] = useState(gym ? gym.avatarUrl : null);
 
     useEffect(() => {
@@ -66,11 +36,7 @@ const EditGymDetails = ({ onUpdate, gym }) => {
         }
     }, [gym]);
 
-    const handleEditorChange = (state) => {
-        setEditorState(state);
-        const contentHTML = stateToHTML(state.getCurrentContent());
-        setUpdatedGym({ ...updatedGym, description: contentHTML });
-    };
+
 
     // useEffect(() => {
     //     const fetchGym = async () => {
@@ -133,13 +99,11 @@ const EditGymDetails = ({ onUpdate, gym }) => {
     };
 
     const handleSave = async () => {
-        const contentHTML = stateToHTML(editorState.getCurrentContent());
-        console.log('Content HTML:', contentHTML);
 
         if (gym && updatedGym) {
             const updateData = {
                 name: updatedGym.name,
-                description: contentHTML,
+                description: editorContent, // Here, use editorContent.
                 bannerUrl: updatedGym.bannerUrl,
             };
 
@@ -198,10 +162,14 @@ const EditGymDetails = ({ onUpdate, gym }) => {
                     />
 
                     <WysiwygEditorComponent
-                        editorState={editorState}
-                        onEditorStateChange={handleEditorChange}
+                        initialContent={editorContent}
+                        handleContentChange={(content, delta, source, editor) => {
+                            console.log("Editor content changed:", content);
+                            setEditorContent(content);
+                        }}
                     />
-<Typography variant="h5">Which leagues are you associated with?</Typography>
+
+                    <Typography variant="h5">Which leagues are you associated with?</Typography>
                     {leagues.map((league) => {
                         // Check if the league's id is in the gymLeagues array
                         console.log('League:', league.id, 'Is in gym leagues:', gymLeagues.includes(league.id));

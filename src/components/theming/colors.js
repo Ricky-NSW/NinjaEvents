@@ -12,7 +12,7 @@ export const colors = {
         contrastText: '#000',
     },
     grey: {
-        light: '#ECECECFF', // light grey
+        light: '#f5f5f5', // light grey
         medium: '#808080', // medium grey
         dark: '#404040' // dark grey
     },

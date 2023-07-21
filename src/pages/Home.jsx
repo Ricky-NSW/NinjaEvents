@@ -1,6 +1,5 @@
 // TODO: show current standings for leagues user is following
-import { useState, useEffect, useContext } from 'react';
-import EventCard from '../components/events/EventCard';
+import React, { useState, useEffect, useContext } from 'react';
 import { List } from '@mui/material';
 import AuthContext from '../contexts/AuthContext';
 import { useDataLayer } from '../components/data/DataLayer';
@@ -9,6 +8,13 @@ import { getFirestore, collection, getDocs, query, where } from 'firebase/firest
 import { Link } from 'react-router-dom';
 import { Typography } from '@mui/material';
 import Divider from '@mui/material/Divider';
+import CollectionLinks from '../components/layout/CollectionLinks';
+
+// cards
+import GymCard from '../components/gyms/GymCard';
+import UserCard from '../components/user/UserCard';
+import LeagueCard from '../components/leagues/LeagueCard';
+import EventCard from '../components/events/EventCard';
 
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
@@ -106,6 +112,8 @@ const Home = () => {
         setSearchResults(allResults);
     };
 
+    console.log('Search results:', searchResults);
+
     return (
         <div>
             <p>&nbsp;</p>
@@ -132,25 +140,31 @@ const Home = () => {
                                             sx={{ my: 2 }}
                                         >{collectionName.toUpperCase()}</Divider>
 
-                                            {collectionResults.map((result, index) => (
-                                                <CollectionCard>
+                                        {collectionResults.map((result, index) => {
+                                            let content;
 
-                                                        <Typography>
-                                                            <Link
-                                                                style={{ textDecoration: 'none' }}
-                                                                to={`/${result.collection}/${result.slug}`}>
-                                                                {
-                                                                    result.collection === 'users'
-                                                                        ? `${result.data.firstName} ${result.data.lastName} (Ninja Name: ${result.data.ninjaName})`
-                                                                        : result.collection === 'events'
-                                                                            ? result.data.title
-                                                                            : result.data.name
-                                                                }
-                                                            </Link>
-                                                        </Typography>
+                                            if (result.collection === 'users') {
+                                                content = (
+                                                    <UserCard key={result.data.id} user={result.data} />
+                                                );
+                                            } else if (result.collection === 'gyms') {
+                                                content = (
+                                                    <GymCard key={`${result.data.slug}-${index}`} gym={result.data} index={index}/>
+                                                );
+                                            } else if (result.collection === 'leagues') {
+                                                content = (
+                                                    <LeagueCard league={result.data} index={index} />
+                                                );
+                                            } else if (result.collection === 'events') {
+                                                content = (
+                                                    <EventCard key={result.data.id} event={result.data} />
+                                                );
+                                            }
 
-                                                </CollectionCard>
-                                            ))}
+
+                                            return content;
+                                        })}
+
 
                                     </Grid>
                                 );
@@ -161,6 +175,8 @@ const Home = () => {
                     }
                 </div>
             )}
+
+            <CollectionLinks />
 
 
 

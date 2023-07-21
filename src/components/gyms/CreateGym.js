@@ -16,19 +16,6 @@ import IconButton from '@mui/material/IconButton';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import Alert from '@mui/material/Alert';
 
-//wysiwyg https://www.npmjs.com/package/react-mui-draft-wysiwyg
-import { Editor, EditorState, ContentState, convertToRaw } from "draft-js";
-import { stateToHTML } from 'draft-js-export-html';
-import { stateFromHTML } from 'draft-js-import-html';
-import { Editor as WysiwygEditor } from 'react-draft-wysiwyg';
-import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
-import { convertToHTML, convertFromHTML } from 'draft-convert';
-import htmlToDraft from 'html-to-draftjs';
-// Define the HTML string you want to convert to a Draft.js ContentState
-const htmlString = '<p>Hello World!</p>';
-// Convert the HTML string to a Draft.js ContentState
-const contentState = htmlToDraft(htmlString);
-const editorState = EditorState.createEmpty();
 
 function CreateGym() {
     const [error, setError] = useState('');
@@ -47,17 +34,6 @@ function CreateGym() {
     const navigate = useNavigate();
     const [area, setArea] = useState('');
 
-    // const [editorState, setEditorState] = useState(EditorState.createEmpty());
-
-    const [editorState, setEditorState] = useState(() => {
-        const contentBlock = htmlToDraft(''); // set your default HTML content here
-        const contentState = contentBlock ? ContentState.createFromBlockArray(contentBlock.contentBlocks) : ContentState.createFromText('');
-        return EditorState.createWithContent(contentState);
-    });
-
-    const handleEditorChange = (state) => {
-        setEditorState(state);
-    };
 
     useEffect(() => {
         if (auth.currentUser) {
@@ -89,10 +65,6 @@ function CreateGym() {
         }
 
         const cleanedGymName = gymName.replace(/[^\w\s]/gi, '').replace(/\s+/g, '_').toLowerCase();
-        const contentHTML = stateToHTML(editorState.getCurrentContent());
-        // console.log('Content HTML:', contentHTML);
-
-
 
         try {
             //Once you've confirmed that the user is signed in, you can get their UID by accessing the uid property of the auth.currentUser object:
@@ -110,7 +82,6 @@ function CreateGym() {
                 country: address.country,
                 latitude: address.lat,
                 longitude: address.lng,
-                description: contentHTML,
                 createdBy: uid
             });
 
@@ -283,10 +254,7 @@ function CreateGym() {
                 </IconButton>
 
                 {/*//this needs to be a description field with a qysiwyg editor */}
-                <WysiwygEditor
-                    editorState={editorState}
-                    onEditorStateChange={handleEditorChange}
-                />
+                {/*WysiwygEditor goes here*/}
                 <br />
                 {showAlert && (
                     <Alert severity={alert} onClose={handleCloseAlert}>

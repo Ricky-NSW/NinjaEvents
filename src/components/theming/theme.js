@@ -7,6 +7,7 @@ export const createThemeOptions = (mode, colors) => ({
     palette: {
         mode: mode,
         primary: {
+            white: '#FFFFFF',
             light: colors.primary.light,
             main: colors.primary.main,
             dark: colors.primary.dark,
@@ -37,6 +38,10 @@ export const createThemeOptions = (mode, colors) => ({
             fontSize: '2.1rem',
             fontWeight: 800,
             color: mode === 'dark' ? colors.primary.dark : colors.primary.dark,
+            //a sibling
+            '&': {
+                textDecoration: 'none',
+            }
         },
         h4: {
             fontSize: '2.1rem',
@@ -52,6 +57,26 @@ export const createThemeOptions = (mode, colors) => ({
         body2: {
             lineHeight: 1.56,
             letterSpacing: '0.1em',
+        },
+    },
+    components: {
+        MuiLink: {
+            styleOverrides: {
+                root: {
+                    color: mode === 'dark' ? colors.secondary.light : colors.primary.light,
+                    textDecoration: 'none',
+                },
+            },
+        },
+        MuiCssBaseline: {
+            styleOverrides: {
+                'body': {
+                    backgroundColor: mode === 'dark' ? colors.grey.dark : colors.white,  // Or whatever you want to change
+                },
+                'a': {
+                    textDecoration: 'none',
+                },
+            },
         },
     },
 });

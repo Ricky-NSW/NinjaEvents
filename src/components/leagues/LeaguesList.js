@@ -5,12 +5,7 @@ import { Link } from 'react-router-dom';
 import { db, auth } from '../../FirebaseSetup';
 import { collection, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
 //MUI
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import Typography from '@mui/material/Typography';
-import CardActions from '@mui/material/CardActions';
-import Button from '@mui/material/Button';
-
+import LeagueCard from '../../components/leagues/LeagueCard';
 //style
 import styled from 'styled-components';
 
@@ -35,21 +30,8 @@ const LeaguesList = ({ leagues }) => {
 
     return (
         <LeaguesContainer>
-            {leagues && leagues.length && leagues.map((league) => (
-                <Card key={league.id} sx={{ maxWidth: 768 }}>
-                    <CardContent>
-                        <Typography gutterBottom variant="h5" component="div">
-                            {league.name}
-                        </Typography>
-                        <Typography gutterBottom variant="h5" component="div">
-                            {truncateDescription(league.description, 100)}
-                        </Typography>
-                    </CardContent>
-                    <CardActions>
-                        <Button size="small">Share</Button>
-                        <Button component={Link} to={`/leagues/` + league.id} size="small">Learn More</Button>
-                    </CardActions>
-                </Card>
+            {leagues && leagues.length && leagues.map((league, index) => (
+                <LeagueCard league={league} index={index} />
             ))}
         </LeaguesContainer>
     );

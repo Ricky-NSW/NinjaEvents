@@ -8,7 +8,7 @@
 // Adults
 
 import React, { useEffect, useState, useContext } from 'react';
-
+import AvatarUpload from "../data/AvatarUpload";
 // Firebase
 import firebase, { db, auth } from '../../FirebaseSetup';
 import { collection, addDoc, doc, updateDoc, arrayUnion } from 'firebase/firestore';
@@ -18,27 +18,8 @@ import AuthContext from '../../contexts/AuthContext';
 // MUI
 import { Box, Button, TextField } from '@mui/material';
 import Alert from '@mui/material/Alert';
-import {Editor as WysiwygEditor} from "react-draft-wysiwyg";
-import htmlToDraft from "html-to-draftjs";
-import {ContentState, EditorState} from "draft-js";
+import WysiwygEditorComponent from "../layout/tools/WysiwygEditorComponent";
 
-//wysiwyg https://www.npmjs.com/package/react-mui-draft-wysiwyg
-// import { EditorState, ContentState } from "draft-js";
-
-// import { Editor as WysiwygEditor } from 'react-draft-wysiwyg';
-import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
-// import htmlToDraft from 'html-to-draftjs';
-import {stateToHTML} from "draft-js-export-html";
-
-// const editorState = EditorState.createEmpty();
-// import { Editor as WysiwygEditor } from 'react-draft-wysiwyg';
-import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
-import { convertToHTML, convertFromHTML } from 'draft-convert';
-// Define the HTML string you want to convert to a Draft.js ContentState
-// Convert the HTML string to a Draft.js ContentState
-const editorState = EditorState.createEmpty();
-const htmlString = '<p>Hello World!</p>';
-const contentState = htmlToDraft(htmlString);
 function CreateLeague() {
     const [error, setError] = useState('');
     const [alert, setAlert] = useState(null);
@@ -51,11 +32,12 @@ function CreateLeague() {
     const { currentUser } = useContext(AuthContext);
     const [createdBy, setCreatedBy] = useState(null);
 
-    const [editorState, setEditorState] = useState(() => {
-        const contentBlock = htmlToDraft(''); // set your default HTML content here
-        const contentState = contentBlock ? ContentState.createFromBlockArray(contentBlock.contentBlocks) : ContentState.createFromText('');
-        return EditorState.createWithContent(contentState);
-    });
+    const [editorContent, setEditorContent] = useState(''); // Initialize to empty string
+    const [league, setLeague] = useState(null);
+
+    const [avatarUrl, setAvatarUrl] = useState(null);
+
+
     console.log( 'create league', userType)
 
     const handleSubmit = async (e) => {
@@ -72,7 +54,7 @@ function CreateLeague() {
             return;
         }
 
-        const contentHTML = stateToHTML(editorState.getCurrentContent());
+        const cleanedLeagueName = leagueName.replace(/[^\w\s]/gi, '').replace(/\s+/g, '_').toLowerCase();
 
         try {
             //Once you've confirmed that the user is signed in, you can get their UID by accessing the uid property of the auth.currentUser object:
@@ -83,9 +65,9 @@ function CreateLeague() {
             //create the league document
             const docRef = await addDoc(collection(db, 'leagues'), {
                 name: leagueName,
-                description: contentHTML,
-                OwnerUid: currentUser.uid,
-                createdBy: uid // Include the user's UID as a field in the document
+                ownerUid: currentUser.uid,
+                createdBy: uid, // Include the user's UID as a field in the document
+                slug: cleanedLeagueName
             });
 
             // Update the user document with the new league ID
@@ -129,11 +111,6 @@ function CreateLeague() {
         fetchUserType();
     }, []);
 
-    const handleEditorChange = (state) => {
-        setEditorState(state);
-    };
-
-
     const handleLeagueNameChange = (e) => {
         setLeagueName(e.target.value);
         setError('');
@@ -157,10 +134,16 @@ function CreateLeague() {
                     required
                     fullWidth
                 />
-                <WysiwygEditor
-                    editorState={editorState}
-                    onEditorStateChange={handleEditorChange}
+
+                <WysiwygEditorComponent
+                    initialContent={editorContent}
+                    handleContentChange={(content, delta, source, editor) => {
+                        console.log("Editor content changed:", content);
+                        setEditorContent(content);
+                    }}
                 />
+
+                {/*WysiwygEditor goes here*/}
                 <br />
                 <br />
                 {showAlert && (

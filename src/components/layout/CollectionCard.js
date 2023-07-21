@@ -20,23 +20,33 @@ const scaleUpFromBottom = keyframes`
 `;
 
 const StyledGrid = styled(Grid)(({ theme, index }) => ({
-    BorderColor: theme.palette.grey.light,
-    border: '1px solid',
+    // BorderColor: theme.palette.grey.light,
+    // border: '1px solid',
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    margin: '2px',
+    width: 'calc(100% - 4px)',
+    boxShadow: '2px 1px 1px hsl(0deg 0% 0% / 0.1)',
     borderRadius: '4px',
     marginBottom: '16px',
     padding: '1rem',
     animation: `${scaleUpFromBottom} 1s ${index * 0.3}s ease-in-out forwards`,
     animationFillMode: 'both',
-
-    //remove underline from text
-    '& a': {
-        textDecoration: 'none',
-    },
+//change background color depending on the theme whether its dark or light mode
+    backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey.medium : theme.palette.grey.light,
 
     //hover state
-    '&:hover': {
-        backgroundColor: theme.palette.grey.light,
+    // '&:hover': {
+    //     backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey.dark : '#fff',
+    // }
+
+
+    //style child paragraphs
+    '& p': {
+        color: theme.palette.mode === 'dark' ? theme.palette.grey.light : theme.palette.grey.dark,
     }
+
 
 }));
 

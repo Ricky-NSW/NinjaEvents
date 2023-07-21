@@ -1,7 +1,6 @@
 import React from "react";
 import {Outlet} from "react-router-dom";
 import NavDrawer from "./NavDrawer";
-import NavBar from "./NavBar";
 import Box from '@mui/material/Box';
 import Header from "./Header";
 import Container from '@mui/material/Container';

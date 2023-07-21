@@ -22,10 +22,12 @@ const style = {
 };
 
 function EventsPage() {
-    const { events, isLoading } = useDataLayer();  // Get events and isLoading from the DataLayer
+    const { events, isAnyDataLoading } = useDataLayer();  // Get events and isAnyDataLoading from the DataLayer
 
-    if (isLoading) {
-        return <Loading />; // Or your preferred loading UI
+    if (isAnyDataLoading) {
+        console.log('Loading events page...', events)
+
+        return (<Loading />); // Or your preferred loading UI
     }
 
     // console.log('events page:', events)

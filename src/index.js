@@ -9,6 +9,7 @@ import GoogleMapsApi from "../src/components/api/GoogleMapsApi";
 import { DataLayer } from "./components/data/DataLayer";
 import reducer, { initialState } from './components/data/reducer';
 import * as serviceWorker from './serviceWorker';
+import '@mui/material/styles';
 
 //import theme
 import { ThemeProvider, createTheme } from '@mui/material/styles'; // Add createTheme import here
@@ -25,8 +26,20 @@ const Root = () => {
     const libraries = ["places"];
     const apiKey = 'AIzaSyAecDrlTL6KojsjVproBpL7iXo4ys-3FNA';
 
-    const [darkMode, setDarkMode] = useState(false);
-    const toggleDarkMode = () => setDarkMode((prevMode) => !prevMode);
+    // const [darkMode, setDarkMode] = useState(false);
+    const [darkMode, setDarkMode] = useState(() => {
+        const savedTheme = localStorage.getItem('darkMode');
+        return savedTheme === 'true' ? true : false;
+    });
+
+    const toggleDarkMode = () => {
+        setDarkMode((prevMode) => {
+            const newMode = !prevMode;
+            localStorage.setItem('darkMode', String(newMode));
+            return newMode;
+        });
+    };
+
     const theme = createTheme(createThemeOptions(darkMode ? 'dark' : 'light', colors));
 
 

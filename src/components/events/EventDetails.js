@@ -1,4 +1,12 @@
-//TODO make it so that the person who created the event can edit it
+// this component shows the data from a document inside the 'events' collection
+// Each event document has a field called gymId which contains the id of one of the gyms in the gyms collections.
+//     Some events also have a leagueId which is the id of a league from the leagues collection.
+//     Each gym and league has a field called ownerUid which is a id of a user from the users collection.
+//
+//     For each event I would like to find the corresponding gym and league and get the data for that gym and league.
+//
+//     Once that data has been found, if the logged in user is the admin of either the gym or the league then allow them to see the <EditEventDetails component on line 256//TODO make it so that the person who created the event can edit it
+
 //TODO: make it check if there is a league assigned to the event, if there is allow any of the league admins to edit it
 //TODO: add a MUI <Switch /> to the event page, when the user clicks the <Switch /> it adds the event id to an array on the 'user' called 'eventSubscriptions'. If they disable the <Switch /> it removes it from the array
 //TODO: create a list of all the users who have subscribed for the event
@@ -253,8 +261,7 @@ const EventDetails = ( userType, handleDelete, ) => {
                     )}
 
                     <hr />
-                    {event && (currentUser?.uid === event.createdBy || // Assuming the league admin list is on the league object
-                            (league && league.admins && league.admins.includes(currentUser?.uid))) &&
+                    {event && (currentUser?.uid === event.createdBy || (gym && gym.ownerUid === currentUser?.uid) || (league && league.ownerUid === currentUser?.uid) || userType === 'Admin') &&
 
                         <>
                             <EditEventDetails
@@ -277,17 +284,7 @@ const EventDetails = ( userType, handleDelete, ) => {
                     }
 
 
-                    {/*//TODO: after the events date has passed show the results of the event - this needs to be a notification for the league and gym owner*/}
-                    {/*//TODO: once events results have been added, they should be displayed below*/}
-                    <SubmitResultsForm eventId={event.id} eventDate={event.date} isEventDatePassed />
-
-                    {/*Check if event.date is after current date and if so then show <ResultsDisplay />*/}
-
-
-
-
-
-
+                    {isEventDatePassed && (<SubmitResultsForm eventId={event.id} eventDate={event.date} isEventDatePassed />)}
 
                     <ResultsDisplay results={results} />
                 </>

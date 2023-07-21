@@ -101,7 +101,7 @@ const GymsList = () => {
                     }
                 }}
                 hasMore={hasMore}
-                loader={gyms.length === 0 && <h4>Loading...</h4>}
+                loader={gyms.length === 0 && <h4>Loading more gyms...</h4>}
             >
                 <br />
                 {gyms.map((gym, index) => (

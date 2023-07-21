@@ -12,7 +12,7 @@ import React, { useEffect, useState, useContext } from 'react';
 import { getFirestore, doc, updateDoc, getDoc, collection, query, where, onSnapshot, arrayUnion, arrayRemove, } from 'firebase/firestore';
 import { useParams, Link } from 'react-router-dom';
 import { Stack, Dialog, DialogTitle, DialogContent, ImageList, ImageListItem, Button, Typography, Box, CardMedia, Avatar } from '@mui/material';
-
+import Loading from '../data/Loading';
 import Divider from '@mui/material/Divider';
 
 // Import components
@@ -39,13 +39,17 @@ import CardContent from "@mui/material/CardContent";
 import CardActions from "@mui/material/CardActions";
 import GymBannerImage from "./GymBannerImage";
 
+// Tabs
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+
 // Import notifications
 import { requestNotificationPermission } from '../messaging/fcm';
 import {getDownloadURL, getStorage, listAll, ref, uploadBytes} from "firebase/storage";
 import {Close} from "@mui/icons-material";
 
 const GymDetails = () => {
-    const { events, getGymBySlug, gyms, updateGymBannerUrl, isLoading } = useDataLayer();
+    const { events, getGymBySlug, gyms, updateGymBannerUrl, isAnyDataLoading } = useDataLayer();
     const { currentUser, setCurrentUser } = useContext(AuthContext);
     const { slug } = useParams();
 
@@ -57,14 +61,18 @@ const GymDetails = () => {
     const [open, setOpen] = useState(false);
     const [selectedImage, setSelectedImage] = useState(null);
     const [selectedFiles, setSelectedFiles] = useState(null);
+    const [error, setError] = useState(null);
+    const [tabValue, setTabValue] = useState(0);
 
     useEffect(() => {
-        if (!isLoading) {
+        if (!isAnyDataLoading) {
+            console.log('GymDetails useEffect loading', isAnyDataLoading);
+
             const fetchGym = async () => {
                 try {
                     setGym(null);
                     const gymDetails = await getGymBySlug(slug);
-
+console.log("Gym details: ", gymDetails);
                     if (gymDetails) {
                         setGym(gymDetails);
                         // Check if the gym's slug is in the user's subscribedGyms array
@@ -76,20 +84,26 @@ const GymDetails = () => {
                         console.log("Gym data: ", gymDetails); // Here's the log
                     } else {
                         console.error('Error fetching gym: gymDetails is', gymDetails);
+                        setError('Error fetching gym details.'); // Set the error
                     }
 
                 } catch (error) {
                     console.error('Error fetching gym:', error);
+                    setError('Error fetching gym.'); // Set the error
                 }
             };
             fetchGym();
         }
         {gym && console.log('gymDetails GymID', gym.slug);}
 
-    }, [slug, currentUser, getGymBySlug, gyms, isLoading]);
+    }, [slug, currentUser, getGymBySlug, isAnyDataLoading]);
 
 
     const fetchImages = async () => {
+        if (!gym?.id) {
+            console.error('Error cannot fetch images: Gym or gym.id is not available');
+            return;
+        }
         try {
             setIsGalleryLoading(true);
             const storage = getStorage();
@@ -99,7 +113,7 @@ const GymDetails = () => {
 
             const imageArray = await Promise.all(imagePromises);
             setImages(imageArray);
-            console.log("Fetched Images: ", imageArray); // Here's the log
+            console.log("Fetched Images: ", imageArray);
         } catch (error) {
             console.error('Error fetching images:', error);
         } finally {
@@ -108,12 +122,16 @@ const GymDetails = () => {
     };
 
 
+
     useEffect(() => {
-        if (gym) {
+        if (gym?.id) {
             fetchImages();
         }
     }, [gym]);
 
+    if (error) {
+        return <p>Error: {error}</p>;
+    }
 
     const handleSubscribeToggle = async () => {
         setIsSubscribed(!isSubscribed);
@@ -161,10 +179,26 @@ const GymDetails = () => {
         maxHeight: '90%',
     };
 
+    const handleTabChange = (event, newValue) => {
+        setTabValue(newValue);
+    };
+
+    let upcomingEvents = [];
+    let pastEvents = [];
+    if(gym){
+        upcomingEvents = events.filter(event => (event.gymId === gym.id) && new Date(event.date) >= new Date());
+        pastEvents = events.filter(event => (event.gymId === gym.id) && new Date(event.date) < new Date());
+    }
+
+
+    console.log("Gym data: ", gym); // Here's the log
+
     return (
+
+
         <Stack spacing={2}>
-            {isLoading ? (
-                <Typography>Loading gym details...</Typography>
+            {isAnyDataLoading || !gym ? (
+                <Loading />
             ) : gym ? (
                 <Stack
                     spacing={2}
@@ -313,52 +347,76 @@ const GymDetails = () => {
                 <p>Loading images...</p>
             ) : (
                 <>
-                    <Divider>Photo Gallery</Divider>
-                    {console.log("Rendering images: ", images)}
-                    <ImageList cols={4} gap={8}>
-                        {images.map((item, index) => (
-                            <ImageListItem key={index}>
-                                <img src={item} alt={`Image ${index}`} loading="lazy" onClick={() => handleOpen(item)} />
-                            </ImageListItem>
-                        ))}
-                    </ImageList>
+                    {images.length > 0 && (
+                        <>
+                            <Divider>Photo Gallery</Divider>
+                            {console.log("Rendering images: ", images)}
+                            <ImageList cols={4} gap={8}>
+                                {images.map((item, index) => (
+                                    <ImageListItem key={index}>
+                                        <img src={item} alt={`Image ${index}`} loading="lazy" onClick={() => handleOpen(item)} />
+                                    </ImageListItem>
+                                ))}
+                            </ImageList>
 
-                    <Dialog
-                        open={open}
-                        onClose={handleClose}
-                        style={modalStyle}
-                        aria-labelledby="image-modal"
-                        aria-describedby="image-modal-description"
-                    >
-                        <DialogContent>
-                            <img src={selectedImage} alt={`Selected image`} style={imgStyle} />
-                            <IconButton
-                                edge="end"
-                                color="inherit"
-                                onClick={handleClose}
-                                aria-label="close"
-                                sx={{
-                                    position: 'absolute',
-                                    top: 8,
-                                    right: 8,
-                                }}
+                            <Dialog
+                                open={open}
+                                onClose={handleClose}
+                                style={modalStyle}
+                                aria-labelledby="image-modal"
+                                aria-describedby="image-modal-description"
                             >
-                                <Close />
-                            </IconButton>
-                        </DialogContent>
-                    </Dialog>
+                                <DialogContent>
+                                    <img src={selectedImage} alt={`Selected image`} style={imgStyle} />
+                                    <IconButton
+                                        edge="end"
+                                        color="inherit"
+                                        onClick={handleClose}
+                                        aria-label="close"
+                                        sx={{
+                                            position: 'absolute',
+                                            top: 8,
+                                            right: 8,
+                                        }}
+                                    >
+                                        <Close />
+                                    </IconButton>
+                                </DialogContent>
+                            </Dialog>
+                        </>
+                    )}
+
                 </>
             )}
 
+
+            {/*List of events*/}
             {
-                gym && events && events.filter(event => event.gym?.id === gym.id || event.gymId === gym.id).length ? (
+                gym && events && events.filter(event => event.gymId === gym.id).length ? (
                     <>
                         <Divider>Events at {gym.name}</Divider>
-                        <Stack container spacing={2} columns={{ xs: 4, md: 12 }}>
-                            {events.filter(event => event.gym?.id === gym.id || event.gymId === gym.id).map((event) => (
-                                <EventCard key={event.id} event={event} hideGym />
-                            ))}
-                        </Stack>
+                        <Box sx={{ width: '100%' }}>
+                            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                                <Tabs value={tabValue} onChange={handleTabChange} aria-label="upcoming and past events tabs">
+                                    <Tab label="Upcoming Events" />
+                                    <Tab label="Past Events" />
+                                </Tabs>
+                            </Box>
+                            <TabPanel value={tabValue} index={0}>
+                                <Stack container spacing={2} columns={{ xs: 4, md: 12 }}>
+                                    {upcomingEvents.map((event) => (
+                                        <EventCard key={event.id} event={event} hideGym />
+                                    ))}
+                                </Stack>
+                            </TabPanel>
+                            <TabPanel value={tabValue} index={1}>
+                                <Stack container spacing={2} columns={{ xs: 4, md: 12 }}>
+                                    {pastEvents.map((event) => (
+                                        <EventCard key={event.id} event={event} hideGym />
+                                    ))}
+                                </Stack>
+                            </TabPanel>
+                        </Box>
                     </>
                 ) : null
             }
@@ -366,5 +424,25 @@ const GymDetails = () => {
         </Stack>
     );
 };
+
+function TabPanel(props) {
+    const { children, value, index, ...other } = props;
+
+    return (
+        <div
+            role="tabpanel"
+            hidden={value !== index}
+            id={`tabpanel-${index}`}
+            aria-labelledby={`tab-${index}`}
+            {...other}
+        >
+            {value === index && (
+                <Box sx={{ p: 3 }}>
+                    {children}
+                </Box>
+            )}
+        </div>
+    );
+}
 
 export default GymDetails;
