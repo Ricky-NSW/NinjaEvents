@@ -119,6 +119,9 @@ const Home = () => {
             <p>&nbsp;</p>
             {/*//TODO: move all the search logic into the search component*/}
             <h1>Ninja Community</h1>
+            <Typography>
+                Welcome to NinjaConnect, the ultimate online hub for ninja athletes! Discover thrilling events, connect with fellow ninjas, and track dynamic leagues all in one place. Explore nearby gyms equipped for ninja training with our intuitive location-based service. Stay updated with the latest in the ninja athletics world and never miss an event. Join NinjaConnect and step into a vast network of ninja athletes and enthusiasts. Enhance your skills, build lasting friendships, and immerse yourself in the exciting world of ninja athletics. Your journey to becoming the ultimate ninja athlete begins here. Join us now at NinjaConnect!
+            </Typography>
             <h4>Use the search bar to find a Gym, League, User or an event.</h4>
             <SearchBar onSearch={handleSearch} />
             {searchResults.length > 0 && (
