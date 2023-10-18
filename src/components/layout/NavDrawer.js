@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
 import {onSnapshot, doc, getFirestore, getDoc} from 'firebase/firestore';
 import { auth } from '../../FirebaseSetup';
-import authContext from "../../contexts/AuthContext";
+import AuthContext from "../../contexts/AuthContext";
 
 //avatar
 import Avatar from '../user/Avatar';
@@ -55,7 +55,7 @@ export default function NavDrawer() {
     });
 
     const [userData, setUserData] = useState(null);
-    const { currentUser } = useContext(authContext);
+    const { currentUser } = useContext(AuthContext);
     const [userDetails, setUserDetails] = useState({});
     const navigate = useNavigate();
 

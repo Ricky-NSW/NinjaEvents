@@ -130,7 +130,7 @@ console.log('manage user page', currentUser)
                         <span style={{ fontWeight: 'bold' }}>What is your favourite obstacle</span> {currentUser.favouriteObstacle}
                     </Typography>
 <br />
-                    <Divider>Leagues You're Following</Divider>
+                    <Divider>Leagues You&apos;re Following</Divider>
                 <br />
                     {/*List of Leagues that the user has subscribed to*/}
                     {leagues && currentUser.subscribedLeagues && (
@@ -142,7 +142,7 @@ console.log('manage user page', currentUser)
                         </>
                     )}
                     <br />
-                    <Divider>Gyms You're Following</Divider>
+                    <Divider>Gyms You&apos;re Following</Divider>
                     <br />
                     {/*List of Gyms that the user has subscribed to*/}
                     {gyms && currentUser.subscribedGyms && (
@@ -158,7 +158,7 @@ console.log('manage user page', currentUser)
                     {/*display all gyms that have this users id as that gyms ownerUid*/}
                     {leagues && leagues.filter((league) => league.OwnerUid && league.OwnerUid.includes(currentUser.uid)).length > 0 && (
                         <>
-                            <Divider>Leagues You're Managing</Divider>
+                            <Divider>Leagues You&apos;re Managing</Divider>
                             <br />
                             {leagues.filter((league) => league.OwnerUid && league.OwnerUid.includes(currentUser.uid)).map((league) => (
                                 <LeagueCard key={league.id} league={league} />
@@ -170,7 +170,7 @@ console.log('manage user page', currentUser)
                     <br />
                     {gyms && gyms.filter((gym) => gym.ownerUid && gym.ownerUid.includes(currentUser.uid)).length > 0 && (
                         <>
-                            <Divider>Gyms You're managing</Divider>
+                            <Divider>Gyms You&apos;re managing</Divider>
                             <br />
                             {gyms.filter((gym) => gym.ownerUid && gym.ownerUid.includes(currentUser.uid)).map((gym) => (
                                 <GymCard key={gym.id} gym={gym} />

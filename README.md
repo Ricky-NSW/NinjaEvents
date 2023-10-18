@@ -29,6 +29,11 @@ Your app is ready to be deployed!
 
 See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 
+### 'firebase deploy'
+This command uploads the content of the build directory to Firebase Hosting. After deployment is successful, Firebase will provide you with a URL where your app is hosted, something like https://your-app-id.web.app.
+
+
+
 ### `npm run eject`
 
 **Note: this is a one-way operation. Once you `eject`, you can't go back!**

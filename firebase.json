@@ -14,5 +14,19 @@
   },
   "extensions": {
     "storage-resize-images": "firebase/storage-resize-images@0.1.36"
+  },
+  "hosting": {
+    "public": "build",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
   }
 }

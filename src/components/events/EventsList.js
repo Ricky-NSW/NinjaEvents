@@ -127,56 +127,64 @@ const EventsList = ({ events = [], filterDisabled }) => {
 
             {!filterDisabled && (
                 <>
-                    <Autocomplete
-                        options={eventStates}
-                        getOptionLabel={(option) => option}
-                        value={stateSearch}
-                        onChange={(event, newValue) => setStateSearch(newValue || '')}
-                        fullWidth
-                        renderInput={(params) => (
-                            <TextField
-                                {...params}
-                                label="Search state"
+                    <Grid container spacing={3} direction="row">
+                        <Grid item xs={12} md={4}>
+                            <Autocomplete
+                                options={eventCountries}
+                                getOptionLabel={(option) => option}
+                                value={countrySearch}
+                                onChange={(event, newValue) => setCountrySearch(newValue || '')}
                                 fullWidth
-                                margin="normal"
-                                variant="outlined"
+                                renderInput={(params) => (
+                                    <TextField
+                                        {...params}
+                                        label="Select country"
+                                        fullWidth
+                                        margin="normal"
+                                        variant="outlined"
+                                    />
+                                )}
                             />
-                        )}
-                    />
+                        </Grid>
 
-                    <Autocomplete
-                        options={eventCountries}
-                        getOptionLabel={(option) => option}
-                        value={countrySearch}
-                        onChange={(event, newValue) => setCountrySearch(newValue || '')}
-                        fullWidth
-                        renderInput={(params) => (
-                            <TextField
-                                {...params}
-                                label="Search country"
+                        <Grid item xs={12} md={4}>
+                            <Autocomplete
+                                options={eventStates}
+                                getOptionLabel={(option) => option}
+                                value={stateSearch}
+                                onChange={(event, newValue) => setStateSearch(newValue || '')}
                                 fullWidth
-                                margin="normal"
-                                variant="outlined"
+                                renderInput={(params) => (
+                                    <TextField
+                                        {...params}
+                                        label="Select state"
+                                        fullWidth
+                                        margin="normal"
+                                        variant="outlined"
+                                    />
+                                )}
                             />
-                        )}
-                    />
+                        </Grid>
 
-                    <Autocomplete
-                        options={eventAges}
-                        getOptionLabel={(option) => option}
-                        value={ageSearch}
-                        onChange={(event, newValue) => setAgeSearch(newValue || '')}
-                        fullWidth
-                        renderInput={(params) => (
-                            <TextField
-                                {...params}
-                                label="Search age"
+                        <Grid item xs={12} md={4}>
+                            <Autocomplete
+                                options={eventAges}
+                                getOptionLabel={(option) => option}
+                                value={ageSearch}
+                                onChange={(event, newValue) => setAgeSearch(newValue || '')}
                                 fullWidth
-                                margin="normal"
-                                variant="outlined"
+                                renderInput={(params) => (
+                                    <TextField
+                                        {...params}
+                                        label="Select age"
+                                        fullWidth
+                                        margin="normal"
+                                        variant="outlined"
+                                    />
+                                )}
                             />
-                        )}
-                    />
+                        </Grid>
+                    </Grid>
                 </>
             )}
             <Box

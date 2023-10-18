@@ -4,7 +4,7 @@ import * as React from 'react';
 
 // Firebase
 import { signOut } from 'firebase/auth';
-import authContext from "../../contexts/AuthContext";
+import AuthContext from "../../contexts/AuthContext";
 
 // Import Material-UI components and icons
 import NavDrawer from "./NavDrawer";
@@ -25,7 +25,6 @@ import MenuItem from '@mui/material/MenuItem';
 
 //MUI icons
 import {useContext, useState} from "react";
-import AuthContext from "../../contexts/AuthContext";
 
 // Create a styled Search component for the search bar
 const Search = styled('div')(({theme}) => ({
@@ -75,7 +74,7 @@ export default function Header() {
 
     const handleLogout = async () => {
         try {
-            await signOut(authContext);
+            await signOut(AuthContext);
         } catch (error) {
             console.error('Error signing out: ', error);
         }

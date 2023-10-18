@@ -74,6 +74,9 @@ function Login() {
             <Typography variant="h4" component="h1" gutterBottom>
                 Login
             </Typography>
+            <Typography variant="subtitle1" id="simple-modal-description">
+                You need to be logged in to view this content.
+            </Typography>
             <Collapse in={loggedIn}>
                 <Alert severity="success" onClose={() => setLoggedIn(false)}>
                     You are logged in!
@@ -131,8 +134,8 @@ function Login() {
                     </Button>
                 </Grid>
             </Grid>
-            <Typography variant="body1" gutterBottom mt={2}>
-                Don't have an account? <Link to="/register">Register</Link>
+            <Typography variant="body2" gutterBottom mt={2}>
+                Don&apos;t have an account? <Link to="/register">Register</Link>
             </Typography>
 
         </>

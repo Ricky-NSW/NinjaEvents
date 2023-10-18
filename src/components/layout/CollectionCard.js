@@ -27,20 +27,22 @@ const StyledGrid = styled(Grid)(({ theme, index }) => ({
     alignItems: 'center',
     margin: '2px',
     width: 'calc(100% - 4px)',
-    boxShadow: '2px 1px 1px hsl(0deg 0% 0% / 0.1)',
+    // boxShadow: '2px 1px 1px hsl(0deg 0% 0% / 0.1)',
     borderRadius: '4px',
     marginBottom: '16px',
     padding: '1rem',
     animation: `${scaleUpFromBottom} 1s ${index * 0.3}s ease-in-out forwards`,
     animationFillMode: 'both',
 //change background color depending on the theme whether its dark or light mode
-    backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey.medium : theme.palette.grey.light,
+    backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey.medium : theme.palette.grey.white,
+    //add a border using theme.palette.grey.white
+    border: theme.palette.mode === 'dark' ? `1px solid ${theme.palette.grey.white}` : `1px solid ${theme.palette.grey.light}`,
 
-    //hover state
-    // '&:hover': {
-    //     backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey.dark : '#fff',
-    // }
-
+    // hover state
+    '&:hover': {
+        boxShadow: '0 16px 64px -16px rgba(46,55,77,.24)',
+        // backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey.dark : '#fff',
+    },
 
     //style child paragraphs
     '& p': {

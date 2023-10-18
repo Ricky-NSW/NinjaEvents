@@ -6,10 +6,10 @@ import reportWebVitals from './reportWebVitals';
 import { db } from './FirebaseSetup.js';
 //css
 import CssBaseline from '@mui/material/CssBaseline';
-import '@fontsource/roboto/300.css';
-import '@fontsource/roboto/400.css';
-import '@fontsource/roboto/500.css';
-import '@fontsource/roboto/700.css';
+
+import "@fontsource/plus-jakarta-sans"; // Defaults to weight 400
+import "@fontsource/plus-jakarta-sans/400.css"; // Specify weight
+import "@fontsource/plus-jakarta-sans/400-italic.css"; // Specify weight and style
 
 import { HashRouter as Router, Routes, Route } from "react-router-dom";
 import Layout from "./components/layout/Layout";

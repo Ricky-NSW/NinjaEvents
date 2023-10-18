@@ -1,5 +1,13 @@
 {
   "projects": {
     "default": "ninjaworld-c885a"
+  },
+  "targets": {},
+  "etags": {
+    "ninjaworld-c885a": {
+      "extensionInstances": {
+        "storage-resize-images": "f443fe87f28b6dd90c057cd3063c7900392122f8211da124a34a2b5f0ce15cd8"
+      }
+    }
   }
 }

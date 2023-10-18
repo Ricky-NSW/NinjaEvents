@@ -44,7 +44,7 @@ function GoogleMapArray({ markers = [], onMapLoad, nestedGym }) {
                 ? { lat: Number(getGymData(marker.gymId).latitude), lng: Number(getGymData(marker.gymId).longitude) }
                 : { lat: Number(marker.latitude), lng: Number(marker.longitude) }
             : { lat: Number(marker.latitude), lng: Number(marker.longitude) }
-    ), [markers, nestedGym, gyms]);
+    ), [markers, nestedGym, gyms, getGymData]);
 
     const uniqueMarkerPositions = removeDuplicates(markerPositions, ['lat', 'lng']);
 
@@ -64,7 +64,7 @@ function GoogleMapArray({ markers = [], onMapLoad, nestedGym }) {
 
     // console.log("Map Options:", mapOptions); // Check the mapOptions object in the console
 
-    const fitBounds = () => {
+    const fitBounds = useCallback(() => {
         if (!mapRef.current || uniqueMarkerPositions.length === 0) return;
 
         const bounds = new window.google.maps.LatLngBounds();
@@ -77,7 +77,8 @@ function GoogleMapArray({ markers = [], onMapLoad, nestedGym }) {
         if (mapRef.current) {
             mapRef.current.fitBounds(bounds);
         }
-    };
+    }, [uniqueMarkerPositions]);
+
 
 
 
@@ -174,6 +175,6 @@ function GoogleMapArray({ markers = [], onMapLoad, nestedGym }) {
             </GoogleMap>
         </>
     );
-};
+}
 
 export default GoogleMapArray;

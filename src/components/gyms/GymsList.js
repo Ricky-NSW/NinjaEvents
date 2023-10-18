@@ -5,12 +5,10 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 import { useDataLayer } from '../data/DataLayer';
 import GymCard from './GymCard';
 import GoogleMapArray from "../api/GoogleMapArray";
-import { makeStyles } from '@material-ui/core/styles';
+import { styled } from '@mui/material/styles';
 
-const useStyles = makeStyles((theme) => ({
-    select: {
-        minWidth: '12rem',
-    }
+const StyledSelect = styled(Select)(({ theme }) => ({
+    minWidth: '12rem',
 }));
 
 const GymsList = () => {
@@ -18,11 +16,9 @@ const GymsList = () => {
     const [triggerFetchMore, setTriggerFetchMore] = useState(false);
     const { currentUser } = useDataLayer();
     const { gyms, loading, setLoading, hasMore } = useGyms(filters, triggerFetchMore);
-    const classes = useStyles();
 
     const countriesFromGyms = Array.from(new Set(gyms.map(gym => gym.country)));
     const statesFromGyms = Array.from(new Set(gyms.map(gym => gym.state)));
-
 
     useEffect(() => {
         if (currentUser) {
@@ -40,20 +36,17 @@ const GymsList = () => {
         setTriggerFetchMore(false);
     };
 
-    // console.log('gyms list info', gyms);
     return (
         <>
             <FormControl>
                 <InputLabel id="demo-simple-select-placeholder-label-label">
                     Country
                 </InputLabel>
-                <Select
+                <StyledSelect
                     labelId="demo-simple-select-placeholder-label-label"
                     id="demo-simple-select-placeholder-label"
                     value={filters.country || ""}
                     onChange={handleCountryChange}
-                    className={classes.select}
-                    label="Select"
                 >
                     <MenuItem value="">
                         <em>All Countries</em>
@@ -63,17 +56,16 @@ const GymsList = () => {
                             {country}
                         </MenuItem>
                     ))}
-                </Select>
+                </StyledSelect>
             </FormControl>
 
             <FormControl>
                 <InputLabel id="demo-simple-select-placeholder-label-label">
                     State
                 </InputLabel>
-                <Select
+                <StyledSelect
                     value={filters.state}
                     onChange={handleStateChange}
-                    className={classes.select}
                 >
                     <MenuItem value="">
                         <em>All States</em>
@@ -83,14 +75,12 @@ const GymsList = () => {
                             {state}
                         </MenuItem>
                     ))}
-                </Select>
-
+                </StyledSelect>
             </FormControl>
-            <br />
-            <br />
 
-            <GoogleMapArray markers={gyms}/>
+            <br /><br />
 
+            <GoogleMapArray markers={gyms} />
 
             <InfiniteScroll
                 dataLength={gyms.length}
@@ -103,13 +93,10 @@ const GymsList = () => {
                 hasMore={hasMore}
                 loader={gyms.length === 0 && <h4>Loading more gyms...</h4>}
             >
-                <br />
                 {gyms.map((gym, index) => (
-                    <GymCard key={`${gym.name}-${index}`} gym={gym} isLoading={loading} index={index}/>
+                    <GymCard key={`${gym.name}-${index}`} gym={gym} isLoading={loading} index={index} />
                 ))}
             </InfiniteScroll>
-
-
         </>
     );
 };

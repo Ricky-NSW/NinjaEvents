@@ -48,7 +48,7 @@ function GymsPage() {
     return (
         <div>
             {/*<h2>scraper</h2>*/}
-            {/*<GymScraper />*/}
+            <GymScraper />
 
             <h2>MAP</h2>
             {/*<GoogleMapArray markers={gyms}/>*/}

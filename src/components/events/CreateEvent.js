@@ -2,7 +2,7 @@
 //TODO: get data from datalayer
 import React, {useState, useEffect, useContext} from 'react';
 import { Link } from 'react-router-dom';
-import authContext from "../../contexts/AuthContext";
+import AuthContext from "../../contexts/AuthContext";
 
 //Firebase
 import firebase, { db, auth } from '../../FirebaseSetup';
@@ -39,7 +39,7 @@ const CreateEvent = () => {
         updateEvent,
         isAnyDataLoading,
     } = useDataLayer();
-    const { currentUser } = useContext(authContext);
+    const { currentUser } = useContext(AuthContext);
 
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');

@@ -44,7 +44,7 @@ function UserGymList() {
                     <Stack direction="column" spacing={2}>
                         {currentUser.managedGyms.map((gym, index) => {
                             return (
-                                <GymCard gym={gym}/>
+                                <GymCard key={gym.id} gym={gym}/>
                             )
                         })}
                     </Stack>

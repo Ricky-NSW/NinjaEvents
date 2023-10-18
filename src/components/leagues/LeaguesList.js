@@ -31,7 +31,7 @@ const LeaguesList = ({ leagues }) => {
     return (
         <LeaguesContainer>
             {leagues && leagues.length && leagues.map((league, index) => (
-                <LeagueCard league={league} index={index} />
+                <LeagueCard key={league.id} league={league} index={index} />
             ))}
         </LeaguesContainer>
     );

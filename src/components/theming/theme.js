@@ -3,7 +3,7 @@ import { createTheme } from '@mui/material/styles';
 import { colors } from './colors';
 
 // This is passed into the index.js file and wraps everything
-export const createThemeOptions = (mode, colors) => ({
+export const createThemeOptions = (mode) => ({
     palette: {
         mode: mode,
         primary: {
@@ -20,9 +20,11 @@ export const createThemeOptions = (mode, colors) => ({
             contrastText: colors.secondary.contrastText,
         },
         grey: { // <-- add this
+            white: colors.grey.white,
             light: colors.grey.light,
             medium: colors.grey.medium,
-            dark: colors.grey.dark
+            dark: colors.grey.dark,
+            almostBlack: colors.grey.almostBlack
         },
     },
     typography: {
@@ -33,6 +35,10 @@ export const createThemeOptions = (mode, colors) => ({
         },
         h2: {
             fontSize: '2.45rem',
+            color: mode === 'dark' ? colors.grey.almostBlack : colors.primary.light,
+            '& a': {
+                color: mode === 'dark' ? colors.secondary.light : colors.grey.almostBlack,
+            }
         },
         h3: {
             fontSize: '2.1rem',
@@ -47,23 +53,38 @@ export const createThemeOptions = (mode, colors) => ({
             fontSize: '2.1rem',
             fontWeight: 400,
         },
+        h5: {
+            fontSize: '1.5rem',
+            fontWeight: 400,
+        },
         body1: {
             lineHeight: 1.56,
-            letterSpacing: '0.1em',
+            letterSpacing: '1px',
             '& a': {
-                color: mode === 'dark' ? colors.secondary.light : colors.primary.light,
+                // color: mode === 'dark' ? colors.secondary.light : colors.primary.light,
             }
         },
         body2: {
-            lineHeight: 1.56,
-            letterSpacing: '0.1em',
+            fontSize: '1rem',
+            lineHeight: 1.2,
+            letterSpacing: '1px',
+        },
+        // bodyBold: {
+        //     fontSize: '1rem',
+        //     lineHeight: 1.2,
+        //     letterSpacing: '1px',
+        //     fontWeight: 'bold',
+        // },
+        body3: {
+            fontSize: '0.8rem',
+            letterSpacing: '1px',
         },
     },
     components: {
         MuiLink: {
             styleOverrides: {
                 root: {
-                    color: mode === 'dark' ? colors.secondary.light : colors.primary.light,
+                    // color: mode === 'dark' ? colors.secondary.light : colors.primary.light,
                     textDecoration: 'none',
                 },
             },
@@ -71,7 +92,7 @@ export const createThemeOptions = (mode, colors) => ({
         MuiCssBaseline: {
             styleOverrides: {
                 'body': {
-                    backgroundColor: mode === 'dark' ? colors.grey.dark : colors.white,  // Or whatever you want to change
+                    backgroundColor: mode === 'dark' ? colors.grey.almostBlack : colors.grey.light,  // Or whatever you want to change
                 },
                 'a': {
                     textDecoration: 'none',

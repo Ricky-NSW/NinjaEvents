@@ -7,7 +7,7 @@ import { CardActionArea } from '@mui/material';
 import CollectionCard from '../layout/CollectionCard';
 import styled from 'styled-components';
 import { auth } from '../../FirebaseSetup';
-
+import {colors} from '../theming/colors';
 //MUI
 import { Card, CardHeader, Avatar, IconButton, CardMedia, CardContent, Typography, CardActions, Button } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
@@ -80,29 +80,32 @@ const EventCard = ({ event, handleDelete, userType, hideGym }) => {
         ) : (
             // If isAnyDataLoading is false, display your actual component
             <CollectionCard key={event.id}>
-                <CardContent>
-                    <Typography gutterBottom variant="h5" component="div">
+                <CardContent
+                    sx={{ p: 0 }}
+                >
+                    <Typography
+                        gutterBottom
+                        variant="h2"
+                        component="h2"
+                        //make it bold
+                        sx={{ fontWeight: 600, fontSize: '1.5rem' }}
+                    >
                         <Link to={`/events/${event.id}`} size="small">
                             {event.title}
                         </Link>
                     </Typography>
-                    <Typography variant={"body2"} color={"text.secondary"}>
+                    <Typography variant={"body2"} color={"secondary.main"}>
                         {formatDate(event.date)}
                     </Typography>
-                    <Typography>
-                        {gym ? (
-                            <span>
-                                Gym: <Link to={`/gyms/${gym.slug}`} size="small">{gym.name}</Link>
-                              </span>
-                        ) : (
-                            <span>No gym available</span>
-                        )}
-                    </Typography>
-                    {league?.name && (
-                        <Typography>
-                            League: <Link to={`/leagues/${league?.slug}`} size="small">{league.name}</Link>
-                        </Typography>
-                    )}
+                    {/*<Typography>*/}
+                    {/*    {gym ? (*/}
+                    {/*        <span>*/}
+                    {/*            Gym: <Link to={`/gyms/${gym.slug}`} size="small">{gym.name}</Link>*/}
+                    {/*          </span>*/}
+                    {/*    ) : (*/}
+                    {/*        <span>No gym available</span>*/}
+                    {/*    )}*/}
+                    {/*</Typography>*/}
                     <Typography>
                         {/*<span>League: {event.league.name}</span>*/}
                     </Typography>
@@ -110,36 +113,73 @@ const EventCard = ({ event, handleDelete, userType, hideGym }) => {
                         Age: {event.age}
                         {/*{event.GeoPoint.latitude} {event.GeoPoint.longitude}*/}
                     </Typography>
-                    <Button
-                        component={Link}
-                        to={`/events/${event.id}`}
-                        size="small"
-                     //   make the button solid with a background
-                        variant="contained"
-                        color="primary"
-                        sx={{ mt: 3, mb: 0 }}
-                    >
-                        Learn More Here
-                    </Button>
-                </CardContent>
-                {!hideGym && (
-                    <>
-                        <CardHeader
-                            avatar={
-                                gym && gym?.avatarUrl ? (
-                                    <Grid item xs={2} sm={6}>
-                                        <Avatar
-                                            alt={gym?.name}
-                                            src={gym?.avatarUrl}
-                                            //TODO: Add a primary color border
-                                        />
+                    {/*{league?.name && (*/}
+                    {/*    <Typography>*/}
+                    {/*        League: <Link to={`/leagues/${league?.slug}`} size="small">{league.name}</Link>*/}
+                    {/*    </Typography>*/}
+                    {/*)}*/}
+                    {league?.name && (
+                        <>
+                            {/*<Typography variant={"h6"}>League:</Typography>*/}
+                            <Grid item xs={12} sx={{ padding: '10px 0 0 0' }}>
+                                {league && league?.avatarUrl ? (
+                                    <Grid container alignItems="center" wrap="nowrap">
+                                        <Grid item sx={{ padding: '10px' }}> {/* Padding added here */}
+                                            <Avatar
+                                                alt={league?.name}
+                                                src={league?.avatarUrl}
+                                                //TODO: Add a primary color border
+                                            />
+                                        </Grid>
+                                        <Grid item>
+                                            <Typography variant="body2">{league?.name}</Typography>
+                                        </Grid>
                                     </Grid>
-                                ) : null
-                            }
-                            title={gym?.name}
-                        />
-                    </>
-                )}
+                                ) : null}
+                            </Grid>
+                        </>
+                    )}
+                    {!hideGym && (
+                        <>
+                            <Grid item xs={12} sx={{ padding: '10px 0 0 0' }}>
+                                {gym && gym?.avatarUrl ? (
+                                    <>
+                                        {/*<Typography variant={"h6"}>Location:</Typography>*/}
+                                        <Grid container alignItems="center" wrap="nowrap">
+                                            <Grid item sx={{ padding: '10px' }}> {/* Padding added here */}
+                                                <Avatar
+                                                    alt={gym?.name}
+                                                    src={gym?.avatarUrl}
+                                                    //TODO: Add a primary color border
+                                                />
+                                            </Grid>
+                                            <Grid item>
+                                                <Typography
+                                                    variant="body3"
+                                                    color="grey.almostBlack"
+                                                >{gym?.name}</Typography>
+                                            </Grid>
+                                        </Grid>
+                                    </>
+                                ) : null}
+                            </Grid>
+                        </>
+                    )}
+
+                </CardContent>
+                {/*<CardActions>*/}
+                {/*    <Button*/}
+                {/*        component={Link}*/}
+                {/*        to={`/events/${event.id}`}*/}
+                {/*        size="small"*/}
+                {/*        //   make the button solid with a background*/}
+                {/*        variant="contained"*/}
+                {/*        color="primary"*/}
+                {/*        sx={{ mt: 3, mb: 0 }}*/}
+                {/*    >*/}
+                {/*        Learn More*/}
+                {/*    </Button>*/}
+                {/*</CardActions>*/}
             </CollectionCard>
         )
     );

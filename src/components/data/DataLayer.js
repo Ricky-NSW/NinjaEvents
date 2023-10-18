@@ -395,4 +395,4 @@ export function DataLayer({ children }) {
             {children}
         </DataLayerContext.Provider>
     );
-};
+}
