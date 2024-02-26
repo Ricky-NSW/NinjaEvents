@@ -9,13 +9,11 @@ import GoogleMapsApi from "../src/components/api/GoogleMapsApi";
 import { DataLayer } from "./components/data/DataLayer";
 import reducer, { initialState } from './components/data/reducer';
 import * as serviceWorker from './serviceWorker';
-import '@mui/material/styles';
 
 //import theme
-import { ThemeProvider, createTheme } from '@mui/material/styles'; // Add createTheme import here
+import { ThemeProvider, createTheme } from '@mui/material/styles';
 import ThemeContext from './contexts/ThemeContext';
 import CssBaseline from '@mui/material/CssBaseline';
-import getTheme from './components/theming/theme';
 import createThemeOptions from './components/theming/theme';
 import { colors } from './components/theming/colors';
 

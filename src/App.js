@@ -11,7 +11,8 @@ import "@fontsource/plus-jakarta-sans"; // Defaults to weight 400
 import "@fontsource/plus-jakarta-sans/400.css"; // Specify weight
 import "@fontsource/plus-jakarta-sans/400-italic.css"; // Specify weight and style
 
-import { HashRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+
 import Layout from "./components/layout/Layout";
 import Home from "./pages/Home";
 import Register from "./pages/Register";

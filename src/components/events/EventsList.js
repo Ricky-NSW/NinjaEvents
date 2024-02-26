@@ -21,7 +21,9 @@ const EventsList = ({ events = [], filterDisabled }) => {
     const [countrySearch, setCountrySearch] = useState('');
     const [filteredEvents, setFilteredEvents] = useState([]);
     const [modalOpen, setModalOpen] = useState(false);
-
+    // Existing state and hooks...
+    const [upcomingEvents, setUpcomingEvents] = useState([]);
+    const [pastEvents, setPastEvents] = useState([]);
     // console.log('gymn on eventlist component', gyms)
 
     const dataLayer = useDataLayer();
@@ -39,6 +41,15 @@ const EventsList = ({ events = [], filterDisabled }) => {
         // You can handle any additional logic on closing the modal
     };
 
+    useEffect(() => {
+        const now = new Date();
+        const sortedEvents = events.sort((a, b) => new Date(a.date) - new Date(b.date));
+        const upcoming = sortedEvents.filter(event => new Date(event.date) >= now);
+        const past = sortedEvents.filter(event => new Date(event.date) < now).reverse(); // Reverse for most recent first
+
+        setUpcomingEvents(upcoming);
+        setPastEvents(past);
+    }, [events]);
 
     useEffect(() => {
         if (events.length > 0) {
@@ -127,8 +138,15 @@ const EventsList = ({ events = [], filterDisabled }) => {
 
             {!filterDisabled && (
                 <>
-                    <Grid container spacing={3} direction="row">
-                        <Grid item xs={12} md={4}>
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            flexDirection: { xs: 'column', md: 'row' },
+                            gap: 2,
+                            marginBottom: 3,
+                        }}
+                    >
+                        <Box sx={{ flex: 1 }}>
                             <Autocomplete
                                 options={eventCountries}
                                 getOptionLabel={(option) => option}
@@ -139,15 +157,14 @@ const EventsList = ({ events = [], filterDisabled }) => {
                                     <TextField
                                         {...params}
                                         label="Select country"
-                                        fullWidth
                                         margin="normal"
                                         variant="outlined"
                                     />
                                 )}
                             />
-                        </Grid>
+                        </Box>
 
-                        <Grid item xs={12} md={4}>
+                        <Box sx={{ flex: 1 }}>
                             <Autocomplete
                                 options={eventStates}
                                 getOptionLabel={(option) => option}
@@ -158,15 +175,14 @@ const EventsList = ({ events = [], filterDisabled }) => {
                                     <TextField
                                         {...params}
                                         label="Select state"
-                                        fullWidth
                                         margin="normal"
                                         variant="outlined"
                                     />
                                 )}
                             />
-                        </Grid>
+                        </Box>
 
-                        <Grid item xs={12} md={4}>
+                        <Box sx={{ flex: 1 }}>
                             <Autocomplete
                                 options={eventAges}
                                 getOptionLabel={(option) => option}
@@ -177,33 +193,71 @@ const EventsList = ({ events = [], filterDisabled }) => {
                                     <TextField
                                         {...params}
                                         label="Select age"
-                                        fullWidth
                                         margin="normal"
                                         variant="outlined"
                                     />
                                 )}
                             />
-                        </Grid>
-                    </Grid>
+                        </Box>
+                    </Box>
                 </>
             )}
-            <Box
-                sx={{
-                    display: 'grid',
-                    columnGap: 3,
-                    rowGap: 3,
-                    gridTemplateColumns: 'repeat(2, 1fr)',
-                }}
-            >
-                {filteredEvents.map((event) => (
-                    <EventCard
-                        key={event.id}
-                        event={event}
-                        gyms={gyms}
-                        userType={currentUser?.userType}
-                    />
-                ))}
-            </Box>
+            <Container>
+                <h2>Upcoming Events</h2>
+                <Box
+                    sx={{
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: 3,
+                    }}
+                >
+                    {upcomingEvents.length > 0 ? (
+                        <Box
+                            sx={{
+                                display: 'grid',
+                                columnGap: 3,
+                                rowGap: 3,
+                                gridTemplateColumns: 'repeat(2, 1fr)',
+                                // Apply specific styling for upcoming events here
+                            }}
+                        >
+                            {upcomingEvents.map((event) => (
+                                <Box key={event.id} sx={{ flex: '1 0 calc(50% - 16px)' }}>
+                                    <EventCard
+                                        event={event}
+                                        gyms={gyms}
+                                        userType={currentUser?.userType}
+                                    />
+                                </Box>
+                            ))}
+                        </Box>
+                    ) : (
+                        <p>There are no upcoming events listed.</p>
+                    )}
+                </Box>
+            </Container>
+
+            {/* Past Events Section */}
+            <Container>
+                <h2>Past Events</h2>
+                <Box
+                    sx={{
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: 3,
+                    }}
+                >
+                    {pastEvents.map((event) => (
+                        <Box key={event.id} sx={{ flex: '1 0 calc(50% - 16px)' }}>
+                            <EventCard
+                                event={event}
+                                gyms={gyms}
+                                userType={currentUser?.userType}
+                            />
+                        </Box>
+                    ))}
+                </Box>
+            </Container>
         </>
     );
 };

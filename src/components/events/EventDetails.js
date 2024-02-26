@@ -93,8 +93,8 @@ const EventDetails = ( userType, handleDelete, ) => {
                 setGym(gymData);
 
                 const leagueData = eventData.leagueId ? await getLeagueById(eventData.leagueId) : null;
-                setLeague(leagueData);
-            }
+                console.log('Fetched League Data:', leagueData);
+                setLeague(leagueData);            }
         };
 
         fetchData();
@@ -239,13 +239,13 @@ const EventDetails = ( userType, handleDelete, ) => {
                     )}
 
                     {league ? (
-                            <>
-                                <h3>League</h3>
-                                <LeagueCard league={league} />
-                            </>
-                        )  : (
+                        <>
+                            <h3>League</h3>
+                            <LeagueCard league={league} />
+                        </>
+                    ) : (
                         <p><i>This event is not associated with any leagues.</i></p>
-                        )}
+                    )}
 
                     {subscribedUsers.length > 0 && (
                         <>

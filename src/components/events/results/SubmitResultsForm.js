@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from "react";
+import AuthContext from '../../../contexts/AuthContext'; // Ensure this path is correct
 import { doc, addDoc, getDocs, collection, getFirestore } from 'firebase/firestore';
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from '@mui/material/TextField';
@@ -7,7 +8,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import Grid from '@mui/material/Grid';
-const SubmitEventResults = ({ eventId, eventDate }) => {
+const SubmitEventResults = ({ eventId, eventDate, ownerId }) => {
     const [numPlaces, setNumPlaces] = useState(0);
     const [users, setUsers] = useState([]);
     const [results, setResults] = useState([]);
@@ -16,6 +17,9 @@ const SubmitEventResults = ({ eventId, eventDate }) => {
     const [open, setOpen] = useState(false);
     const [showForm, setShowForm] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    //hide the button for non league or gym owners or admins
+    const { currentUser } = useContext(AuthContext);
 
     const handleManualEnter = (index, event) => {
         const newResults = [...results];
@@ -57,13 +61,24 @@ const SubmitEventResults = ({ eventId, eventDate }) => {
     };
 
     useEffect(() => {
+        // Check if currentUser is owner or admin and set form visibility
+        const isOwner = currentUser?.uid === ownerId;
+        const isAdmin = currentUser?.role === 'admin';
+        setShowForm(isOwner || isAdmin);
+    }, [currentUser, ownerId]);
+
+    useEffect(() => {
+        // Define getUsers inside useEffect to avoid defining it on every render
         const getUsers = async () => {
             const usersSnapshot = await getDocs(collection(getFirestore(), 'users'));
             const usersData = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             setUsers(usersData);
         };
+
+        // Call getUsers
         getUsers();
-    }, []);
+    }, []); // Ensure this useEffect is properly closed
+
 
     //handle result time
     const handleMinutesChange = (event, index) => {

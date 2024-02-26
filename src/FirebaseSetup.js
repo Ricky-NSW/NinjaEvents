@@ -6,7 +6,9 @@ import 'firebase/compat/auth';
 import 'firebase/compat/firestore';
 import 'firebase/compat/storage';
 import 'firebase/compat/messaging';
+import 'firebase/compat/performance'; // Import the performance monitoring library
 import 'firebase/storage';
+
 
 const firebaseConfig = {
     apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -20,6 +22,9 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
+
+// Initialize Firebase Performance Monitoring
+const performance = firebase.performance();
 
 // Enable offline persistence
 firebase.firestore().enablePersistence()
@@ -41,4 +46,6 @@ export const auth = firebase.auth();
 export const storage = firebase.storage();
 export default firebase;
 export const messaging = firebase.messaging();
+// Export the performance monitoring instance
+export const perf = performance;
 

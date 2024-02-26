@@ -6,23 +6,20 @@ import {
     TextField,
     Typography,
     Grid,
-    Paper,
 } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import styled from '@emotion/styled';
 import { useDataLayer } from '../data/DataLayer';
 import AuthContext from '../../contexts/AuthContext';
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import UserAvatarUpload from './UserAvatarUpload'; // Add this import
+import UserAvatarUpload from './UserAvatarUpload';
 
-const useStyles = makeStyles((theme) => ({
-    paper: {
-        position: 'absolute',
-        width: 400,
-        backgroundColor: theme.palette.background.paper,
-        boxShadow: theme.shadows[5],
-        padding: theme.spacing(2, 4, 3),
-    },
+const StyledPaper = styled('div')(({ theme }) => ({
+    position: 'absolute',
+    width: 400,
+    backgroundColor: theme.palette.background.paper,
+    boxShadow: theme.shadows[5],
+    padding: `${theme.spacing(2)}px ${theme.spacing(4)}px ${theme.spacing(3)}px`
 }));
+
 
 const UpdateUserForm = () => {
     const classes = useStyles();
@@ -119,8 +116,7 @@ const UpdateUserForm = () => {
                 aria-describedby="modal-for-editing-user-profile"
             >
                 <Box
-                    component={Paper}
-                    className={classes.paper}
+                    component={StyledPaper} // Use the StyledPaper component here
                     onSubmit={handleSubmit}
                     as="form"
                 >

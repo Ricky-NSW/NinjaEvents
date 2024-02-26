@@ -132,7 +132,7 @@ const UserProfile = () => {
                 {results && results.length > 0 && <Divider>Results</Divider>}
                 <List>
                     {results && results.map(result => (
-                        // <CollectionCard link={`/#/events/${result.eventId}`}>
+                        // <CollectionCard link={`/events/${result.eventId}`}>
                         <CollectionCard key={results.id} link={`/events/${result.eventId}`}>
                             <ListItem
                                 key={result.id}

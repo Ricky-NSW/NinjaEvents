@@ -1,10 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- ... -->
+
+    <!-- Preconnects to Google Maps for faster map loading -->
+    <link rel="preconnect" href="https://maps.gstatic.com">
+    <link rel="dns-prefetch" href="https://maps.gstatic.com">
+
+    <!-- Preconnects to Google Maps APIs for faster API responses -->
+    <link rel="preconnect" href="https://maps.googleapis.com">
+    <link rel="dns-prefetch" href="https://maps.googleapis.com">
+
+    <!-- Preconnects to Firebase Firestore to speed up database operations -->
+    <link rel="preconnect" href="https://firestore.googleapis.com">
+    <link rel="dns-prefetch" href="https://firestore.googleapis.com">
+
+    <!-- Preconnects to Firebase Storage for faster file uploads and downloads -->
+    <link rel="preconnect" href="https://firebasestorage.googleapis.com">
+    <link rel="dns-prefetch" href="https://firebasestorage.googleapis.com">
+
+    <!-- Preconnects to your Firebase app for faster initial load -->
     <link rel="preconnect" href="https://ninjaworld-c885a.firebaseapp.com">
-    <link rel="preconnect" href="https://www.googleapis.com">
-    <!-- ... -->
+    <link rel="dns-prefetch" href="https://ninjaworld-c885a.firebaseapp.com">
+
+    <!-- Preconnects to Google APIs and SDKs to speed up their use by establishing early connections -->
+<!--    <link rel="preconnect" href="https://www.googleapis.com">-->
+<!--    <link rel="dns-prefetch" href="https://www.googleapis.com">-->
+
+    <!-- Preconnects to Google Storage to speed up loading times for any resources stored there -->
+<!--    <link rel="preconnect" href="https://storage.googleapis.com">-->
+<!--    <link rel="dns-prefetch" href="https://storage.googleapis.com">-->
+
+    <!-- Preconnects to Google's general APIs (like Maps, Drive, etc.) for faster API calls -->
+<!--    <link rel="preconnect" href="https://apis.google.com">-->
+<!--    <link rel="dns-prefetch" href="https://apis.google.com">-->
+
 </head>
 <body>
     <div id="root"></div>
